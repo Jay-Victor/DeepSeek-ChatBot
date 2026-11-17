@@ -8,13 +8,18 @@
 
 [![Latest release](https://img.shields.io/github/v/release/Jay-Victor/DeepSeek-ChatBot?label=release&color=4D6BFE)](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest)
 [![Download APK](https://img.shields.io/badge/download-APK-3DDC84?logo=android&logoColor=white)](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest)
+[![DeepSeek](https://img.shields.io/badge/DeepSeek-4D6BFE?logo=deepseek&logoColor=white)](https://www.deepseek.com/)
 
 把 [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.1 原样装进 Android：
 **上游前端产物 + 一层 Kotlin WebView 壳**，不重写界面，也不改协议。
 
-<p align="center">
-  <img src="docs/screenshot.png" width="300" alt="界面截图">
-</p>
+| 会话 | 侧边栏 |
+| :---: | :---: |
+| <img src="docs/screenshot.png" width="260" alt="会话页截图"> | <img src="docs/screenshot-sidebar.png" width="260" alt="侧边栏截图"> |
+
+| 设置 · 通用 | 设置 · 关于 |
+| :---: | :---: |
+| <img src="docs/screenshot-settings-general.png" width="260" alt="通用设置截图"> | <img src="docs/screenshot-settings-about.png" width="260" alt="关于页截图"> |
 
 | | |
 | --- | --- |
@@ -25,26 +30,50 @@
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
 | 构建工具链 | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
 
+## 功能
+
+### 来自上游
+
+- 多会话与自动标题、编辑提问、重新生成、消息分支
+- 流式回答、深度思考、智能搜索与来源引用
+- 附件上传（粘贴 / 拖拽）、语音输入与朗读
+- Markdown / 代码高亮 / KaTeX 公式 / Mermaid 图表
+- 中英文、浅色深色、ZIP 历史导入导出
+
+### 壳补上的部分
+
+- **系统能力**：返回键、状态栏配色、安全区与键盘避让、麦克风、文件选择、外链
+- **导出**：ZIP 走 SAF 落盘（WebView 会丢弃 `blob:` 下载）
+- **移动端侧边栏**：会话搜索（标题 + 当前分支正文，命中高亮）、底部浮动「新建」、多选批量置顶 / 删除
+- **会话页顶栏**：自动朗读开关；开启后每条新完成的回复自动朗读，切换时在屏幕中央显示 1.6 秒提示
+- **会话三点菜单**：置顶 / 取消置顶、多选
+- **设置与关于**：思考内容自动折叠、上下文占用环（DeepSeek-V4 分词器，1M 窗口）、版本与更新检查、应用内下载安装
+
+## 快速开始
+
+从 [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 下载签名 APK，或：
+
+```bash
+adb install -r DeepSeekChatBot-v0.1.9-release.apk
+```
+
+首次启动在「设置 → 数据管理」填入自己的 DeepSeek API Key；Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
+
+**同一 `applicationId` 必须始终用同一个 keystore 签名**，否则只能卸载重装，本地会话与 Key 会一起清空。
+
 ## 为什么是 WebView 壳
 
 上游是纯静态 SPA：`rspack` 打成静态文件、没有后端，状态全在 localStorage 与 IndexedDB，请求直连 DeepSeek API。
-它跑进 WebView 只差六件「浏览器有、WebView 没有」的能力；重写成 Kotlin 反而要丢掉 Markdown、KaTeX、Mermaid、历史导入导出那一整套实现。
+它跑进 WebView 只差六类「浏览器有、WebView 没有」的能力；重写成 Kotlin 反而要丢掉 Markdown、KaTeX、Mermaid、历史导入导出那一整套实现。
 所以这里只补壳，不动业务。
 
-## 功能
+## 构建
 
-界面能力全部来自上游：多会话与自动标题、编辑提问、重新生成、消息分支、流式回答、深度思考、智能搜索与来源引用、
-附件上传（粘贴/拖拽）、语音输入与朗读、Markdown / 代码高亮 / KaTeX 公式 / Mermaid 图表、中英文、浅色深色、历史导入导出（ZIP）。
-
-壳补上的部分：系统返回键、状态栏配色、安全区与键盘避让、麦克风权限、文件选择、导出落盘、外链，「设置」里的思考内容自动折叠，「关于」里的版本信息与 GitHub Release 更新检查（自动检查可关），输入框里的上下文占用环（按 DeepSeek-V4 分词器统计，1M 窗口，回合结束更新），以及「关于」页的应用内下载安装更新（校验 SHA-256、签名与版本号后交给系统安装器）；移动端侧边栏新增会话搜索（标题与当前分支正文，命中高亮）、底部浮动「新建」和多选批量置顶 / 删除，会话顶栏的新建按钮改为常驻。会话页顶栏新增自动朗读开关（新回复完成后自动朗读，可随时关闭）；移动端会话三点菜单可直接置顶 / 取消置顶或进入多选。
-
-## 环境要求
+环境要求：
 
 - Node.js 22+ 与 pnpm
 - JDK 17+（本仓库用 21 构建）
 - Android SDK：platform `android-36`、build-tools `36.1.0`
-
-## 构建
 
 ```bash
 scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
@@ -67,18 +96,6 @@ cd ../android && ./gradlew assembleRelease
 ```
 
 > 构建前别用静态服务器占着 `web/dist`：rspack 会清空输出目录，Windows 下直接报 `EBUSY`。
-
-## 安装
-
-```bash
-adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.9-release.apk
-```
-
-不想自己构建的话，[Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 里直接下签名好的 APK。
-
-首次启动会要求填 API Key（设置 → 数据管理）。Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
-
-**同一 `applicationId` 必须始终用同一个 keystore 签名**，否则只能卸载重装，本地会话与 Key 会一起清空。
 
 ## 签名
 
@@ -104,35 +121,35 @@ KEYSTORE_FILE / KEYSTORE_PASSWORD / KEYSTORE_ALIAS / KEY_PASSWORD
 | 系统栏与键盘 | 由容器 padding 留出状态栏、导航栏与输入法高度；状态栏字色随页面主题反色 |
 | 深浅色 | `values/` 用浅色基主题、`values-night/` 用深色基——WebView 的 `prefers-color-scheme` 取自应用主题而非系统 uiMode |
 
+## 已知限制
+
+- **自动朗读会产生 TTS 调用**：每条完成的回复一次，默认关闭；只读当前会话、前台完成的回复，正在朗读其他内容时不打断
+- **会话搜索、置顶与多选只在移动端侧边栏**：搜索匹配标题、当前分支正文与附件名，不含思考内容；首次搜索需建本地索引，历史很多时会有短暂延迟
+- **后台 / 锁屏**：WebView 会被系统节流，长时间生成可能中断；「锁屏继续跑」需要前台服务，未实现
+- **系统深色模式**：页面按启动时的系统主题渲染（`configChanges` 含 `uiMode`，为的是不重建 Activity、不丢流式回复），运行中切系统主题要重启应用才生效；应用内「设置 → 主题」可立即切换
+- 大附件（几十 MB）经 SAF 进内存再上传，低端机有 OOM 风险（已开 `largeHeap`）
+- 只支持 DeepSeek 官方接口（`/anthropic/v1/messages`、`/anthropic/v1/files`、`/v1/tools/asr|tts`）；换 OpenAI 兼容端点需要改 `web/src/services/api/`
+- 应用内更新需要访问 GitHub 资产（优先 `api.github.com` 资产入口）；受限网络可能下载失败，此时可用「在浏览器中下载」，首次安装还需在系统设置里允许未知来源
+- 没有 iOS 版本：同样六类能力在 iOS 上要另写一份
+
+## 验证状态
+
+在 Android 16（API 36.1，x86_64 模拟器）上核对过壳层：页面 origin 与安全上下文、流式端点的 CORS 与 401 错误映射、
+ZIP 导出落盘（下载文件 md5 与源数据一致）、麦克风授权链路、文件选择、外链进入 Custom Tabs、返回键三级行为、
+浅色深色与状态栏反色、安全区与键盘不双留白、应用内更新的下载进度 / SHA-256 与签名校验 / 未知来源授权 / 系统安装器覆盖安装。
+
+v0.1.9 的移动端侧边栏（搜索、多选、置顶分组、批量删除、浮动新建、顶栏常驻）、会话菜单（置顶 / 取消置顶 / 多选）
+与顶栏自动朗读开关（含 1.6 秒居中提示与自动朗读触发）在 390×844 视口核对；自动朗读的真实出声与真机输入法待确认。
+
 ## 仓库结构
 
 ```
 web/        上游 chat-demo 0.1.1 源码；相对上游的改动见 web/PATCHES.md
 android/    Kotlin WebView 壳（Gradle 工程）
 scripts/    build-apk.sh：构建 Web → 同步 assets → 出 APK
-docs/       截图
+docs/       截图与按版本归档的 Release 正文
 references/ 上游原始压缩包与图标素材（不进版本库）
 ```
-
-## 已知限制
-
-- **会话搜索与多选只在移动端侧边栏**：搜索按标题、当前分支正文与附件名匹配，不含思考内容；首次搜索需建本地索引，历史很多时会有短暂延迟。多选支持批量置顶 / 删除，置顶写入本地并随 ZIP 导入导出。桌面端侧边栏保持原来的全宽新建按钮与列表。
-- **后台 / 锁屏**：WebView 会被系统节流，长时间生成可能中断；「锁屏继续跑」需要前台服务，未实现。
-- **系统深色模式**：页面按启动时的系统主题渲染（`configChanges` 含 `uiMode`，为的是不重建 Activity、不丢流式回复），
-  运行中切系统主题要重启应用才生效；应用内「设置 → 主题」可立即切换。
-- 大附件（几十 MB）经 SAF 进内存再上传，低端机有 OOM 风险（已开 `largeHeap`）。
-- 只支持 DeepSeek 官方接口（`/anthropic/v1/messages`、`/anthropic/v1/files`、`/v1/tools/asr|tts`）；
-  换 OpenAI 兼容端点需要改 `web/src/services/api/`。
-- 应用内更新需要访问 GitHub 资产（优先 `api.github.com` 资产入口）；受限网络可能下载失败，此时可用
-  「在浏览器中下载」，首次安装还需在系统设置里允许未知来源。下载期间请保持应用在前台，进程被系统回收后需要重新下载。
-- 没有 iOS 版本：同样六项能力在 iOS 上要另写一份。
-
-## 验证状态
-
-在 Android 16（API 36.1，x86_64 模拟器）上核对过：页面 origin 与安全上下文、流式端点的 CORS 与 401 错误映射、
-ZIP 导出落盘（下载文件 md5 与源数据一致）、麦克风授权链路、文件选择、外链进入 Custom Tabs、返回键三级行为、
-浅色深色与状态栏反色、安全区与键盘不双留白、应用内更新的下载进度 / SHA-256 与签名校验 / 未知来源授权 /
-系统安装器覆盖安装。真机待安装后确认。本版移动端侧边栏（搜索、多选、置顶分组、批量删除、浮动新建、顶栏常驻）、会话菜单（置顶 / 取消置顶 / 多选）与顶栏自动朗读开关（含 1.6 秒居中提示与自动朗读触发）在 390×844 视口核对；自动朗读的真实出声与真机输入法待确认。
 
 ## 许可证
 
