@@ -32,3 +32,6 @@ desktop.ini
 __pycache__/
 *.pyc
 .venv/
+
+# local reference material (不纳入版本库)
+references/
