@@ -52,6 +52,16 @@
 | `android/app/src/main/res/xml/file_paths.xml`（新增） | 只暴露 `cache/updates/` 给系统安装器 |
 | `android/app/src/main/java/.../MainActivity.kt` | 桥接 `downloadUpdate` / `cancelUpdate`，转发进度事件，`onResume` 继续权限后的安装 |
 | `android/app/src/main/java/.../UpdateInstaller.kt`（新增） | HTTPS 下载、字节数/SHA-256/包名/签名/versionCode 校验、未知来源权限与系统安装器 |
+| `src/components/session/MobileHeader.tsx` | 顶栏改为「菜单 + 标题 + 常驻新建」：标题空着也占位，欢迎页 / 加载页 / 会话页都显示右侧新建按钮，沿用原来的聊天气泡加号图标 |
+| `src/components/sider/Sider.tsx` | 移动端：顶部新建按钮改为会话搜索框、列表底部新增浮动「新建」胶囊（点击时清空搜索、新建并关闭抽屉）；桌面端保持原来的全宽新建按钮与列表 |
+| `src/components/sider/SessionSearch.tsx` / `.module.css` / `.css.d.ts`（新增） | 侧边栏搜索框：放大镜、清除按钮、`type=search`；拼音组合期间不触发搜索，`compositionend` 后再查，Esc 清空 |
+| `src/components/sider/SearchResultItem.tsx` / `.module.css` / `.css.d.ts`（新增） | 搜索结果行：标题 + 命中片段，关键词用 `<mark>` 高亮，点击打开会话 |
+| `src/components/sider/useSessionSearch.ts`（新增） | 搜索状态：标题同步先出结果，正文索引异步补齐；120ms 防抖，索引失败退回标题匹配 |
+| `src/services/chat/sessionSearch.ts`（新增） | 本地会话搜索：首次用游标逐条读 `sessions` 建正文索引（只取当前分支的用户正文、附件名与回复正文，跳过思考与模板），之后按 `updatedAt` 增量补齐；标题命中优先，最多展示 50 条 |
+| `src/services/chat/db.ts` | 新增 `iterateSessions`：逐条遍历会话，避免一次把所有历史读进内存 |
+| `src/services/chat/store.ts` | 导入历史替换全部会话后调用 `invalidateSessionSearch()`，避免沿用替换前的正文索引 |
+| `src/components/sider/Sider.module.css` / `.css.d.ts` | 保留桌面端全宽新建按钮样式；移动端新增 148px 浮动胶囊（48px 高、20px 图标）与空结果提示，列表底部留出胶囊高度的滚动空间 |
+| `src/i18n/zh.ts` / `en.ts` | 搜索占位、清除、空结果、结果计数、搜索中与「新建」短文案 |
 
 分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与
 Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch。计数实现见 `bpe.ts`。

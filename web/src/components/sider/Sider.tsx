@@ -4,7 +4,7 @@ import { useTranslate } from '../../i18n/index.js'
 import { IconPanelLeftOutline16, IconSettingsOutline16, NewChatIcon } from '../base/icons.js'
 import { setSiderCollapsed } from '../../services/settings.js'
 import { groupSessions } from '../../services/chat/sessionGroups.js'
-import { newChat, removeSession, useChatStore } from '../../services/chat/store.js'
+import { newChat, removeSession, selectSession, useChatStore } from '../../services/chat/store.js'
 import type { SessionSummary } from '../../services/chat/types.js'
 import { Button } from '../base/Button.js'
 import { IconButton } from '../base/IconButton.js'
@@ -13,10 +13,13 @@ import { showToast } from '../base/toastState.js'
 import { openSettings } from '../settings/settingsDialogState.js'
 import { closeMobileSider, useMobileSider } from './mobileSiderState.js'
 import { usePushSider } from './usePushSider.js'
+import { SearchResultItem } from './SearchResultItem.js'
 import { SessionItem } from './SessionItem.js'
+import { SessionSearch } from './SessionSearch.js'
+import { useSessionSearch } from './useSessionSearch.js'
 import styles from './Sider.module.css'
 
-/** 展开的侧边栏：名称与收起按钮、开启新对话、按时间分组的会话列表、底部设置；移动端放在抽屉里，收起按钮关闭抽屉 */
+/** 展开的侧边栏：名称与收起按钮、会话搜索、按时间分组的会话列表、底部浮动新建与设置；移动端放在抽屉里，收起按钮关闭抽屉 */
 export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
   const t = useTranslate()
   const sessions = useChatStore((state) => state.sessions)
@@ -25,6 +28,10 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
   const groups = useMemo(() => groupSessions(sessions, now, t), [sessions, now, t])
   const [deleting, setDeleting] = useState<SessionSummary | null>(null)
   const [deletePending, setDeletePending] = useState(false)
+  const [query, setQuery] = useState('')
+  const searching = query.trim().length > 0
+  // 搜索只属于移动端抽屉；桌面端保持原来的全宽新建按钮
+  const search = useSessionSearch(mobile ? query : '', sessions)
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>
@@ -62,35 +69,82 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
           onClick={() => (mobile ? closeMobileSider() : setSiderCollapsed(true))}
         />
       </div>
-      <button
-        type="button"
-        className={styles.newChat}
-        onClick={() => {
-          newChat()
-          closeMobileSider()
-        }}
-      >
-        <span className={styles.newChatIcon}>
-          <NewChatIcon />
-        </span>
-        {t('newChat')}
-      </button>
+      {mobile ? (
+        <SessionSearch value={query} onChange={setQuery} />
+      ) : (
+        <button
+          type="button"
+          className={styles.newChat}
+          onClick={() => {
+            newChat()
+            closeMobileSider()
+          }}
+        >
+          <span className={styles.newChatIcon}>
+            <NewChatIcon />
+          </span>
+          {t('newChat')}
+        </button>
+      )}
       <div className={styles.listWrap}>
         <div className={styles.list}>
-          {groups.map((group) => (
-            <div key={group.key} className={styles.section}>
-              <div className={styles.sectionHeader}>{group.label}</div>
-              {group.sessions.map((session) => (
-                <SessionItem
-                  key={session.id}
-                  session={session}
-                  active={session.id === activeId}
-                  onDelete={() => setDeleting(session)}
-                />
-              ))}
-            </div>
-          ))}
+          {searching ? (
+            search.hits.length === 0 ? (
+              <div className={styles.searchEmpty}>
+                {search.pending ? t('sessionSearching') : t('sessionSearchEmpty')}
+              </div>
+            ) : (
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  {t('sessionSearchResultsCount', { count: search.total })}
+                </div>
+                {search.hits.map((hit) => (
+                  <SearchResultItem
+                    key={hit.id}
+                    hit={hit}
+                    query={query}
+                    active={hit.id === activeId}
+                    onSelect={() => {
+                      setQuery('')
+                      selectSession(hit.id)
+                      closeMobileSider()
+                    }}
+                  />
+                ))}
+              </div>
+            )
+          ) : (
+            groups.map((group) => (
+              <div key={group.key} className={styles.section}>
+                <div className={styles.sectionHeader}>{group.label}</div>
+                {group.sessions.map((session) => (
+                  <SessionItem
+                    key={session.id}
+                    session={session}
+                    active={session.id === activeId}
+                    onDelete={() => setDeleting(session)}
+                  />
+                ))}
+              </div>
+            ))
+          )}
         </div>
+        {mobile ? (
+          <button
+            type="button"
+            className={styles.newChatFab}
+            onClick={() => {
+              setQuery('')
+              newChat()
+              closeMobileSider()
+            }}
+          >
+            <span className={styles.newChatFabIcon}>
+              <NewChatIcon />
+            </span>
+            {t('newChatShort')}
+          </button>
+        ) : null}
       </div>
       <div className={styles.bottom}>
         <button type="button" className={styles.settings} onClick={() => openSettings('general')}>

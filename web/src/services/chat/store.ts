@@ -15,6 +15,7 @@ import {
   prepareDraftMessage,
 } from './drafts.js'
 import { createLatestReminder } from './latestReminder.js'
+import { invalidateSessionSearch } from './sessionSearch.js'
 import {
   applyEvent,
   canContinueReply,
@@ -417,6 +418,8 @@ export const replaceHistory = async (write: () => Promise<void>): Promise<number
     unsavedSessions.clear()
     pendingFiles.clear()
     clearAllDrafts()
+    // 会话整体替换后，搜索索引里的正文可能已经过期
+    invalidateSessionSearch()
     set({
       ready: true,
       initError: false,
