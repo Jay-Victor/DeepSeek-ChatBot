@@ -240,18 +240,23 @@
   align-items: center;
   gap: 8px;
   margin-top: 4px;
-  padding: 12px;
+  padding: 12px 8px;
 }
 
 .toggles {
   display: flex;
   flex: 1;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
-.collapsedToggles .toggleLabel {
+.toggleLabel {
+  white-space: nowrap;
+}
+
+/* 空间不足时保留文字、收起图标：文字被隐藏会让两个开关失去含义 */
+.collapsedToggles .toggle svg {
   display: none;
 }
 
@@ -260,10 +265,10 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  height: 34px;
-  padding: 0 12px;
-  border-radius: 18px;
+  gap: 3px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 16px;
   border: 1px solid var(--dsw-alias-border-l2);
   background-color: transparent;
   color: var(--dsw-alias-label-primary);
@@ -301,6 +306,6 @@
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   margin-left: auto;
 }

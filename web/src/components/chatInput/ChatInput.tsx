@@ -64,13 +64,29 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
 
     const updateLabels = () => {
       toggles.classList.remove(styles.collapsedToggles)
-      toggles.classList.toggle(styles.collapsedToggles, toggles.scrollWidth > toggles.clientWidth)
+      // 用两个按钮的实际外框量需要多宽；scrollWidth 在 overflow: visible 下并不可靠
+      const buttons = Array.from(toggles.querySelectorAll('button'))
+      const required = buttons.length
+        ? buttons[buttons.length - 1].getBoundingClientRect().right -
+          buttons[0].getBoundingClientRect().left
+        : 0
+      toggles.classList.toggle(styles.collapsedToggles, required > toggles.clientWidth)
     }
 
     updateLabels()
     const observer = new ResizeObserver(updateLabels)
     observer.observe(toggles)
-    return () => observer.disconnect()
+    // 字体晚于首帧生效时（系统字体 / 自定义字体）重新量一次
+    let active = true
+    void document.fonts?.ready.then(() => {
+      if (active) {
+        updateLabels()
+      }
+    })
+    return () => {
+      active = false
+      observer.disconnect()
+    }
   }, [t])
 
   const acceptFiles = (files: File[]) => {

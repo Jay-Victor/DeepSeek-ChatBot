@@ -64,6 +64,8 @@
 | `src/app/viewport.ts` | 原生壳里跳过 `visualViewport` 跟随：容器已按输入法 inset 缩短 WebView，页面再缩一次会在键盘动画开始时先于容器收缩、露出一帧底色（搜索框聚焦闪烁） |
 | `src/components/settings/AboutSetting.tsx` / `Settings.module.css` | 关于页更新卡片去掉「安装前校验签名与版本号…」提示；宽度改为 288px 并计入内边距（原来 320px 之外再加 28px，手机上几乎占满） |
 | `src/i18n/zh.ts` / `en.ts` | 新增搜索文案与「新建」短文案；移除 `aboutInstallVerifyHint` |
+| `src/components/chatInput/ChatInput.module.css` | 输入框底栏：开关高度 34→32、左右内边距 12→10、按钮间距 10→8，底栏左右留白 12→8（整体外移）；右侧功能组间距 4→2；空间不足时改为收起图标、保留「深度思考 / 智能搜索」文字，避免文字被整段隐藏 |
+| `src/components/chatInput/ChatActionButton.module.css` | 发送 / 停止按钮去掉额外的 6px 左边距，和附件、上下文环靠得更紧 |
 
 分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与
 Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch。计数实现见 `bpe.ts`。
