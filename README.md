@@ -2,10 +2,20 @@
 
 [English](README.en.md) | 简体中文
 
+<p align="center">
+  <img src="docs/logo.png" width="132" alt="DeepSeek ChatBot logo">
+</p>
+
+[![Latest release](https://img.shields.io/github/v/release/Jay-Victor/DeepSeek-ChatBot?label=release&color=4D6BFE)](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest)
+[![Download APK](https://img.shields.io/badge/download-APK-3DDC84?logo=android&logoColor=white)](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest)
+[![Release workflow](https://github.com/Jay-Victor/DeepSeek-ChatBot/actions/workflows/release.yml/badge.svg)](https://github.com/Jay-Victor/DeepSeek-ChatBot/actions/workflows/release.yml)
+
 把 [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.1 原样装进 Android：
 **上游前端产物 + 一层 Kotlin WebView 壳**，不重写界面，也不改协议。
 
-<img src="docs/screenshot.png" width="320" alt="界面截图">
+<p align="center">
+  <img src="docs/screenshot.png" width="300" alt="界面截图">
+</p>
 
 | | |
 | --- | --- |
@@ -65,6 +75,8 @@ cd ../android && ./gradlew assembleRelease
 adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.0-release.apk
 ```
 
+不想自己构建的话，[Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 里直接下签名好的 APK。
+
 首次启动会要求填 API Key（设置 → 数据管理）。Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
 
 **同一 `applicationId` 必须始终用同一个 keystore 签名**，否则只能卸载重装，本地会话与 Key 会一起清空。
@@ -123,3 +135,5 @@ ZIP 导出落盘（下载文件 md5 与源数据一致）、麦克风授权链�
 
 [MIT](LICENSE)。`web/` 是 [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 的衍生副本，
 其 MIT 声明保留在 `web/LICENSE`，并随构建产物分发。图标与 DeepSeek 品牌仅用于个人侧载。
+
+变更记录见 [CHANGELOG.md](CHANGELOG.md)，构建与发版约定（含 Release 格式要求）见 [AGENTS.md](AGENTS.md)。

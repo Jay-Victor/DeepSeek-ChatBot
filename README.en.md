@@ -2,10 +2,20 @@
 
 English | [简体中文](README.md)
 
+<p align="center">
+  <img src="docs/logo.png" width="132" alt="DeepSeek ChatBot logo">
+</p>
+
+[![Latest release](https://img.shields.io/github/v/release/Jay-Victor/DeepSeek-ChatBot?label=release&color=4D6BFE)](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest)
+[![Download APK](https://img.shields.io/badge/download-APK-3DDC84?logo=android&logoColor=white)](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest)
+[![Release workflow](https://github.com/Jay-Victor/DeepSeek-ChatBot/actions/workflows/release.yml/badge.svg)](https://github.com/Jay-Victor/DeepSeek-ChatBot/actions/workflows/release.yml)
+
 Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.1 into an installable Android app:
 **the upstream web build, wrapped in a thin Kotlin WebView shell**. No UI rewrite, no protocol changes.
 
-<img src="docs/screenshot.png" width="320" alt="Screenshot">
+<p align="center">
+  <img src="docs/screenshot.png" width="300" alt="Screenshot">
+</p>
 
 | | |
 | --- | --- |
@@ -69,6 +79,9 @@ cd ../android && ./gradlew assembleRelease
 ```bash
 adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.0-release.apk
 ```
+
+If you would rather not build it yourself, the signed APK is attached to the
+[latest release](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest).
 
 On first launch the app asks for an API key (Settings → Data). The key is written only to the on-device WebView
 localStorage and is excluded from cloud backup (`allowBackup=false`).
@@ -137,3 +150,6 @@ pending.
 [MIT](LICENSE). `web/` is a derived copy of [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo); its MIT
 notice is kept in `web/LICENSE` and ships with the build output. The icon artwork and the DeepSeek name are used for a
 personal, side-loaded build only.
+
+See [CHANGELOG.md](CHANGELOG.md) for history, and [AGENTS.md](AGENTS.md) for build and release conventions
+(including the required release format).
