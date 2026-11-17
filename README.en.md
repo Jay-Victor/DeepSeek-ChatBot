@@ -19,7 +19,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.1 in
 | | |
 | --- | --- |
 | Application ID | `com.deepseekchatbot` |
-| Version | 0.1.5 (versionCode 6) |
+| Version | 0.1.6 (versionCode 7) |
 | Size | 5.32 MB (release) |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | Native deps | androidx only (webkit / browser / activity / core-splashscreen), no third-party runtime |
@@ -64,7 +64,7 @@ The script does three things: `pnpm build` inside `web/`, sync `web/dist` into
 `android/app/src/main/assets/www`, then `./gradlew assembleRelease`. Output:
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.5-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.6-release.apk
 ```
 
 Step by step:
@@ -82,7 +82,7 @@ cd ../android && ./gradlew assembleRelease
 ## Install
 
 ```bash
-adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.5-release.apk
+adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.6-release.apk
 ```
 
 If you would rather not build it yourself, the signed APK is attached to the

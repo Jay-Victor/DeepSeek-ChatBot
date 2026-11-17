@@ -5,6 +5,13 @@
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-11-17
+
+### 修复
+
+- 移动端点击搜索框、键盘弹出的一瞬间页面会闪一下：原生壳已经按输入法 inset 缩短 WebView，页面不再重复按 `visualViewport` 缩短固定层，避免先缩后缩之间露出一帧底色
+- 「关于」页的更新卡片去掉多余的「安装前校验签名与版本号…」提示，宽度收窄到 288px 并计入内边距
+
 ## [0.1.5] - 2026-11-17
 
 ### 新增
@@ -72,7 +79,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.6
 [0.1.5]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.5
 [0.1.4]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.4
 [0.1.3]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.3
