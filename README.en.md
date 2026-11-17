@@ -8,7 +8,6 @@ English | [简体中文](README.md)
 
 [![Latest release](https://img.shields.io/github/v/release/Jay-Victor/DeepSeek-ChatBot?label=release&color=4D6BFE)](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest)
 [![Download APK](https://img.shields.io/badge/download-APK-3DDC84?logo=android&logoColor=white)](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest)
-[![Release workflow](https://github.com/Jay-Victor/DeepSeek-ChatBot/actions/workflows/release.yml/badge.svg)](https://github.com/Jay-Victor/DeepSeek-ChatBot/actions/workflows/release.yml)
 
 Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.1 into an installable Android app:
 **the upstream web build, wrapped in a thin Kotlin WebView shell**. No UI rewrite, no protocol changes.
@@ -151,5 +150,4 @@ pending.
 notice is kept in `web/LICENSE` and ships with the build output. The icon artwork and the DeepSeek name are used for a
 personal, side-loaded build only.
 
-See [CHANGELOG.md](CHANGELOG.md) for history, and [AGENTS.md](AGENTS.md) for build and release conventions
-(including the required release format).
+See [CHANGELOG.md](CHANGELOG.md) for history.

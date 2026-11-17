@@ -48,3 +48,6 @@ android/keystore/
 android/KEYSTORE_INFO.txt
 *.jks
 *.keystore
+
+# 本地协作约定：只留在本机，不提交
+AGENTS.md

@@ -8,7 +8,6 @@
 
 [![Latest release](https://img.shields.io/github/v/release/Jay-Victor/DeepSeek-ChatBot?label=release&color=4D6BFE)](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest)
 [![Download APK](https://img.shields.io/badge/download-APK-3DDC84?logo=android&logoColor=white)](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest)
-[![Release workflow](https://github.com/Jay-Victor/DeepSeek-ChatBot/actions/workflows/release.yml/badge.svg)](https://github.com/Jay-Victor/DeepSeek-ChatBot/actions/workflows/release.yml)
 
 把 [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.1 原样装进 Android：
 **上游前端产物 + 一层 Kotlin WebView 壳**，不重写界面，也不改协议。
@@ -136,4 +135,4 @@ ZIP 导出落盘（下载文件 md5 与源数据一致）、麦克风授权链�
 [MIT](LICENSE)。`web/` 是 [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 的衍生副本，
 其 MIT 声明保留在 `web/LICENSE`，并随构建产物分发。图标与 DeepSeek 品牌仅用于个人侧载。
 
-变更记录见 [CHANGELOG.md](CHANGELOG.md)，构建与发版约定（含 Release 格式要求）见 [AGENTS.md](AGENTS.md)。
+变更记录见 [CHANGELOG.md](CHANGELOG.md)。

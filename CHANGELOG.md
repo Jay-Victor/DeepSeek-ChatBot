@@ -5,6 +5,11 @@
 
 ## [Unreleased]
 
+### 变更
+
+- 移除 GitHub Actions 工作流（`.github/`）与仓库 secrets：发布改为本地构建 + 手动上传，签名私钥只留在本机
+- `AGENTS.md` 改为本地文件（已加入 `.gitignore`）
+
 ## [0.1.0] - 2026-11-17
 
 首个可安装版本。
