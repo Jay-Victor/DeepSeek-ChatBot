@@ -5,6 +5,12 @@
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-17
+
+### 新增
+
+- 通用设置新增「思考内容自动折叠」开关：开启后思考结束自动收起思考过程，历史消息中已结束的思考也默认收起
+
 ## [0.1.1] - 2026-11-17
 
 ### 新增
@@ -41,6 +47,7 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.2
 [0.1.1]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.0
