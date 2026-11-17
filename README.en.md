@@ -41,8 +41,9 @@ light and dark themes, ZIP history import/export.
 
 Added by the shell: system back button, status bar appearance, safe areas and keyboard avoidance, microphone
 permission, file picker, saving exports to disk, opening external links, an optional "collapse thinking
-automatically" switch, and version info / GitHub Release update checks in Settings → About (automatic checks can be
-turned off).
+automatically" switch, version info / GitHub Release update checks in Settings → About (automatic checks can be
+turned off), and a context-usage ring in the composer (DeepSeek-V4 tokenizer, 1M window, refreshed after each
+turn).
 
 ## Requirements
 

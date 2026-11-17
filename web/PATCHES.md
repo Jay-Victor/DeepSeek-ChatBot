@@ -31,6 +31,21 @@
 | `src/main.tsx` | 调一次 `installNativeBridge()` |
 | `src/components/settings/SettingsDialog.tsx` | 导出改用 `saveBlob()`，用户取消保存不算失败 |
 | `package.json` | `build` 脚本去掉 `rm -rf dist && NODE_ENV=production`：Windows 下 pnpm 用 cmd 跑脚本会报错，且 rspack CLI 对 `build` 已默认 production（`output.clean` 负责清理） |
+| `src/services/tokenizer/bpe.ts`（新增） | byte-level BPE 计数：三段 Split(Isolated) + ByteLevel + merge rank 表；只统计 token 数，不加载 vocab |
+| `src/services/tokenizer/index.ts`（新增） | 懒加载 merges / specials 资源，失败可重试，不阻断聊天 |
+| `src/services/tokenizer/contextUsage.ts`（新增） | 复用 `getContextRounds` 重建当前分支上下文，按消息对象缓存；用最近一次 `usage.prompt` 校准模板与附件开销；窗口固定 1M |
+| `src/components/chatInput/ContextUsageRing.tsx` / `.module.css`（新增） | 输入框功能行右侧的圆形占用环；桌面与移动端点击都打开详情浮层 |
+| `src/components/chatInput/ChatInput.tsx` | 在 `.right` 中加入占用环（仅会话页） |
+| `src/services/chat/store.ts` | 导出 `SYSTEM_PROMPT` 供统计复用，值不变 |
+| `src/i18n/zh.ts` / `en.ts` | 占用环、详情与估算提示的中英文案 |
+| `rspack.config.ts` / `src/env.d.ts` | `.txt` 走 `asset/resource`；声明 `*.txt` 模块 |
+| `package.json` | 新增 `tokenizer:build` / `tokenizer:verify` 脚本 |
+| `scripts/build-tokenizer-asset.mjs`（新增） | 从 `references/` 的 `tokenizer.json` 生成 merges 与 specials 运行时资源 |
+| `scripts/verify-tokenizer.mjs` / `scripts/tokenizer-fixtures.json`（新增） | 用 Python `tokenizers` 的夹具校验计数实现 |
+| `src/assets/deepseek-v4-merges.txt` / `deepseek-v4-specials.txt`（新增） | 运行时资源约 1.5 MB（gzip 约 0.7 MB）；原始 6.3 MB `tokenizer.json` 仍不进版本库 |
+
+分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与
+Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch。计数实现见 `bpe.ts`。
 
 同步上游的做法：
 

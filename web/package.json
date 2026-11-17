@@ -10,7 +10,9 @@
     "build": "rspack build -c rspack.config.ts",
     "type": "tsc -p tsconfig.json",
     "lint": "oxlint src rspack.config.ts",
-    "format": "oxfmt --write ."
+    "format": "oxfmt --write .",
+    "tokenizer:build": "node scripts/build-tokenizer-asset.mjs",
+    "tokenizer:verify": "node scripts/verify-tokenizer.mjs"
   },
   "dependencies": {
     "@types/katex": "^0.16.5",

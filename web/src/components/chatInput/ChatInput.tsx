@@ -28,6 +28,7 @@ import { ACCEPT, useUploads } from '../../services/attachments.js'
 import { DraftAttachments } from './DraftAttachments.js'
 import { useVoiceInput } from './useVoiceInput.js'
 import { ChatActionButton, type ChatActionMode } from './ChatActionButton.js'
+import { ContextUsageRing } from './ContextUsageRing.js'
 import { Spectrum } from './Spectrum.js'
 import { useTranslate } from '../../i18n/index.js'
 import styles from './ChatInput.module.css'
@@ -267,6 +268,7 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
           </Tooltip>
         </div>
         <div className={styles.right}>
+          {sessionId !== null ? <ContextUsageRing sessionId={sessionId} /> : null}
           <IconButton
             size="m"
             tone="primary"

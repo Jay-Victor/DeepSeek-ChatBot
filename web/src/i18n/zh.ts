@@ -183,4 +183,11 @@ export const zh = {
   latestReminderLanguage: '中文',
   settingsLocaleZhCN: '简体中文',
   settingsLocaleEnUS: 'English',
+  contextUsage: '上下文占用',
+  contextUsageDetail: '上下文占用 {used} / {window} tokens（{percent}%）',
+  contextUsageDialog: '对话文本',
+  contextUsageSystem: '系统与模板',
+  contextUsageMeasured: '上次请求：输入 {prompt}，输出 {output}',
+  contextUsageApproximate: '含附件或网页，本地按文本估算',
+  contextUsageUncalibrated: '尚无服务端用量，按本地文本估算',
 } as const

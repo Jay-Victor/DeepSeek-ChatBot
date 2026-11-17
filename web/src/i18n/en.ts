@@ -193,4 +193,11 @@ export const en = {
   latestReminderLanguage: 'English',
   settingsLocaleZhCN: 'Simplified Chinese',
   settingsLocaleEnUS: 'English',
+  contextUsage: 'Context usage',
+  contextUsageDetail: 'Context usage {used} / {window} tokens ({percent}%)',
+  contextUsageDialog: 'Conversation',
+  contextUsageSystem: 'System & template',
+  contextUsageMeasured: 'Last request: {prompt} in, {output} out',
+  contextUsageApproximate: 'Includes files or web pages; local text estimate only',
+  contextUsageUncalibrated: 'No server usage yet; local text estimate',
 } satisfies Record<keyof typeof zh, string>
