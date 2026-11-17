@@ -42,8 +42,9 @@ light and dark themes, ZIP history import/export.
 Added by the shell: system back button, status bar appearance, safe areas and keyboard avoidance, microphone
 permission, file picker, saving exports to disk, opening external links, an optional "collapse thinking
 automatically" switch, version info / GitHub Release update checks in Settings → About (automatic checks can be
-turned off), and a context-usage ring in the composer (DeepSeek-V4 tokenizer, 1M window, refreshed after each
-turn).
+turned off), a context-usage ring in the composer (DeepSeek-V4 tokenizer, 1M window, refreshed after each
+turn), and in-app update installation from Settings → About (SHA-256, signature and version are verified before
+handing the APK to the system installer).
 
 ## Requirements
 
@@ -137,6 +138,10 @@ references/ upstream archive and icon assets (not tracked)
   enabled, which only helps).
 - DeepSeek endpoints only (`/anthropic/v1/messages`, `/anthropic/v1/files`, `/v1/tools/asr|tts`). Supporting an
   OpenAI-compatible endpoint means changing `web/src/services/api/`.
+- In-app updates need access to GitHub release assets (the `api.github.com` asset endpoint is preferred). On
+  restricted networks the download may fail; use "Download in browser" instead. The first install also requires
+  allowing unknown sources in system settings. Keep the app in the foreground while downloading; if the process is
+  reclaimed, the download starts over.
 - No iOS build: the same six capabilities would need a separate implementation there.
 
 ## Verification status
@@ -144,7 +149,8 @@ references/ upstream archive and icon assets (not tracked)
 Checked on Android 16 (API 36.1, x86_64 emulator): page origin and secure context, CORS on the streaming endpoint and
 401 error mapping, ZIP export written to disk (downloaded file md5 matches the source data), microphone permission
 flow, file picker, external links opening in Custom Tabs, all three levels of back button behaviour, light/dark with
-status bar inversion, and insets/keyboard without double spacing. On-device confirmation (iQOO 9 / OriginOS) is still
+status bar inversion, insets/keyboard without double spacing, and in-app update download progress / SHA-256 and
+signature verification / unknown-sources permission / system installer upgrade. On-device confirmation is still
 pending.
 
 ## License

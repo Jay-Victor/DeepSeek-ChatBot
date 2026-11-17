@@ -43,6 +43,15 @@
 | `scripts/build-tokenizer-asset.mjs`（新增） | 从 `references/` 的 `tokenizer.json` 生成 merges 与 specials 运行时资源 |
 | `scripts/verify-tokenizer.mjs` / `scripts/tokenizer-fixtures.json`（新增） | 用 Python `tokenizers` 的夹具校验计数实现 |
 | `src/assets/deepseek-v4-merges.txt` / `deepseek-v4-specials.txt`（新增） | 运行时资源约 1.5 MB（gzip 约 0.7 MB）；原始 6.3 MB `tokenizer.json` 仍不进版本库 |
+| `src/services/update.ts` | Release 解析补充 APK 的 size、sha256 digest 与 GitHub API 资产入口；受限网络优先走 API 入口 |
+| `src/services/updateInstall.ts`（新增） | 应用内更新的 Zustand 状态：下载/校验/权限/安装阶段、进度与错误码 |
+| `src/components/settings/AboutSetting.tsx` | 关于页的「下载并安装」按钮、进度条、取消/重试、错误提示与浏览器下载回退 |
+| `src/components/settings/Settings.module.css` / `.css.d.ts` | 更新卡片、进度条、链接与错误状态样式 |
+| `src/i18n/zh.ts` / `en.ts` | 应用内更新的下载、校验、权限、错误与回退文案 |
+| `android/app/src/main/AndroidManifest.xml` | 新增 `REQUEST_INSTALL_PACKAGES` 与 `FileProvider` 声明 |
+| `android/app/src/main/res/xml/file_paths.xml`（新增） | 只暴露 `cache/updates/` 给系统安装器 |
+| `android/app/src/main/java/.../MainActivity.kt` | 桥接 `downloadUpdate` / `cancelUpdate`，转发进度事件，`onResume` 继续权限后的安装 |
+| `android/app/src/main/java/.../UpdateInstaller.kt`（新增） | HTTPS 下载、字节数/SHA-256/包名/签名/versionCode 校验、未知来源权限与系统安装器 |
 
 分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与
 Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch。计数实现见 `bpe.ts`。

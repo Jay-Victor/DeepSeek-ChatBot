@@ -42,6 +42,18 @@ declare const styles: {
   readonly "aboutStatus": string;
   readonly "aboutStatusError": string;
   readonly "aboutStatusLink": string;
+  readonly "aboutUpdateCard": string;
+  readonly "aboutUpdateTitle": string;
+  readonly "aboutUpdateMeta": string;
+  readonly "aboutActions": string;
+  readonly "aboutTextButton": string;
+  readonly "aboutProgress": string;
+  readonly "aboutProgressBar": string;
+  readonly "aboutProgressIndeterminate": string;
+  readonly "aboutProgressText": string;
+  readonly "aboutError": string;
+  readonly "aboutLinks": string;
+  readonly "aboutActionLink": string;
 };
 export = styles;
 

@@ -22,6 +22,14 @@ export type ReleaseInfo = {
   url: string
   /** Release 里的 APK 资产，没有时为 null */
   apkUrl: string | null
+  /** GitHub API 的资产下载入口；受限网络下比 github.com 直链更容易走通 */
+  apkApiUrl: string | null
+  /** APK 资产文件名；用于安装前提示，不参与路径拼接 */
+  apkName: string | null
+  /** APK 字节数；0 表示 Release 没有提供 */
+  apkSize: number
+  /** Release 资产摘要（GitHub 的 sha256），没有时为 null */
+  apkSha256: string | null
   publishedAt: string
 }
 
@@ -111,6 +119,17 @@ const safeReleaseUrl = (value: unknown, fallback: string) =>
 const safeDownloadUrl = (value: unknown) =>
   typeof value === 'string' && value.startsWith(`${REPO_URL}/releases/download/`) ? value : null
 
+const SHA256_PATTERN = /^[0-9a-f]{64}$/i
+
+/** GitHub 资产 digest 形如 `sha256:<hex>`；不认识的算法一律视为没有摘要 */
+const parseDigest = (value: unknown) => {
+  if (typeof value !== 'string') {
+    return null
+  }
+  const match = /^sha256:([0-9a-f]{64})$/i.exec(value.trim())
+  return match ? match[1].toLowerCase() : null
+}
+
 const parseRelease = (data: unknown): ReleaseInfo | null => {
   if (typeof data !== 'object' || data === null) {
     return null
@@ -123,14 +142,29 @@ const parseRelease = (data: unknown): ReleaseInfo | null => {
   }
   const assets = Array.isArray(item.assets) ? item.assets : []
   let apkUrl: string | null = null
+  let apkApiUrl: string | null = null
+  let apkName: string | null = null
+  let apkSize = 0
+  let apkSha256: string | null = null
   for (const asset of assets) {
     if (typeof asset !== 'object' || asset === null) {
       continue
     }
-    const download = (asset as Record<string, unknown>).browser_download_url
+    const record = asset as Record<string, unknown>
+    const download = record.browser_download_url
     if (typeof download === 'string' && /\.apk$/i.test(download)) {
       apkUrl = safeDownloadUrl(download)
       if (apkUrl) {
+        const assetId =
+          typeof record.id === 'number' && Number.isSafeInteger(record.id) && record.id > 0
+            ? record.id
+            : null
+        apkApiUrl = assetId
+          ? `https://api.github.com/repos/${REPO}/releases/assets/${assetId}`
+          : null
+        apkName = typeof record.name === 'string' ? record.name : null
+        apkSize = typeof record.size === 'number' && record.size > 0 ? record.size : 0
+        apkSha256 = parseDigest(record.digest)
         break
       }
     }
@@ -141,6 +175,10 @@ const parseRelease = (data: unknown): ReleaseInfo | null => {
       typeof item.name === 'string' && item.name.trim() ? item.name.trim() : `v${version}`,
     url: safeReleaseUrl(item.html_url, `${REPO_URL}/releases/tag/v${version}`),
     apkUrl,
+    apkApiUrl,
+    apkName,
+    apkSize,
+    apkSha256,
     publishedAt: typeof item.published_at === 'string' ? item.published_at : '',
   }
 }
@@ -165,6 +203,17 @@ const readCachedRelease = (): ReleaseInfo | null => {
       name: typeof item.name === 'string' && item.name ? item.name : `v${version}`,
       url: safeReleaseUrl(item.url, `${REPO_URL}/releases/tag/v${version}`),
       apkUrl: safeDownloadUrl(item.apkUrl),
+      apkApiUrl:
+        typeof item.apkApiUrl === 'string' &&
+        item.apkApiUrl.startsWith(`https://api.github.com/repos/${REPO}/releases/assets/`)
+          ? item.apkApiUrl
+          : null,
+      apkName: typeof item.apkName === 'string' ? item.apkName : null,
+      apkSize: typeof item.apkSize === 'number' && item.apkSize > 0 ? item.apkSize : 0,
+      apkSha256:
+        typeof item.apkSha256 === 'string' && SHA256_PATTERN.test(item.apkSha256)
+          ? item.apkSha256.toLowerCase()
+          : null,
       publishedAt: typeof item.publishedAt === 'string' ? item.publishedAt : '',
     }
   } catch {

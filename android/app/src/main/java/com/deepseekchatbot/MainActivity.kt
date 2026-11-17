@@ -39,6 +39,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.webkit.WebViewAssetLoader
+import org.json.JSONObject
 import java.io.OutputStream
 import java.util.UUID
 
@@ -53,6 +54,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var root: FrameLayout
     private lateinit var webView: WebView
     private lateinit var assetLoader: WebViewAssetLoader
+    private lateinit var updateInstaller: UpdateInstaller
     private var errorView: TextView? = null
 
     /** 页面首帧就绪前保持启动图 */
@@ -128,6 +130,7 @@ class MainActivity : ComponentActivity() {
         setContentView(root)
 
         webView = createWebView()
+        updateInstaller = UpdateInstaller(this) { payload -> emitUpdateEvent(payload) }
         root.addView(
             webView,
             FrameLayout.LayoutParams(
@@ -169,7 +172,24 @@ class MainActivity : ComponentActivity() {
         })
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (::updateInstaller.isInitialized) {
+            updateInstaller.onResume()
+        }
+    }
+
+    override fun onPause() {
+        if (::updateInstaller.isInitialized) {
+            updateInstaller.onPause()
+        }
+        super.onPause()
+    }
+
     override fun onDestroy() {
+        if (::updateInstaller.isInitialized) {
+            updateInstaller.onDestroy()
+        }
         synchronized(saveStreams) {
             saveStreams.values.forEach { stream -> runCatching { stream.close() } }
             saveStreams.clear()
@@ -372,6 +392,19 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /** 更新下载进度/结果回到页面；payload 由 UpdateInstaller 生成，只含 id、阶段与数字/错误码 */
+    private fun emitUpdateEvent(payload: JSONObject) {
+        val json = payload.toString()
+        webView.post {
+            runCatching {
+                webView.evaluateJavascript(
+                    "window.__onUpdateEvent && window.__onUpdateEvent(${JSONObject.quote(json)})",
+                    null
+                )
+            }
+        }
+    }
+
     private fun applyTheme(dark: Boolean, background: String) {
         val color = runCatching { Color.parseColor(background) }
             .getOrDefault(ContextCompat.getColor(this, R.color.window_bg))
@@ -477,6 +510,21 @@ class MainActivity : ComponentActivity() {
             runOnUiThread {
                 Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
             }
+        }
+
+        /** 页面只会传 Release 里的 HTTPS APK 地址；原生再次校验域名、路径与包签名 */
+        @android.webkit.JavascriptInterface
+        fun downloadUpdate(
+            url: String,
+            version: String,
+            assetName: String,
+            size: String,
+            sha256: String
+        ): String = updateInstaller.start(url, version, assetName, size, sha256)
+
+        @android.webkit.JavascriptInterface
+        fun cancelUpdate(id: String) {
+            updateInstaller.cancel(id)
         }
     }
 
