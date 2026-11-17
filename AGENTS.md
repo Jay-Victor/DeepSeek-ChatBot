@@ -78,6 +78,7 @@ scripts/build-apk.sh release     # 或 debug
    ```
 
 6. `.github/workflows/release.yml` 自动：构建 → 签名 → 校验版本与 tag 一致 → 创建/更新 Release → 上传 APK。之后只需 `git push --tags`。
+   想先干跑一次（只构建、不发版）：在 Actions 页面对 `Release APK` 点 **Run workflow**，或在 API 里 dispatch 到 `main`，产物在 run 的 artifact 里。
 
 ### B. 手动（与 v0.1.0 的实际操作一致）
 
