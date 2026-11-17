@@ -5,6 +5,8 @@
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-11-17
+
 ### 新增
 
 - 「关于」页支持应用内下载并安装更新：优先从 GitHub API 资产入口下载 APK，校验字节数、SHA-256、包名、签名证书与 versionCode 后交给系统安装器；首次安装会引导开启未知来源权限，返回应用后自动继续，失败时可回退到浏览器下载
@@ -58,7 +60,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.4
 [0.1.3]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.3
 [0.1.2]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.2
 [0.1.1]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.1
