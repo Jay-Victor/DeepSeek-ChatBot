@@ -1,11 +1,18 @@
 import clsx from 'clsx'
 import { memo, useState } from 'react'
 import { useTranslate } from '../../i18n/index.js'
-import { IconCheckOutline16, IconEditOutline16, IconEllipsisOutline16, IconTrashOutline16 } from '../base/icons.js'
+import {
+  IconCheckOutline16,
+  IconEditOutline16,
+  IconEllipsisOutline16,
+  IconMultiSelectOutline16,
+  IconPinOutline16,
+  IconTrashOutline16,
+} from '../base/icons.js'
 import { renameSession, selectSession } from '../../services/chat/store.js'
 import type { SessionSummary } from '../../services/chat/types.js'
 import { IconButton } from '../base/IconButton.js'
-import { Menu } from '../base/Menu.js'
+import { Menu, type MenuOption } from '../base/Menu.js'
 import { closeMobileSider } from './mobileSiderState.js'
 import styles from './SessionItem.module.css'
 
@@ -13,6 +20,8 @@ export const SessionItem = memo(function SessionItem({
   session,
   active,
   onDelete,
+  onPin,
+  onStartSelect,
   selectable = false,
   selected = false,
   onToggle,
@@ -20,6 +29,10 @@ export const SessionItem = memo(function SessionItem({
   session: SessionSummary
   active: boolean
   onDelete: () => void
+  /** 移动端菜单里的单条置顶 / 取消置顶；桌面端不传 */
+  onPin?: () => void
+  /** 移动端菜单里的「多选」，进入选择模式并选中当前会话 */
+  onStartSelect?: () => void
   /** 多选模式：整行变成勾选行，不再显示重命名 / 删除菜单 */
   selectable?: boolean
   selected?: boolean
@@ -28,6 +41,41 @@ export const SessionItem = memo(function SessionItem({
   const t = useTranslate()
   const [editing, setEditing] = useState(false)
   const displayTitle = session.title || t('untitledChat')
+  const options: MenuOption[] = [
+    {
+      key: 'rename',
+      label: t('sessionItemMenuRenameOption'),
+      icon: <IconEditOutline16 />,
+      onSelect: () => setEditing(true),
+    },
+    ...(onPin
+      ? [
+          {
+            key: 'pin',
+            label: t(session.pinned ? 'sessionItemMenuUnpinOption' : 'sessionItemMenuPinOption'),
+            icon: <IconPinOutline16 />,
+            onSelect: onPin,
+          },
+        ]
+      : []),
+    ...(onStartSelect
+      ? [
+          {
+            key: 'select',
+            label: t('sessionItemMenuSelectOption'),
+            icon: <IconMultiSelectOutline16 />,
+            onSelect: onStartSelect,
+          },
+        ]
+      : []),
+    {
+      key: 'delete',
+      label: t('delete'),
+      icon: <IconTrashOutline16 />,
+      danger: true,
+      onSelect: onDelete,
+    },
+  ]
 
   if (selectable) {
     return (
@@ -80,23 +128,7 @@ export const SessionItem = memo(function SessionItem({
     >
       <div className={styles.title}>{displayTitle}</div>
       <div className={styles.action} onClick={(event) => event.stopPropagation()}>
-        <Menu
-          options={[
-            {
-              key: 'rename',
-              label: t('sessionItemMenuRenameOption'),
-              icon: <IconEditOutline16 />,
-              onSelect: () => setEditing(true),
-            },
-            {
-              key: 'delete',
-              label: t('delete'),
-              icon: <IconTrashOutline16 />,
-              danger: true,
-              onSelect: onDelete,
-            },
-          ]}
-        >
+        <Menu options={options}>
           {({ toggle }) => (
             <IconButton icon={<IconEllipsisOutline16 />} aria-label={t('more')} onClick={toggle} />
           )}

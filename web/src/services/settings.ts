@@ -19,6 +19,7 @@ type Settings = {
   siderCollapsed: boolean
   autoCheckUpdates: boolean
   autoCollapseThinking: boolean
+  autoReadAloud: boolean
 }
 
 const KEYS = {
@@ -32,6 +33,7 @@ const KEYS = {
   siderCollapsed: 'chat-demo:sider-collapsed',
   autoCheckUpdates: 'chat-demo:auto-check-updates',
   autoCollapseThinking: 'chat-demo:auto-collapse-thinking',
+  autoReadAloud: 'chat-demo:auto-read-aloud',
 } as const
 
 const read = (key: string) => {
@@ -104,6 +106,8 @@ export const useSettings = create<Settings>(() => ({
   autoCheckUpdates: read(KEYS.autoCheckUpdates) !== 'false',
   // 思考内容默认保持展开，由用户主动打开自动折叠
   autoCollapseThinking: read(KEYS.autoCollapseThinking) === 'true',
+  // 自动朗读默认关闭，由顶栏开关主动打开
+  autoReadAloud: read(KEYS.autoReadAloud) === 'true',
 }))
 
 export const setLocale = (locale: Locale) => {
@@ -155,4 +159,9 @@ export const setAutoCheckUpdates = (autoCheckUpdates: boolean) => {
 export const setAutoCollapseThinking = (autoCollapseThinking: boolean) => {
   write(KEYS.autoCollapseThinking, String(autoCollapseThinking))
   useSettings.setState({ autoCollapseThinking })
+}
+
+export const setAutoReadAloud = (autoReadAloud: boolean) => {
+  write(KEYS.autoReadAloud, String(autoReadAloud))
+  useSettings.setState({ autoReadAloud })
 }

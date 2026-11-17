@@ -513,6 +513,39 @@ export const IconPlayMediaOutline16 = () => (
   </svg>
 )
 
+/** 自动朗读开启：喇叭 + 两道声波 */
+export const IconVolumeOutline20 = () => (
+  <svg width={20} height={20} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M3.4 7.3h2.4l3.5-2.8c.62-.5 1.55-.06 1.55.74v9.52c0 .8-.93 1.24-1.55.74l-3.5-2.8H3.4c-.55 0-1-.45-1-1V8.3c0-.55.45-1 1-1Z"
+      fill="currentColor"
+    />
+    <path
+      d="M13.4 7.6a3.2 3.2 0 0 1 0 4.8"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    <path
+      d="M15.7 5.3a6.4 6.4 0 0 1 0 9.4"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+  </svg>
+)
+
+/** 自动朗读关闭：喇叭 + 斜杠 */
+export const IconVolumeMuteOutline20 = () => (
+  <svg width={20} height={20} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M3.4 7.3h2.4l3.5-2.8c.62-.5 1.55-.06 1.55.74v9.52c0 .8-.93 1.24-1.55.74l-3.5-2.8H3.4c-.55 0-1-.45-1-1V8.3c0-.55.45-1 1-1Z"
+      fill="currentColor"
+    />
+    <path d="M13.2 13.2 18.6 6.8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+)
+
 export const IconPhotoErrorFill20 = () => (
   <svg width={20} height={20} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path

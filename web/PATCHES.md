@@ -77,6 +77,17 @@
 | `src/components/base/icons.tsx` | 新增多选图标 `IconMultiSelectOutline16` 与图钉 `IconPinOutline16` |
 | `src/components/sider/Sider.module.css` / `.css.d.ts` | 多选入口、选择头、底部操作栏与确认弹窗的样式 |
 | `src/i18n/zh.ts` / `en.ts` | 多选、已选计数、置顶、批量删除与失败提示文案 |
+| `src/components/session/MobileHeader.tsx` / `.module.css` | 会话页顶栏在「新建」左侧新增自动朗读开关（44px，喇叭 / 静音两态，`aria-pressed`）；右侧按钮组 4px 间距；欢迎页与加载页不显示 |
+| `src/components/base/icons.tsx` | 新增 `IconVolumeOutline20` / `IconVolumeMuteOutline20` |
+| `src/services/settings.ts` | 新增 `autoReadAloud`（默认关闭）并持久化 |
+| `src/services/speech/readAloud.ts` | 拆出 `startReadAloud`；创建 AudioContext 后 `resume()` 兜底 |
+| `src/services/speech/autoRead.ts`（新增） | 回复 `done` 时按开关 / 当前会话 / 前台 / 是否正在朗读判定，取 `buildReplyView` 的正文自动朗读，同一文本不重复 |
+| `src/services/chat/store.ts` | `streamReply` 收尾时调用自动朗读判定 |
+| `src/components/base/toastState.ts` / `Toast.tsx` / `Toast.module.css` | `showToast` 支持居中与自定义时长；新增居中胶囊样式（本次提示 1.6s） |
+| `src/i18n/zh.ts` / `en.ts` | 自动朗读开关与提示的中英文案 |
+| `src/components/sider/SessionItem.tsx` | 会话三点菜单新增「置顶 / 取消置顶」与「多选」；顺序为重命名、置顶、多选、删除，仅移动端传入这两个动作 |
+| `src/components/sider/Sider.tsx` | 单条置顶写盘，失败时提示并保持原状；从会话菜单进入多选时预选当前会话 |
+| `src/i18n/zh.ts` / `en.ts` | 会话菜单的置顶 / 取消置顶 / 多选文案 |
 
 分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与
 Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch。计数实现见 `bpe.ts`。

@@ -73,22 +73,17 @@ export const describeReadAloudError = (error: unknown): TranslationMessage | str
   }
 }
 
-/**
- * 开始朗读一条回复的正文；同一条正在朗读时调用等于停止。
- * 必须在点击事件中同步调用：AudioContext 需要用户手势才能出声。
- */
-export const toggleReadAloud = (
+/** 开始朗读一条回复的正文；已有朗读先停止。自动朗读也走这里。 */
+export const startReadAloud = (
   messageId: string,
   text: string,
   onError: (error: unknown) => void
 ) => {
-  const reading = useReadAloud.getState().messageId
   stopReadAloud()
-  if (reading === messageId) {
-    return
-  }
   const controller = new AbortController()
   const context = new AudioContext({ sampleRate: TTS_SAMPLE_RATE })
+  // 自动朗读发生在回复结束后、不在手势回调里：壳里已关闭媒体手势限制，这里再兜底恢复
+  void context.resume().catch(() => {})
   current = { controller, context }
   useReadAloud.setState({ messageId, status: 'loading' })
   // 音色在开始朗读时读取，设置中切换后下一次朗读生效
@@ -141,4 +136,20 @@ export const toggleReadAloud = (
       }
     }
   })()
+}
+
+/**
+ * 手动朗读：点击同一条时停止，否则开始新的朗读。
+ * 必须在点击事件中同步调用：AudioContext 需要用户手势才能出声。
+ */
+export const toggleReadAloud = (
+  messageId: string,
+  text: string,
+  onError: (error: unknown) => void
+) => {
+  if (useReadAloud.getState().messageId === messageId) {
+    stopReadAloud()
+    return
+  }
+  startReadAloud(messageId, text, onError)
 }

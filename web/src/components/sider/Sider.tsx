@@ -52,10 +52,11 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
   const [confirmPending, setConfirmPending] = useState(false)
   const selectionActive = mobile && selecting
 
-  const enterSelecting = () => {
+  /** 顶部入口不预选；从会话菜单进入时把当前会话选中 */
+  const enterSelecting = (initialId?: string) => {
     setQuery('')
     setSelecting(true)
-    setSelected(new Set())
+    setSelected(initialId ? new Set([initialId]) : new Set())
   }
 
   const exitSelecting = () => {
@@ -75,6 +76,14 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
       }
       return next
     })
+  }
+
+  /** 会话菜单里的单条置顶 / 取消置顶；失败时列表保持原状并提示 */
+  const togglePinned = async (session: SessionSummary) => {
+    const ok = await setSessionsPinned([session.id], !session.pinned)
+    if (!ok) {
+      showToast({ key: 'sessionPinFailed', type: 'error' })
+    }
   }
 
   const confirmPin = async () => {
@@ -185,7 +194,7 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
             type="button"
             className={styles.multiSelect}
             aria-label={t('selectMode')}
-            onClick={enterSelecting}
+            onClick={() => enterSelecting()}
           >
             <IconMultiSelectOutline16 />
           </button>
@@ -226,6 +235,8 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
                     session={session}
                     active={session.id === activeId}
                     onDelete={() => setDeleting(session)}
+                    onPin={mobile ? () => void togglePinned(session) : undefined}
+                    onStartSelect={mobile ? () => enterSelecting(session.id) : undefined}
                     selectable={selectionActive}
                     selected={selected.has(session.id)}
                     onToggle={() => toggleSelected(session.id)}

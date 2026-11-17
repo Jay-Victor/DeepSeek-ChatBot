@@ -1,13 +1,45 @@
-import { IconMenuOutline20, IconNewChatOutline20 } from '../base/icons.js'
+import {
+  IconMenuOutline20,
+  IconNewChatOutline20,
+  IconVolumeMuteOutline20,
+  IconVolumeOutline20,
+} from '../base/icons.js'
 import { useTranslate } from '../../i18n/index.js'
 import { newChat } from '../../services/chat/store.js'
+import { setAutoReadAloud, useSettings } from '../../services/settings.js'
+import { stopReadAloud } from '../../services/speech/readAloud.js'
 import { IconButton } from '../base/IconButton.js'
+import { showToast } from '../base/toastState.js'
 import { openMobileSider } from '../sider/mobileSiderState.js'
 import styles from './MobileHeader.module.css'
 
-/** 移动端顶栏：左侧菜单打开侧边栏；右侧常驻新建会话，标题居中占位 */
-export const MobileHeader = ({ title }: { title?: string }) => {
+/** 自动朗读开关的状态提示：短到不挡内容，又够看清 */
+const HINT_DURATION = 1600
+
+/**
+ * 移动端顶栏：左侧菜单打开侧边栏，右侧常驻新建会话。
+ * 会话页在新建左侧额外显示自动朗读开关；欢迎页与加载页不显示。
+ */
+export const MobileHeader = ({
+  title,
+  autoRead = false,
+}: {
+  title?: string
+  autoRead?: boolean
+}) => {
   const t = useTranslate()
+  const autoReadOn = useSettings((state) => state.autoReadAloud)
+  const toggleAutoRead = () => {
+    const next = !useSettings.getState().autoReadAloud
+    setAutoReadAloud(next)
+    if (!next) {
+      stopReadAloud()
+    }
+    showToast(
+      { key: next ? 'autoReadEnabled' : 'autoReadDisabled' },
+      { placement: 'center', duration: HINT_DURATION }
+    )
+  }
   return (
     <div className={styles.header}>
       <IconButton
@@ -18,13 +50,25 @@ export const MobileHeader = ({ title }: { title?: string }) => {
         onClick={openMobileSider}
       />
       <div className={styles.title}>{title ?? ''}</div>
-      <IconButton
-        size="xl"
-        tone="primary"
-        icon={<IconNewChatOutline20 />}
-        aria-label={t('newChat')}
-        onClick={newChat}
-      />
+      <div className={styles.actions}>
+        {autoRead ? (
+          <IconButton
+            size="xl"
+            tone="primary"
+            icon={autoReadOn ? <IconVolumeOutline20 /> : <IconVolumeMuteOutline20 />}
+            tooltip={t(autoReadOn ? 'autoReadDisable' : 'autoReadEnable')}
+            aria-pressed={autoReadOn}
+            onClick={toggleAutoRead}
+          />
+        ) : null}
+        <IconButton
+          size="xl"
+          tone="primary"
+          icon={<IconNewChatOutline20 />}
+          aria-label={t('newChat')}
+          onClick={newChat}
+        />
+      </div>
     </div>
   )
 }

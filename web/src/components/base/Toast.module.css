@@ -25,6 +25,21 @@
   pointer-events: none;
 }
 
+/* 居中胶囊：用于顶栏按钮的状态提示，停留时间由调用方给（通常 1.6s） */
+.center {
+  top: 45%;
+  right: auto;
+  left: 50%;
+  margin: 0;
+  padding: 14px 22px;
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  line-height: 24px;
+  transform: translate(-50%, -50%);
+  animation: enter-center 0.18s var(--ds-ease-in-out);
+}
+
 /* 带图标时图标在左、文字左对齐，整体仍居中 */
 .error {
   display: flex;
@@ -57,5 +72,12 @@
   from {
     opacity: 0;
     transform: translateY(-8px);
+  }
+}
+
+@keyframes enter-center {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% - 8px));
   }
 }
