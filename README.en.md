@@ -10,7 +10,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.1 in
 | | |
 | --- | --- |
 | Application ID | `com.deepseekchatbot` |
-| Version | 1.0.0 (versionCode 1) |
+| Version | 0.1.0 (versionCode 100) |
 | Size | 4.5 MB (release) |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | Native deps | androidx only (webkit / browser / activity / core-splashscreen), no third-party runtime |
@@ -49,7 +49,7 @@ The script does three things: `pnpm build` inside `web/`, sync `web/dist` into
 `android/app/src/main/assets/www`, then `./gradlew assembleRelease`. Output:
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v1.0.0-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.0-release.apk
 ```
 
 Step by step:
@@ -67,7 +67,7 @@ cd ../android && ./gradlew assembleRelease
 ## Install
 
 ```bash
-adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v1.0.0-release.apk
+adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.0-release.apk
 ```
 
 On first launch the app asks for an API key (Settings → Data). The key is written only to the on-device WebView

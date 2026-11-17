@@ -10,7 +10,7 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 1.0.0（versionCode 1） |
+| 版本 | 0.1.0（versionCode 100） |
 | 体积 | 4.5 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
@@ -45,7 +45,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v1.0.0-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.0-release.apk
 ```
 
 手动分步：
@@ -62,7 +62,7 @@ cd ../android && ./gradlew assembleRelease
 ## 安装
 
 ```bash
-adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v1.0.0-release.apk
+adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.0-release.apk
 ```
 
 首次启动会要求填 API Key（设置 → 数据管理）。Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
