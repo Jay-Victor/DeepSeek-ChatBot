@@ -25,4 +25,4 @@ else
   ./gradlew assembleDebug
 fi
 
-find "$ROOT/android/app/build/outputs/apk" -name "*.apk" -newermt '-10 minutes' -print
+find "$ROOT/android/app/build/outputs/apk/$VARIANT" -name "*.apk" -print
