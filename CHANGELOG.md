@@ -5,6 +5,8 @@
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-17
+
 ### 新增
 
 - 输入框新增上下文占用环：按 DeepSeek-V4 分词器统计当前分支的文本 token，以 1M 窗口为分母，
@@ -52,7 +54,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.3
 [0.1.2]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.2
 [0.1.1]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.0

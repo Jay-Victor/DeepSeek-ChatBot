@@ -19,8 +19,8 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.2（versionCode 3） |
-| 体积 | 4.6 MB（release） |
+| 版本 | 0.1.3（versionCode 4） |
+| 体积 | 5.3 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
 | 构建工具链 | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
@@ -54,7 +54,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.2-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.3-release.apk
 ```
 
 手动分步：
@@ -71,7 +71,7 @@ cd ../android && ./gradlew assembleRelease
 ## 安装
 
 ```bash
-adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.2-release.apk
+adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.3-release.apk
 ```
 
 不想自己构建的话，[Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 里直接下签名好的 APK。
