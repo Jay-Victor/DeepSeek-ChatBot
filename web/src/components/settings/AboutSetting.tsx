@@ -149,12 +149,11 @@ export const AboutSetting = () => {
       {available && release ? (
         <div className={styles.aboutUpdateCard}>
           <div className={styles.aboutUpdateTitle}>{release.name}</div>
-          <div className={styles.aboutUpdateMeta}>
-            {release.apkSize > 0 ? (
+          {release.apkSize > 0 ? (
+            <div className={styles.aboutUpdateMeta}>
               <span>{t('aboutUpdateSize', { size: formatSize(release.apkSize) })}</span>
-            ) : null}
-            <span>{t('aboutInstallVerifyHint')}</span>
-          </div>
+            </div>
+          ) : null}
 
           {installable ? (
             <>

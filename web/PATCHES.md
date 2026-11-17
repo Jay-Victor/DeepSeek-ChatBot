@@ -61,7 +61,9 @@
 | `src/services/chat/db.ts` | 新增 `iterateSessions`：逐条遍历会话，避免一次把所有历史读进内存 |
 | `src/services/chat/store.ts` | 导入历史替换全部会话后调用 `invalidateSessionSearch()`，避免沿用替换前的正文索引 |
 | `src/components/sider/Sider.module.css` / `.css.d.ts` | 保留桌面端全宽新建按钮样式；移动端新增 148px 浮动胶囊（48px 高、20px 图标）与空结果提示，列表底部留出胶囊高度的滚动空间 |
-| `src/i18n/zh.ts` / `en.ts` | 搜索占位、清除、空结果、结果计数、搜索中与「新建」短文案 |
+| `src/app/viewport.ts` | 原生壳里跳过 `visualViewport` 跟随：容器已按输入法 inset 缩短 WebView，页面再缩一次会在键盘动画开始时先于容器收缩、露出一帧底色（搜索框聚焦闪烁） |
+| `src/components/settings/AboutSetting.tsx` / `Settings.module.css` | 关于页更新卡片去掉「安装前校验签名与版本号…」提示；宽度改为 288px 并计入内边距（原来 320px 之外再加 28px，手机上几乎占满） |
+| `src/i18n/zh.ts` / `en.ts` | 新增搜索文案与「新建」短文案；移除 `aboutInstallVerifyHint` |
 
 分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与
 Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch。计数实现见 `bpe.ts`。

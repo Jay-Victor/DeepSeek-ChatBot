@@ -42,13 +42,20 @@ export const usePreventPageScroll = (enabled: boolean) => {
   }, [enabled])
 }
 
+/**
+ * Android 壳会给容器留出输入法高度，WebView 视口本身会真正变矮；
+ * 页面再按 visualViewport 缩一次，就会在键盘动画开始时先缩、容器后缩，露出一帧底色。
+ * 浏览器里没有这个桥，仍走 visualViewport 跟随。
+ */
+const inNativeShell = () => 'DeepSeekNative' in window
+
 /** 移动端页面跟随视觉视口，键盘弹出后顶栏和输入框仍留在可见区域。 */
 export const useMobileViewport = (enabled: boolean) => {
   const frameRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
     const frame = frameRef.current
-    if (!enabled || !frame) {
+    if (!enabled || !frame || inNativeShell()) {
       return
     }
     const viewport = window.visualViewport

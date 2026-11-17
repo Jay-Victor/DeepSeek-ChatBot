@@ -125,7 +125,6 @@ export const en = {
   aboutInstallReady: 'Package ready; return to the app to continue',
   aboutInstallRetry: 'Retry',
   aboutInstallCancel: 'Cancel',
-  aboutInstallVerifyHint: 'Verifies signature and version, plus SHA-256 when available',
   aboutUpdateSize: 'Package {size}',
   aboutReleaseNotes: 'View release notes',
   aboutOpenInBrowser: 'Download in browser',

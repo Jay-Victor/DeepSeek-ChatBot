@@ -119,7 +119,6 @@ export const zh = {
   aboutInstallReady: '安装包已就绪，返回应用后继续',
   aboutInstallRetry: '重试',
   aboutInstallCancel: '取消',
-  aboutInstallVerifyHint: '安装前校验签名与版本号（有摘要时也校验 SHA-256）',
   aboutUpdateSize: '安装包 {size}',
   aboutReleaseNotes: '查看 Release 说明',
   aboutOpenInBrowser: '在浏览器中下载',
