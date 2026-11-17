@@ -35,3 +35,16 @@ __pycache__/
 
 # local reference material (不纳入版本库)
 references/
+
+# android 构建产物与本地配置
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/
+android/app/src/main/assets/www/
+
+# 签名材料不进版本库
+android/keystore/
+android/KEYSTORE_INFO.txt
+*.jks
+*.keystore

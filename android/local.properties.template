@@ -1,0 +1,7 @@
+# 复制为 local.properties，填入签名信息（该文件不进版本库）
+sdk.dir=E\\:\\SDK
+
+KEYSTORE_FILE=E\\:\\ALL_FOR_MY_PROJECTS\\DeepSeek ChatBot\\android\\keystore\\deepseekchatbot.jks
+KEYSTORE_PASSWORD=change-me
+KEYSTORE_ALIAS=deepseekchatbot
+KEY_PASSWORD=change-me

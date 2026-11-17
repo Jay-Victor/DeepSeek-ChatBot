@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DeepSeek ChatBot</string>
+    <string name="load_failed">页面加载失败，点按重试</string>
+    <string name="export_saved">已保存</string>
+</resources>
