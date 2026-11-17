@@ -19,7 +19,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.1 in
 | | |
 | --- | --- |
 | Application ID | `com.deepseekchatbot` |
-| Version | 0.1.8 (versionCode 9) |
+| Version | 0.1.9 (versionCode 10) |
 | Size | 5.32 MB (release) |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | Native deps | androidx only (webkit / browser / activity / core-splashscreen), no third-party runtime |
@@ -46,8 +46,9 @@ turned off), a context-usage ring in the composer (DeepSeek-V4 tokenizer, 1M win
 turn), and in-app update installation from Settings → About (SHA-256, signature and version are verified before
 handing the APK to the system installer). On mobile, the sidebar gains local session search (titles plus the
 current branch's text and attachment names, with highlighted hits), a floating New button at the bottom, and
-multi-select with batch pin/delete, and the session header's new-chat button is always visible; the desktop sidebar
-is unchanged.
+multi-select with batch pin/delete, and the session header's new-chat button is always visible; the session header
+also gains an auto-read toggle that reads each completed reply aloud, and the session menu gains pin/unpin and
+multi-select. The desktop sidebar is unchanged.
 
 ## Requirements
 
@@ -65,7 +66,7 @@ The script does three things: `pnpm build` inside `web/`, sync `web/dist` into
 `android/app/src/main/assets/www`, then `./gradlew assembleRelease`. Output:
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.8-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.9-release.apk
 ```
 
 Step by step:
@@ -83,7 +84,7 @@ cd ../android && ./gradlew assembleRelease
 ## Install
 
 ```bash
-adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.8-release.apk
+adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.9-release.apk
 ```
 
 If you would rather not build it yourself, the signed APK is attached to the
@@ -159,7 +160,9 @@ flow, file picker, external links opening in Custom Tabs, all three levels of ba
 status bar inversion, insets/keyboard without double spacing, and in-app update download progress / SHA-256 and
 signature verification / unknown-sources permission / system installer upgrade. On-device confirmation is still
 pending. This version's mobile sidebar (search, multi-select, pinned group, batch delete, floating New, persistent
-header button) was checked in a 390×844 viewport; the Android IME behaviour still needs an on-device check.
+header button), the session menu (pin / unpin / multi-select) and the auto-read toggle (including the 1.6-second
+centered hint and the auto-read trigger) were checked in a 390×844 viewport; real audio output and the Android IME
+behaviour still need an on-device check.
 
 ## License
 

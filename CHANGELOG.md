@@ -5,6 +5,17 @@
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-11-18
+
+### 新增
+
+- 会话页顶栏「新建会话」左侧新增自动朗读开关：开启后每条新回复完成后自动朗读一次；关闭时停止当前朗读。状态持久化，切换时在屏幕中央显示 1.6 秒的「已开启自动朗读 / 已关闭自动朗读」提示
+- 移动端会话三点菜单新增「置顶 / 取消置顶」与「多选」：置顶写入本地并进入「置顶」分组；多选进入选择模式并预选当前会话
+
+### 变更
+
+- `showToast` 支持居中胶囊与自定义时长，供自动朗读状态提示使用
+
 ## [0.1.8] - 2026-11-18
 
 ### 新增
@@ -92,7 +103,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.8...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.9...HEAD
+[0.1.9]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.9
 [0.1.8]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.8
 [0.1.7]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.7
 [0.1.6]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.6
