@@ -16,6 +16,7 @@ export const Modal = ({
   footer,
   closable = false,
   className,
+  titleClassName,
   mainClassName,
   onClose,
 }: {
@@ -25,6 +26,8 @@ export const Modal = ({
   /** 标题栏右侧显示关闭按钮 */
   closable?: boolean
   className?: string
+  /** 标题的 class（确认弹窗居中） */
+  titleClassName?: string
   /** 内容区的 class */
   mainClassName?: string
   onClose: () => void
@@ -60,7 +63,7 @@ export const Modal = ({
         aria-labelledby={titleId}
       >
         <div className={styles.header}>
-          <div id={titleId} className={styles.title}>
+          <div id={titleId} className={clsx(styles.title, titleClassName)}>
             {title}
           </div>
           {closable ? (

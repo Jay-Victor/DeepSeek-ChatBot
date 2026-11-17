@@ -535,3 +535,36 @@ export const IconToastError16 = () => (
     />
   </svg>
 )
+
+/** 多选：两条带滑块的横线 */
+export const IconMultiSelectOutline16 = () => (
+  <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M2 4.6h8.4M12.9 4.6h1.1"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+    />
+    <circle cx="11.6" cy="4.6" r="1.4" stroke="currentColor" strokeWidth="1.4" />
+    <path
+      d="M2 11.4h1.1M5.7 11.4h8.3"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+    />
+    <circle cx="4.4" cy="11.4" r="1.4" stroke="currentColor" strokeWidth="1.4" />
+  </svg>
+)
+
+/** 置顶：斜放的图钉 */
+export const IconPinOutline16 = () => (
+  <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M9.7 2.1l4.2 4.2-2.3.6-2.6 2.6-.5 2.4-4.4-4.4 2.4-.5 2.6-2.9.6-2Z"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinejoin="round"
+    />
+    <path d="M6.4 9.9 2.7 13.6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+  </svg>
+)

@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { memo, useState } from 'react'
 import { useTranslate } from '../../i18n/index.js'
-import { IconEditOutline16, IconEllipsisOutline16, IconTrashOutline16 } from '../base/icons.js'
+import { IconCheckOutline16, IconEditOutline16, IconEllipsisOutline16, IconTrashOutline16 } from '../base/icons.js'
 import { renameSession, selectSession } from '../../services/chat/store.js'
 import type { SessionSummary } from '../../services/chat/types.js'
 import { IconButton } from '../base/IconButton.js'
@@ -13,14 +13,37 @@ export const SessionItem = memo(function SessionItem({
   session,
   active,
   onDelete,
+  selectable = false,
+  selected = false,
+  onToggle,
 }: {
   session: SessionSummary
   active: boolean
   onDelete: () => void
+  /** 多选模式：整行变成勾选行，不再显示重命名 / 删除菜单 */
+  selectable?: boolean
+  selected?: boolean
+  onToggle?: () => void
 }) {
   const t = useTranslate()
   const [editing, setEditing] = useState(false)
   const displayTitle = session.title || t('untitledChat')
+
+  if (selectable) {
+    return (
+      <button
+        type="button"
+        className={clsx(styles.item, styles.selectable)}
+        aria-pressed={selected}
+        onClick={onToggle}
+      >
+        <span className={clsx(styles.checkbox, selected && styles.checkboxChecked)} aria-hidden>
+          {selected ? <IconCheckOutline16 /> : null}
+        </span>
+        <span className={styles.title}>{displayTitle}</span>
+      </button>
+    )
+  }
 
   if (editing) {
     const finish = (title: string) => {

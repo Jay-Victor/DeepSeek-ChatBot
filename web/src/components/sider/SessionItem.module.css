@@ -39,6 +39,40 @@
   line-height: 18px;
 }
 
+/* 多选行：整行可点，左侧圆形勾选 */
+.selectable {
+  width: 100%;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--dsw-alias-label-primary);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  border: 1.5px solid var(--dsw-alias-label-tertiary);
+  border-radius: 50%;
+  color: var(--dsw-static-neutral-bluish-00);
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+.checkboxChecked {
+  border-color: var(--dsw-alias-brand-primary);
+  background-color: var(--dsw-alias-brand-primary);
+}
+
 .action {
   display: none;
   flex-shrink: 0;

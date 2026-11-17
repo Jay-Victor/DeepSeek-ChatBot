@@ -1,10 +1,24 @@
 import clsx from 'clsx'
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { useTranslate } from '../../i18n/index.js'
-import { IconPanelLeftOutline16, IconSettingsOutline16, NewChatIcon } from '../base/icons.js'
+import {
+  IconCloseOutline16,
+  IconMultiSelectOutline16,
+  IconPanelLeftOutline16,
+  IconPinOutline16,
+  IconSettingsOutline16,
+  IconTrashOutline16,
+  NewChatIcon,
+} from '../base/icons.js'
 import { setSiderCollapsed } from '../../services/settings.js'
 import { groupSessions } from '../../services/chat/sessionGroups.js'
-import { newChat, removeSession, selectSession, useChatStore } from '../../services/chat/store.js'
+import {
+  newChat,
+  removeSession,
+  selectSession,
+  setSessionsPinned,
+  useChatStore,
+} from '../../services/chat/store.js'
 import type { SessionSummary } from '../../services/chat/types.js'
 import { Button } from '../base/Button.js'
 import { IconButton } from '../base/IconButton.js'
@@ -32,6 +46,65 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
   const searching = query.trim().length > 0
   // 搜索只属于移动端抽屉；桌面端保持原来的全宽新建按钮
   const search = useSessionSearch(mobile ? query : '', sessions)
+  const [selecting, setSelecting] = useState(false)
+  const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set())
+  const [confirm, setConfirm] = useState<'pin' | 'delete' | null>(null)
+  const [confirmPending, setConfirmPending] = useState(false)
+  const selectionActive = mobile && selecting
+
+  const enterSelecting = () => {
+    setQuery('')
+    setSelecting(true)
+    setSelected(new Set())
+  }
+
+  const exitSelecting = () => {
+    setSelecting(false)
+    setSelected(new Set())
+    setConfirm(null)
+    setConfirmPending(false)
+  }
+
+  const toggleSelected = (id: string) => {
+    setSelected((previous) => {
+      const next = new Set(previous)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  const confirmPin = async () => {
+    setConfirmPending(true)
+    const ok = await setSessionsPinned([...selected], true)
+    setConfirmPending(false)
+    if (ok) {
+      exitSelecting()
+    } else {
+      showToast({ key: 'sessionPinFailed', type: 'error' })
+    }
+  }
+
+  const confirmDelete = async () => {
+    setConfirmPending(true)
+    const failed = new Set<string>()
+    for (const id of selected) {
+      if (!(await removeSession(id))) {
+        failed.add(id)
+      }
+    }
+    setConfirmPending(false)
+    if (failed.size === 0) {
+      exitSelecting()
+      return
+    }
+    setSelected(failed)
+    setConfirm(null)
+    showToast({ key: 'sessionDeleteFailed', type: 'error' })
+  }
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>
@@ -60,16 +133,36 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
   return (
     <div className={clsx(styles.sider, mobile && styles.mobile)}>
       <div className={styles.top}>
-        <div className={styles.appName}>{t('appName')}</div>
-        <IconButton
-          size="m"
-          icon={<IconPanelLeftOutline16 />}
-          tooltip={t('collapseSiderbarButton')}
-          tooltipPlacement="bottom"
-          onClick={() => (mobile ? closeMobileSider() : setSiderCollapsed(true))}
-        />
+        {selectionActive ? (
+          <>
+            <div className={styles.selectTitle}>
+              {selected.size > 0
+                ? t('selectedSessionsCount', { count: selected.size })
+                : t('selectSessions')}
+            </div>
+            <IconButton
+              size="xl"
+              tone="primary"
+              className={styles.selectClose}
+              icon={<IconCloseOutline16 />}
+              aria-label={t('exitSelectMode')}
+              onClick={exitSelecting}
+            />
+          </>
+        ) : (
+          <>
+            <div className={styles.appName}>{t('appName')}</div>
+            <IconButton
+              size="m"
+              icon={<IconPanelLeftOutline16 />}
+              tooltip={t('collapseSiderbarButton')}
+              tooltipPlacement="bottom"
+              onClick={() => (mobile ? closeMobileSider() : setSiderCollapsed(true))}
+            />
+          </>
+        )}
       </div>
-      {mobile ? (
+      {selectionActive ? null : mobile ? (
         <SessionSearch value={query} onChange={setQuery} />
       ) : (
         <button
@@ -86,7 +179,17 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
           {t('newChat')}
         </button>
       )}
-      <div className={styles.listWrap}>
+      <div className={clsx(styles.listWrap, selectionActive && styles.selecting)}>
+        {mobile && !selectionActive && !searching && sessions.length > 0 ? (
+          <button
+            type="button"
+            className={styles.multiSelect}
+            aria-label={t('selectMode')}
+            onClick={enterSelecting}
+          >
+            <IconMultiSelectOutline16 />
+          </button>
+        ) : null}
         <div className={styles.list}>
           {searching ? (
             search.hits.length === 0 ? (
@@ -123,13 +226,16 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
                     session={session}
                     active={session.id === activeId}
                     onDelete={() => setDeleting(session)}
+                    selectable={selectionActive}
+                    selected={selected.has(session.id)}
+                    onToggle={() => toggleSelected(session.id)}
                   />
                 ))}
               </div>
             ))
           )}
         </div>
-        {mobile ? (
+        {mobile && !selectionActive ? (
           <button
             type="button"
             className={styles.newChatFab}
@@ -146,14 +252,38 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
           </button>
         ) : null}
       </div>
-      <div className={styles.bottom}>
-        <button type="button" className={styles.settings} onClick={() => openSettings('general')}>
-          <span className={styles.settingsIcon}>
-            <IconSettingsOutline16 />
-          </span>
-          <span className={styles.settingsLabel}>{t('settings')}</span>
-        </button>
-      </div>
+      {selectionActive ? (
+        <div className={styles.selectActions}>
+          <button
+            type="button"
+            className={styles.selectAction}
+            disabled={selected.size === 0}
+            onClick={() => setConfirm('pin')}
+          >
+            <IconPinOutline16 />
+            <span>{t('pinSessions')}</span>
+          </button>
+          <div className={styles.selectDivider} />
+          <button
+            type="button"
+            className={clsx(styles.selectAction, styles.deleteAction)}
+            disabled={selected.size === 0}
+            onClick={() => setConfirm('delete')}
+          >
+            <IconTrashOutline16 />
+            <span>{t('delete')}</span>
+          </button>
+        </div>
+      ) : (
+        <div className={styles.bottom}>
+          <button type="button" className={styles.settings} onClick={() => openSettings('general')}>
+            <span className={styles.settingsIcon}>
+              <IconSettingsOutline16 />
+            </span>
+            <span className={styles.settingsLabel}>{t('settings')}</span>
+          </button>
+        </div>
+      )}
       {deleting ? (
         <Modal
           title={t('deleteSessionModalContentTitle')}
@@ -189,6 +319,73 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
           }
         >
           {t('deleteSessionWithFilesDescription')}
+        </Modal>
+      ) : null}
+      {confirm === 'pin' ? (
+        <Modal
+          title={t('pinSessionsConfirm', { count: selected.size })}
+          titleClassName={styles.confirmTitle}
+          onClose={() => {
+            if (!confirmPending) {
+              setConfirm(null)
+            }
+          }}
+          footer={
+            <div className={styles.confirmActions}>
+              <Button
+                variant="outlined"
+                size="m"
+                className={styles.confirmAction}
+                disabled={confirmPending}
+                onClick={() => setConfirm(null)}
+              >
+                {t('cancel')}
+              </Button>
+              <Button
+                variant="primary"
+                size="m"
+                className={styles.confirmAction}
+                disabled={confirmPending}
+                onClick={() => void confirmPin()}
+              >
+                {t('pinSessions')}
+              </Button>
+            </div>
+          }
+        />
+      ) : null}
+      {confirm === 'delete' ? (
+        <Modal
+          title={t('deleteSessionsConfirm', { count: selected.size })}
+          titleClassName={styles.confirmTitle}
+          mainClassName={styles.confirmBody}
+          onClose={() => {
+            if (!confirmPending) {
+              setConfirm(null)
+            }
+          }}
+          footer={
+            <div className={styles.deleteConfirmActions}>
+              <Button
+                variant="danger"
+                block
+                disabled={confirmPending}
+                onClick={() => void confirmDelete()}
+              >
+                {t('delete')}
+              </Button>
+              <button
+                type="button"
+                className={styles.cancelText}
+                disabled={confirmPending}
+                onClick={() => setConfirm(null)}
+              >
+                {t('cancel')}
+              </button>
+            </div>
+          }
+        >
+          {t('deleteSessionsDescription')}
         </Modal>
       ) : null}
     </div>

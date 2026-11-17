@@ -66,6 +66,17 @@
 | `src/i18n/zh.ts` / `en.ts` | 新增搜索文案与「新建」短文案；移除 `aboutInstallVerifyHint` |
 | `src/components/chatInput/ChatInput.module.css` | 输入框底栏：开关高度 34→32、左右内边距 12→10、按钮间距 10→8，底栏左右留白 12→8（整体外移）；右侧功能组间距 4→2；空间不足时改为收起图标、保留「深度思考 / 智能搜索」文字，避免文字被整段隐藏 |
 | `src/components/chatInput/ChatActionButton.module.css` | 发送 / 停止按钮去掉额外的 6px 左边距，和附件、上下文环靠得更紧 |
+| `src/services/chat/types.ts` | `Session` / `SessionSummary` 增加可选的 `pinned`，摘要提取时一并带上 |
+| `src/services/chat/db.ts` | 新增 `setSessionsPinned`：在同一事务里更新会话详情与摘要 |
+| `src/services/chat/store.ts` | 新增 `setSessionsPinned` 动作（写盘、重排、同步缓存）；列表排序改为置顶优先 |
+| `src/services/chat/sessionGroups.ts` | 新增「置顶」分组，置顶会话不再落进日期分组 |
+| `src/services/chat/history/schema.ts` / `toArchive.ts` / `toLocal.ts` | ZIP 导入导出读写归档里已有的 `pinned` 字段，置顶状态跟历史一起迁移 |
+| `src/components/sider/Sider.tsx` | 移动端侧边栏多选模式：列表右上角入口、选择头（计数 / 关闭）、底部置顶 / 删除操作、置顶与批量删除确认弹窗 |
+| `src/components/sider/SessionItem.tsx` / `SessionItem.module.css` | 多选时整行变为勾选行（圆形勾选、无重命名 / 删除菜单） |
+| `src/components/base/Modal.tsx` | 新增 `titleClassName`，供居中的确认弹窗使用 |
+| `src/components/base/icons.tsx` | 新增多选图标 `IconMultiSelectOutline16` 与图钉 `IconPinOutline16` |
+| `src/components/sider/Sider.module.css` / `.css.d.ts` | 多选入口、选择头、底部操作栏与确认弹窗的样式 |
+| `src/i18n/zh.ts` / `en.ts` | 多选、已选计数、置顶、批量删除与失败提示文案 |
 
 分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与
 Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch。计数实现见 `bpe.ts`。

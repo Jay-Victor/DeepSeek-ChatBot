@@ -34,6 +34,26 @@
   color: var(--dsw-alias-brand-primary);
 }
 
+.selectTitle {
+  flex: 1;
+  min-width: 0;
+  padding-left: 4px;
+  overflow: hidden;
+  font-size: 18px;
+  line-height: 22px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--dsw-alias-label-primary);
+}
+
+.selectClose {
+  width: 36px;
+  height: 36px;
+  background-color: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}
+
 .newChat {
   position: relative;
   display: flex;
@@ -139,6 +159,35 @@
   margin-top: 24px;
 }
 
+.multiSelect {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--dsw-specific-sidebar-fill);
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--dsw-specific-sidebar-nav-item-hover);
+      color: var(--dsw-alias-label-primary);
+    }
+  }
+}
+
+.selecting .list {
+  padding-bottom: 0;
+}
+
 .list {
   box-sizing: border-box;
   height: 100%;
@@ -183,6 +232,97 @@
   display: flex;
   flex-shrink: 0;
   height: 64px;
+}
+
+/* 多选模式底部操作栏：占满抽屉宽度，中间一条分隔线 */
+.selectActions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  height: 64px;
+  margin: 0 -12px;
+  padding: 0 4px;
+  border-top: 1px solid var(--dsw-alias-border-l1);
+  background-color: var(--dsw-specific-sidebar-fill);
+}
+
+.selectAction {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--dsw-alias-brand-text);
+  cursor: pointer;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:disabled {
+    color: var(--dsw-alias-label-tertiary);
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.selectDivider {
+  flex-shrink: 0;
+  width: 1px;
+  height: 24px;
+  background-color: var(--dsw-alias-border-l1);
+}
+
+.deleteAction:not(:disabled) {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.confirmTitle {
+  width: 100%;
+  text-align: center;
+}
+
+.confirmBody {
+  text-align: center;
+}
+
+.confirmActions {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+}
+
+.confirmAction {
+  flex: 1;
+}
+
+.deleteConfirmActions {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 8px;
+}
+
+.cancelText {
+  padding: 6px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
 }
 
 .settings {
@@ -305,6 +445,10 @@
   .bottom {
     height: auto;
     padding: 12px 0;
+  }
+
+  .selectActions {
+    height: 68px;
   }
 
   .settings {

@@ -91,7 +91,9 @@ export const useChatStore = create<ChatState>(() => ({
 const { getState: get, setState: set } = useChatStore
 
 const sortSessions = (sessions: SessionSummary[]) =>
-  [...sessions].sort((a, b) => b.updatedAt - a.updatedAt)
+  [...sessions].sort(
+    (a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || b.updatedAt - a.updatedAt
+  )
 
 const getSession = (id: string) => {
   const cache = get().sessionCache
@@ -478,6 +480,35 @@ export const renameSession = (id: string, title: string) => {
     }))
     void db.renameSession(id, title).catch(db.reportStorageError('rename session'))
   }
+}
+
+/**
+ * 批量置顶 / 取消置顶：先落盘，再按“置顶优先、更新时间倒序”重排列表；
+ * 已加载的会话详情同步字段，未加载的由摘要与下次读取保持一致。
+ */
+export const setSessionsPinned = async (ids: string[], pinned: boolean): Promise<boolean> => {
+  if (get().importingHistory || ids.length === 0) {
+    return false
+  }
+  try {
+    await db.setSessionsPinned(ids, pinned)
+  } catch (error) {
+    db.reportStorageError('pin sessions')(error)
+    return false
+  }
+  const target = new Set(ids)
+  set((state) => ({
+    sessions: sortSessions(
+      state.sessions.map((session) => (target.has(session.id) ? { ...session, pinned } : session))
+    ),
+    sessionCache: Object.fromEntries(
+      Object.entries(state.sessionCache).map(([id, session]) => [
+        id,
+        target.has(id) ? { ...session, pinned } : session,
+      ])
+    ),
+  }))
+  return true
 }
 
 /**
