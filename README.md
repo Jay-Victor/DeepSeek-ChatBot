@@ -19,8 +19,8 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.0（versionCode 1） |
-| 体积 | 4.5 MB（release） |
+| 版本 | 0.1.1（versionCode 2） |
+| 体积 | 4.6 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
 | 构建工具链 | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
@@ -36,7 +36,7 @@
 界面能力全部来自上游：多会话与自动标题、编辑提问、重新生成、消息分支、流式回答、深度思考、智能搜索与来源引用、
 附件上传（粘贴/拖拽）、语音输入与朗读、Markdown / 代码高亮 / KaTeX 公式 / Mermaid 图表、中英文、浅色深色、历史导入导出（ZIP）。
 
-壳补上的部分：系统返回键、状态栏配色、安全区与键盘避让、麦克风权限、文件选择、导出落盘、外链。
+壳补上的部分：系统返回键、状态栏配色、安全区与键盘避让、麦克风权限、文件选择、导出落盘、外链，以及「设置 → 关于」里的版本信息与 GitHub Release 更新检查（自动检查可关）。
 
 ## 环境要求
 
@@ -54,7 +54,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.0-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.1-release.apk
 ```
 
 手动分步：
@@ -71,7 +71,7 @@ cd ../android && ./gradlew assembleRelease
 ## 安装
 
 ```bash
-adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.0-release.apk
+adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.1-release.apk
 ```
 
 不想自己构建的话，[Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 里直接下签名好的 APK。

@@ -5,8 +5,16 @@
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-17
+
+### 新增
+
+- 设置新增「关于」：显示应用图标、名称与版本，可从 GitHub Release 检查更新；自动检查默认开启（每次打开应用时检查一次），也可关闭
+
 ### 变更
 
+- 输入框的语音键与发送键合并为一个按钮：无内容时是麦克风，输入后变发送，输出中变停止
+- 移动端侧边栏改为推挤式抽屉：展开时主内容被推开并随进度压暗，支持全屏横向右滑打开、左滑或点按关闭
 - 移除 GitHub Actions 工作流（`.github/`）与仓库 secrets：发布改为本地构建 + 手动上传，签名私钥只留在本机
 - `AGENTS.md` 改为本地文件（已加入 `.gitignore`）
 
@@ -33,5 +41,6 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.1
 [0.1.0]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.0
