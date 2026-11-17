@@ -10,7 +10,7 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.0（versionCode 100） |
+| 版本 | 0.1.0（versionCode 1） |
 | 体积 | 4.5 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
@@ -67,7 +67,6 @@ adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.0-rele
 
 首次启动会要求填 API Key（设置 → 数据管理）。Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
 
-侧载提示：vivo / OriginOS 需要关闭「纯净模式」并允许安装未知来源。
 **同一 `applicationId` 必须始终用同一个 keystore 签名**，否则只能卸载重装，本地会话与 Key 会一起清空。
 
 ## 签名

@@ -10,7 +10,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.1 in
 | | |
 | --- | --- |
 | Application ID | `com.deepseekchatbot` |
-| Version | 0.1.0 (versionCode 100) |
+| Version | 0.1.0 (versionCode 1) |
 | Size | 4.5 MB (release) |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | Native deps | androidx only (webkit / browser / activity / core-splashscreen), no third-party runtime |
@@ -73,7 +73,6 @@ adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.0-rele
 On first launch the app asks for an API key (Settings → Data). The key is written only to the on-device WebView
 localStorage and is excluded from cloud backup (`allowBackup=false`).
 
-Sideloading: on vivo / OriginOS you have to turn off "Pure Mode" and allow installing from unknown sources.
 **The same `applicationId` must always be signed with the same keystore** — otherwise the only option is uninstall and
 reinstall, which wipes local sessions and the API key.
 
