@@ -1,6 +1,6 @@
 import { useTranslate } from '../../i18n/index.js'
 import clsx from 'clsx'
-import { memo, useEffect, useState, type ReactNode } from 'react'
+import { memo, useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   IconBrowseOutline16,
   IconBrowseWarningOutline16,
@@ -15,6 +15,7 @@ import {
   IconThinkOutline16,
 } from '../base/icons.js'
 import type { AssistantMessage } from '../../services/chat/types.js'
+import { useSettings } from '../../services/settings.js'
 import {
   getAreaTitle,
   isDeepSearchKind,
@@ -65,14 +66,27 @@ export const ReplyArea = memo(function ReplyArea({
   hasResponse: boolean
 }) {
   useTranslate()
-  const [open, setOpen] = useState(true)
+  const autoCollapseThinking = useSettings((state) => state.autoCollapseThinking)
   const titleActive = streaming && !hasResponse
+  // 未记录请求开关时，按是否有思考内容显示标题。
+  const thinking = message.thinking ?? view.steps.some((step) => step.type === 'thinking')
+  // 开关打开时：历史消息里已结束的思考默认收起；进行中的思考先展开，结束后再自动收起
+  const [open, setOpen] = useState(
+    () => !(autoCollapseThinking && thinking && !titleActive)
+  )
   useTicker(titleActive, 1000)
+  const thinkingActiveRef = useRef(titleActive)
+  const autoCollapseRef = useRef(autoCollapseThinking)
+  autoCollapseRef.current = autoCollapseThinking
+  useEffect(() => {
+    if (thinking && thinkingActiveRef.current && !titleActive && autoCollapseRef.current) {
+      setOpen(false)
+    }
+    thinkingActiveRef.current = titleActive
+  }, [thinking, titleActive])
   if (view.steps.length === 0 && !(message.thinking && streaming)) {
     return null
   }
-  // 未记录请求开关时，按是否有思考内容显示标题。
-  const thinking = message.thinking ?? view.steps.some((step) => step.type === 'thinking')
   const title = thinking ? getAreaTitle(view, streaming, Date.now(), hasResponse) : null
   const stopped = !streaming && !hasResponse
   return (

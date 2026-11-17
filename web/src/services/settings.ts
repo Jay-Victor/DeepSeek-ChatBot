@@ -7,7 +7,7 @@ export type Locale = 'zh-CN' | 'en-US'
 /** 主题偏好；默认跟随系统 */
 export type ThemePreference = 'light' | 'dark' | 'system'
 
-/** 本机设置，存 localStorage：API Key、语言、主题、位置、朗读音色、深度思考与智能搜索开关、侧边栏收起状态、自动检查更新 */
+/** 本机设置，存 localStorage：API Key、语言、主题、位置、朗读音色、深度思考与智能搜索开关、侧边栏收起状态、自动检查更新、思考内容自动折叠 */
 type Settings = {
   apiKey: string | null
   locale: Locale
@@ -18,6 +18,7 @@ type Settings = {
   search: boolean
   siderCollapsed: boolean
   autoCheckUpdates: boolean
+  autoCollapseThinking: boolean
 }
 
 const KEYS = {
@@ -30,6 +31,7 @@ const KEYS = {
   search: 'chat-demo:search',
   siderCollapsed: 'chat-demo:sider-collapsed',
   autoCheckUpdates: 'chat-demo:auto-check-updates',
+  autoCollapseThinking: 'chat-demo:auto-collapse-thinking',
 } as const
 
 const read = (key: string) => {
@@ -100,6 +102,8 @@ export const useSettings = create<Settings>(() => ({
   siderCollapsed: read(KEYS.siderCollapsed) === 'true',
   // 默认开启自动检查；用户关掉后写 'false'
   autoCheckUpdates: read(KEYS.autoCheckUpdates) !== 'false',
+  // 思考内容默认保持展开，由用户主动打开自动折叠
+  autoCollapseThinking: read(KEYS.autoCollapseThinking) === 'true',
 }))
 
 export const setLocale = (locale: Locale) => {
@@ -146,4 +150,9 @@ export const setSiderCollapsed = (siderCollapsed: boolean) => {
 export const setAutoCheckUpdates = (autoCheckUpdates: boolean) => {
   write(KEYS.autoCheckUpdates, String(autoCheckUpdates))
   useSettings.setState({ autoCheckUpdates })
+}
+
+export const setAutoCollapseThinking = (autoCollapseThinking: boolean) => {
+  write(KEYS.autoCollapseThinking, String(autoCollapseThinking))
+  useSettings.setState({ autoCollapseThinking })
 }

@@ -97,6 +97,9 @@ export const en = {
   settingsLocationProvince: 'Select province/region',
   settingsLocationCity: 'Select city',
   settingsLocationRegion: 'Select country or region',
+  settingsAutoCollapseThinking: 'Collapse thinking automatically',
+  settingsAutoCollapseThinkingDescription:
+    'Collapses the thinking process when it ends. You can expand it anytime.',
   settingDialogAsideGeneralOptionLabel: 'General',
   settingDialogAsideDataOptionLabel: 'Data',
   settingDialogAsideAboutOptionLabel: 'About',

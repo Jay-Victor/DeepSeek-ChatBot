@@ -42,9 +42,6 @@ declare const styles: {
   readonly "aboutStatus": string;
   readonly "aboutStatusError": string;
   readonly "aboutStatusLink": string;
-  readonly "switch": string;
-  readonly "switchOn": string;
-  readonly "switchThumb": string;
 };
 export = styles;
 

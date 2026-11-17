@@ -4,29 +4,8 @@ import { useTranslate } from '../../i18n/index.js'
 import { setAutoCheckUpdates, useSettings } from '../../services/settings.js'
 import { appVersion, checkForUpdates, hasUpdate, useUpdate } from '../../services/update.js'
 import { Button } from '../base/Button.js'
+import { Switch } from '../base/Switch.js'
 import styles from './Settings.module.css'
-
-/** 开关：关于页的自动检查更新 */
-const Switch = ({
-  checked,
-  label,
-  onChange,
-}: {
-  checked: boolean
-  label: string
-  onChange: (checked: boolean) => void
-}) => (
-  <button
-    type="button"
-    role="switch"
-    aria-checked={checked}
-    aria-label={label}
-    className={clsx(styles.switch, checked && styles.switchOn)}
-    onClick={() => onChange(!checked)}
-  >
-    <span className={styles.switchThumb} />
-  </button>
-)
 
 /**
  * 关于：上方居中放应用图标、名称与版本，下方是检查更新按钮和自动检查开关。

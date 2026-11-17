@@ -22,6 +22,7 @@ import { useChatStore } from '../../services/chat/store.js'
 import { regionCodes, getRegionName, provinces } from '../../services/location.js'
 import {
   isChineseBrowser,
+  setAutoCollapseThinking,
   setLocale,
   setLocation,
   setThemePreference,
@@ -33,6 +34,7 @@ import { useTranslate, type TranslationKey, type TranslationMessage } from '../.
 import { Button } from '../base/Button.js'
 import { Modal } from '../base/Modal.js'
 import { Select } from '../base/Select.js'
+import { Switch } from '../base/Switch.js'
 import { showToast } from '../base/toastState.js'
 import { ApiKeyConfirm, ApiKeyField, useApiKeyEditor } from './ApiKeyField.js'
 import { AboutSetting } from './AboutSetting.js'
@@ -104,6 +106,7 @@ const SettingsContent = () => {
               <LocaleSetting />
               <TtsVoiceSetting />
               <LocationSetting />
+              <AutoCollapseThinkingSetting />
             </>
           ) : section === 'data' ? (
             <>
@@ -270,6 +273,26 @@ const LocationSetting = () => {
             />
           )}
         </div>
+      }
+    />
+  )
+}
+
+/** 思考内容自动折叠：思考结束后收起思考过程，可随时展开 */
+const AutoCollapseThinkingSetting = () => {
+  const t = useTranslate()
+  const autoCollapseThinking = useSettings((state) => state.autoCollapseThinking)
+  return (
+    <SettingCell
+      label={t('settingsAutoCollapseThinking')}
+      description={t('settingsAutoCollapseThinkingDescription')}
+      status={null}
+      action={
+        <Switch
+          checked={autoCollapseThinking}
+          label={t('settingsAutoCollapseThinking')}
+          onChange={setAutoCollapseThinking}
+        />
       }
     />
   )

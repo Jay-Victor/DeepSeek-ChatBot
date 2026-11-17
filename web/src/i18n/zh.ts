@@ -92,6 +92,8 @@ export const zh = {
   settingsLocationProvince: '请选择省份/地区',
   settingsLocationCity: '请选择市',
   settingsLocationRegion: '请选择国家或地区',
+  settingsAutoCollapseThinking: '思考内容自动折叠',
+  settingsAutoCollapseThinkingDescription: '思考结束后自动收起思考过程，可随时点开查看。',
   settingDialogAsideGeneralOptionLabel: '通用设置',
   settingDialogAsideDataOptionLabel: '数据管理',
   settingDialogAsideAboutOptionLabel: '关于',

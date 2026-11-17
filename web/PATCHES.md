@@ -17,13 +17,15 @@
 | `src/components/sider/Sider.tsx` / `Sider.module.css` / `.css.d.ts` | `MobileSider` 常驻 DOM、收起时停在屏外；新增随进度加深的压暗层，抽屉右缘阴影 |
 | `src/app/App.tsx` / `App.module.css` | 把 frame ref 传给抽屉；移动端 `main` 用同一条 `--sider-offset` 位移，形成推挤联动 |
 | `src/services/update.ts`（新增） | GitHub Release 检查：只用公开 `releases/latest`，12s 超时、每次打开应用检查一次、同一版本只提示一次、结果缓存本地；版本比较与链接白名单 |
-| `src/services/settings.ts` | 新增 `autoCheckUpdates`（默认开启）并持久化 |
-| `src/components/settings/AboutSetting.tsx`（新增） | 关于页：应用图标 / 名称 / 版本、检查更新按钮、自动检查开关 |
-| `src/components/settings/SettingsDialog.tsx` / `settingsDialogState.ts` | 设置分「通用设置 / 数据管理 / 关于」三组 |
-| `src/components/settings/Settings.module.css` / `.css.d.ts` | 关于页品牌区、状态行与开关样式 |
+| `src/services/settings.ts` | 新增 `autoCheckUpdates`（默认开启）、`autoCollapseThinking`（默认关闭）并持久化 |
+| `src/components/base/Switch.tsx` / `Switch.module.css`（新增） | 44px 触控区开关；关于页与通用设置共用 |
+| `src/components/messages/ReplyArea.tsx` | 开启自动折叠时，思考结束后收起思考区；历史消息中已结束的思考默认收起 |
+| `src/components/settings/AboutSetting.tsx`（新增） | 关于页：应用图标 / 名称 / 版本、检查更新按钮、自动检查开关（复用 Switch） |
+| `src/components/settings/SettingsDialog.tsx` / `settingsDialogState.ts` | 设置分「通用设置 / 数据管理 / 关于」三组；通用设置新增「思考内容自动折叠」开关 |
+| `src/components/settings/Settings.module.css` / `.css.d.ts` | 关于页品牌区与状态行样式 |
 | `src/components/base/icons.tsx` | 新增 `IconInfoOutline16`（关于分组图标） |
-| `src/app/App.tsx` | 启动时自动检查一次，发现新版本用带链接的 toast 提示 |
-| `src/i18n/zh.ts` / `en.ts` | 关于页与更新提示的中英文案 |
+| `src/app/App.tsx` | 每次打开应用（含回到前台）自动检查更新，发现新版本用带链接的 toast 提示 |
+| `src/i18n/zh.ts` / `en.ts` | 关于页、更新提示与思考折叠的中英文案 |
 | `src/assets/app-icon.png`（新增） | 关于页图标，取自 Android 启动图标 |
 | `rspack.config.ts` / `src/env.d.ts` | 支持导入 png 等图片资源（输出到 `static/media`） |
 | `src/main.tsx` | 调一次 `installNativeBridge()` |
