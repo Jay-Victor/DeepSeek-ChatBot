@@ -5,6 +5,18 @@
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-11-17
+
+### 新增
+
+- 移动端侧边栏新增会话搜索：按标题与当前分支正文（含附件名）匹配，结果带命中片段与高亮，点击直接打开会话；正文索引首次搜索时逐条建立，之后按更新时间增量更新，导入历史后自动失效
+- 会话顶栏右上角的新建按钮改为常驻：欢迎页、加载页、会话页都显示，沿用原来的聊天气泡加号图标
+- 移动端侧边栏底部新增浮动「新建」胶囊（148×48），原顶部的全宽新建按钮不再显示
+
+### 变更
+
+- 移动端侧边栏顶部改为搜索框；桌面端侧边栏保持原来的全宽新建按钮与列表
+
 ## [0.1.4] - 2026-11-17
 
 ### 新增
@@ -60,7 +72,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.5
 [0.1.4]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.4
 [0.1.3]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.3
 [0.1.2]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.2
