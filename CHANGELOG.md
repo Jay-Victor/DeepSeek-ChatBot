@@ -5,6 +5,13 @@
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-11-18
+
+### 变更
+
+- 输入框底栏：「深度思考 / 智能搜索」尺寸略微收紧（高度 34→32、内边距 12→10、间距 10→8）并向左移；上下文占用环、附件、发送 / 停止按钮收紧并向右移（间距 4→2，去掉发送键额外的 6px 左边距）
+- 空间不足时改为收起开关图标、保留「深度思考 / 智能搜索」文字，并在字体加载后重新测量，避免窄屏或大字体下文字被整段隐藏
+
 ## [0.1.6] - 2026-11-17
 
 ### 修复
@@ -79,7 +86,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.7...HEAD
+[0.1.7]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.7
 [0.1.6]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.6
 [0.1.5]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.5
 [0.1.4]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.4
