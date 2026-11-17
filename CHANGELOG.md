@@ -5,6 +5,12 @@
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-11-18
+
+### 新增
+
+- 移动端侧边栏多选：列表右上角「多选」进入选择模式，勾选会话后可批量置顶或删除；置顶新增「置顶」分组，状态持久化并随 ZIP 导入导出；置顶 / 删除前均有确认弹窗
+
 ## [0.1.7] - 2026-11-18
 
 ### 变更
@@ -86,7 +92,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.7...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.8...HEAD
+[0.1.8]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.8
 [0.1.7]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.7
 [0.1.6]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.6
 [0.1.5]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.5

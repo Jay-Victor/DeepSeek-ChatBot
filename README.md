@@ -19,7 +19,7 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.7（versionCode 8） |
+| 版本 | 0.1.8（versionCode 9） |
 | 体积 | 5.32 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
@@ -36,7 +36,7 @@
 界面能力全部来自上游：多会话与自动标题、编辑提问、重新生成、消息分支、流式回答、深度思考、智能搜索与来源引用、
 附件上传（粘贴/拖拽）、语音输入与朗读、Markdown / 代码高亮 / KaTeX 公式 / Mermaid 图表、中英文、浅色深色、历史导入导出（ZIP）。
 
-壳补上的部分：系统返回键、状态栏配色、安全区与键盘避让、麦克风权限、文件选择、导出落盘、外链，「设置」里的思考内容自动折叠，「关于」里的版本信息与 GitHub Release 更新检查（自动检查可关），输入框里的上下文占用环（按 DeepSeek-V4 分词器统计，1M 窗口，回合结束更新），以及「关于」页的应用内下载安装更新（校验 SHA-256、签名与版本号后交给系统安装器）；移动端侧边栏新增会话搜索（标题与当前分支正文，命中高亮）和底部浮动「新建」，会话顶栏的新建按钮改为常驻。
+壳补上的部分：系统返回键、状态栏配色、安全区与键盘避让、麦克风权限、文件选择、导出落盘、外链，「设置」里的思考内容自动折叠，「关于」里的版本信息与 GitHub Release 更新检查（自动检查可关），输入框里的上下文占用环（按 DeepSeek-V4 分词器统计，1M 窗口，回合结束更新），以及「关于」页的应用内下载安装更新（校验 SHA-256、签名与版本号后交给系统安装器）；移动端侧边栏新增会话搜索（标题与当前分支正文，命中高亮）、底部浮动「新建」和多选批量置顶 / 删除，会话顶栏的新建按钮改为常驻。
 
 ## 环境要求
 
@@ -54,7 +54,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.7-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.8-release.apk
 ```
 
 手动分步：
@@ -71,7 +71,7 @@ cd ../android && ./gradlew assembleRelease
 ## 安装
 
 ```bash
-adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.7-release.apk
+adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.8-release.apk
 ```
 
 不想自己构建的话，[Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 里直接下签名好的 APK。
@@ -116,7 +116,7 @@ references/ 上游原始压缩包与图标素材（不进版本库）
 
 ## 已知限制
 
-- **会话搜索只在移动端侧边栏**：按标题、当前分支正文与附件名匹配，不含思考内容；首次搜索需建本地索引，历史很多时会有短暂延迟。桌面端侧边栏保持原来的全宽新建按钮与列表。
+- **会话搜索与多选只在移动端侧边栏**：搜索按标题、当前分支正文与附件名匹配，不含思考内容；首次搜索需建本地索引，历史很多时会有短暂延迟。多选支持批量置顶 / 删除，置顶写入本地并随 ZIP 导入导出。桌面端侧边栏保持原来的全宽新建按钮与列表。
 - **后台 / 锁屏**：WebView 会被系统节流，长时间生成可能中断；「锁屏继续跑」需要前台服务，未实现。
 - **系统深色模式**：页面按启动时的系统主题渲染（`configChanges` 含 `uiMode`，为的是不重建 Activity、不丢流式回复），
   运行中切系统主题要重启应用才生效；应用内「设置 → 主题」可立即切换。
@@ -132,7 +132,7 @@ references/ 上游原始压缩包与图标素材（不进版本库）
 在 Android 16（API 36.1，x86_64 模拟器）上核对过：页面 origin 与安全上下文、流式端点的 CORS 与 401 错误映射、
 ZIP 导出落盘（下载文件 md5 与源数据一致）、麦克风授权链路、文件选择、外链进入 Custom Tabs、返回键三级行为、
 浅色深色与状态栏反色、安全区与键盘不双留白、应用内更新的下载进度 / SHA-256 与签名校验 / 未知来源授权 /
-系统安装器覆盖安装。真机待安装后确认。本版移动端侧边栏（搜索、浮动新建、顶栏常驻）在 390×844 视口核对；真机输入法待确认。
+系统安装器覆盖安装。真机待安装后确认。本版移动端侧边栏（搜索、多选、置顶分组、批量删除、浮动新建、顶栏常驻）在 390×844 视口核对；真机输入法待确认。
 
 ## 许可证
 

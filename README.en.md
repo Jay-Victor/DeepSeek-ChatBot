@@ -19,7 +19,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.1 in
 | | |
 | --- | --- |
 | Application ID | `com.deepseekchatbot` |
-| Version | 0.1.7 (versionCode 8) |
+| Version | 0.1.8 (versionCode 9) |
 | Size | 5.32 MB (release) |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | Native deps | androidx only (webkit / browser / activity / core-splashscreen), no third-party runtime |
@@ -45,8 +45,9 @@ automatically" switch, version info / GitHub Release update checks in Settings �
 turned off), a context-usage ring in the composer (DeepSeek-V4 tokenizer, 1M window, refreshed after each
 turn), and in-app update installation from Settings → About (SHA-256, signature and version are verified before
 handing the APK to the system installer). On mobile, the sidebar gains local session search (titles plus the
-current branch's text and attachment names, with highlighted hits) and a floating New button at the bottom, and the
-session header's new-chat button is always visible; the desktop sidebar is unchanged.
+current branch's text and attachment names, with highlighted hits), a floating New button at the bottom, and
+multi-select with batch pin/delete, and the session header's new-chat button is always visible; the desktop sidebar
+is unchanged.
 
 ## Requirements
 
@@ -64,7 +65,7 @@ The script does three things: `pnpm build` inside `web/`, sync `web/dist` into
 `android/app/src/main/assets/www`, then `./gradlew assembleRelease`. Output:
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.7-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.8-release.apk
 ```
 
 Step by step:
@@ -82,7 +83,7 @@ cd ../android && ./gradlew assembleRelease
 ## Install
 
 ```bash
-adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.7-release.apk
+adb install -r android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.8-release.apk
 ```
 
 If you would rather not build it yourself, the signed APK is attached to the
@@ -131,9 +132,10 @@ references/ upstream archive and icon assets (not tracked)
 
 ## Known limitations
 
-- **Session search is mobile-only**: it matches titles, the current branch's text and attachment names, but not
-  thinking blocks. The first search builds a local index, so a large history may pause briefly. The desktop sidebar
-  keeps its original full-width New button and list.
+- **Session search and multi-select are mobile-only**: search matches titles, the current branch's text and
+  attachment names, but not thinking blocks. The first search builds a local index, so a large history may pause
+  briefly. Multi-select supports batch pin/delete; pinned state is stored locally and kept through ZIP export/import.
+  The desktop sidebar keeps its original full-width New button and list.
 - **Background / lock screen**: the system throttles WebView, so long generations may be interrupted. Keeping it
   running while locked needs a foreground service, which is not implemented.
 - **System dark mode**: the page renders with the theme present at launch (`configChanges` includes `uiMode` so the
@@ -156,8 +158,8 @@ Checked on Android 16 (API 36.1, x86_64 emulator): page origin and secure contex
 flow, file picker, external links opening in Custom Tabs, all three levels of back button behaviour, light/dark with
 status bar inversion, insets/keyboard without double spacing, and in-app update download progress / SHA-256 and
 signature verification / unknown-sources permission / system installer upgrade. On-device confirmation is still
-pending. This version's mobile sidebar (search, floating New, persistent header button) was checked in a 390×844
-viewport; the Android IME behaviour still needs an on-device check.
+pending. This version's mobile sidebar (search, multi-select, pinned group, batch delete, floating New, persistent
+header button) was checked in a 390×844 viewport; the Android IME behaviour still needs an on-device check.
 
 ## License
 
