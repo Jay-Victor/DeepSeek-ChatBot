@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { useTranslate } from '../../i18n/index.js'
 import { IconPanelLeftOutline16, IconSettingsOutline16, NewChatIcon } from '../base/icons.js'
 import { setSiderCollapsed } from '../../services/settings.js'
@@ -12,6 +12,7 @@ import { Modal } from '../base/Modal.js'
 import { showToast } from '../base/toastState.js'
 import { openSettings } from '../settings/settingsDialogState.js'
 import { closeMobileSider, useMobileSider } from './mobileSiderState.js'
+import { usePushSider } from './usePushSider.js'
 import { SessionItem } from './SessionItem.js'
 import styles from './Sider.module.css'
 
@@ -140,17 +141,38 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
   )
 }
 
-/** 移动端抽屉：浮在页面上方，点空白区域关闭。 */
-export const MobileSider = () => {
+/**
+ * 移动端推挤式抽屉：常驻 DOM，收起时停在屏幕外，才能从关闭状态跟手滑出；
+ * 内容只在打开、拖动或收起动画期间挂载，避免会话列表在屏外空转。
+ */
+export const MobileSider = ({ frameRef }: { frameRef: RefObject<HTMLDivElement> }) => {
   const open = useMobileSider((state) => state.open)
-  if (!open) {
-    return null
-  }
+  const contentMounted = useMobileSider((state) => state.open || state.closing || state.dragging)
+  const drawerRef = useRef<HTMLDivElement>(null)
+  usePushSider(frameRef, drawerRef)
+
+  useEffect(() => {
+    const drawer = drawerRef.current
+    if (!drawer) {
+      return
+    }
+    // 屏外内容要从焦点顺序和读屏树里摘掉
+    drawer.toggleAttribute('inert', !open)
+  }, [open])
+
   return (
     <>
-      <div className={styles.drawerMask} onClick={closeMobileSider} />
-      <div className={styles.drawer}>
-        <Sider mobile />
+      <div
+        className={clsx(styles.scrim, open && styles.scrimOpen)}
+        aria-hidden="true"
+        onClick={() => {
+          if (open) {
+            closeMobileSider()
+          }
+        }}
+      />
+      <div ref={drawerRef} className={styles.drawer} aria-hidden={!open}>
+        {contentMounted ? <Sider mobile /> : null}
       </div>
     </>
   )

@@ -192,18 +192,34 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
+/* 推挤式抽屉：收起时整块停在左侧屏外，位移与主内容共用一条 --sider-offset */
 .drawer {
+  --sider-width: 300px;
+  --sider-width: min(300px, calc(100vw - 48px));
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   z-index: 800;
+  width: var(--sider-width);
+  transform: translate3d(calc(var(--sider-offset, 0px) - var(--sider-width)), 0, 0);
+  will-change: transform;
+  box-shadow: calc(var(--sider-progress, 0) * 10px) 0 calc(var(--sider-progress, 0) * 30px)
+    rgba(0, 0, 0, 0.12);
 }
 
-.drawerMask {
+/* 随推开比例加深的压暗层；收起时不吃触摸 */
+.scrim {
   position: absolute;
   inset: 0;
-  z-index: 799;
+  z-index: 790;
+  background-color: #000;
+  opacity: calc(var(--sider-progress, 0) * 0.16);
+  pointer-events: none;
+}
+
+.scrimOpen {
+  pointer-events: auto;
 }
 
 .mobile {

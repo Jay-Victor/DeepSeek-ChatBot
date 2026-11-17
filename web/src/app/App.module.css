@@ -59,4 +59,9 @@
     bottom: auto;
     height: var(--app-viewport-height, 100dvh);
   }
+
+  /* 推挤式侧边栏：和抽屉共用 --sider-offset，形成同一块被推开的布局 */
+  .main {
+    transform: translate3d(var(--sider-offset, 0px), 0, 0);
+  }
 }

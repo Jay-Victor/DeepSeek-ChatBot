@@ -15,7 +15,8 @@ declare const styles: {
   readonly "collapsed": string;
   readonly "collapsedGroup": string;
   readonly "drawer": string;
-  readonly "drawerMask": string;
+  readonly "scrim": string;
+  readonly "scrimOpen": string;
   readonly "mobile": string;
 };
 export = styles;

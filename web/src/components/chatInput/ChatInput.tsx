@@ -3,8 +3,6 @@ import { memo, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import {
   IconGlobeLanguageOutline14,
   IconPaperclipOutline16,
-  IconSendOutline16,
-  IconStopFill16,
   IconThinkOutline14,
 } from '../base/icons.js'
 import { setSearch, setThinking, useSettings } from '../../services/settings.js'
@@ -29,7 +27,7 @@ import { showToast } from '../base/toastState.js'
 import { ACCEPT, useUploads } from '../../services/attachments.js'
 import { DraftAttachments } from './DraftAttachments.js'
 import { useVoiceInput } from './useVoiceInput.js'
-import { VoiceButton } from './VoiceButton.js'
+import { ChatActionButton, type ChatActionMode } from './ChatActionButton.js'
 import { Spectrum } from './Spectrum.js'
 import { useTranslate } from '../../i18n/index.js'
 import styles from './ChatInput.module.css'
@@ -152,6 +150,47 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
     }
   }
 
+  // 右侧只有一个主按钮：显式状态（录音 / 转写 / 停止）优先，其余按有没有内容在语音与发送之间切换
+  const hasContent = text.trim().length > 0 || attachments.length > 0
+  const actionMode: ChatActionMode =
+    voice.status === 'recording'
+      ? 'recording'
+      : voice.status === 'transcribing'
+        ? 'transcribing'
+        : streaming && sessionId !== null
+          ? 'stop'
+          : hasContent
+            ? 'send'
+            : 'voice'
+  const actionDimmed =
+    actionMode === 'send'
+      ? !canSend
+      : actionMode === 'voice'
+        ? importingHistory || !voice.available
+        : false
+
+  const onAction = () => {
+    if (actionMode === 'stop') {
+      if (sessionId !== null) {
+        stopReadAloud()
+        stopReply(sessionId)
+      }
+      return
+    }
+    if (actionMode === 'send') {
+      send()
+      return
+    }
+    if (importingHistory || !voice.available) {
+      return
+    }
+    // 开始录音要先有 Key；录音中、转写中的点击是结束或取消，不拦
+    if (voice.status === 'idle' && !ensureApiKey()) {
+      return
+    }
+    void voice.toggle()
+  }
+
   return (
     <div
       className={clsx(styles.wrapper, sessionId === null ? styles.home : styles.session)}
@@ -228,19 +267,6 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
           </Tooltip>
         </div>
         <div className={styles.right}>
-          <VoiceButton
-            status={voice.status}
-            disabled={!voice.available}
-            seconds={voice.seconds}
-            onClick={() => {
-              if (
-                voice.status !== 'idle' ||
-                (!useChatStore.getState().importingHistory && ensureApiKey())
-              ) {
-                void voice.toggle()
-              }
-            }}
-          />
           <IconButton
             size="m"
             tone="primary"
@@ -260,29 +286,13 @@ const Input = ({ sessionId }: { sessionId: string | null }) => {
               event.target.value = ''
             }}
           />
-          {streaming && sessionId ? (
-            <button
-              type="button"
-              className={styles.sendButton}
-              aria-label={t('chatInputStopButtonTooltip')}
-              onClick={() => {
-                stopReadAloud()
-                stopReply(sessionId)
-              }}
-            >
-              <IconStopFill16 />
-            </button>
-          ) : (
-            <button
-              type="button"
-              className={clsx(styles.sendButton, !canSend && styles.disabled)}
-              aria-label={t('send')}
-              aria-disabled={!canSend}
-              onClick={send}
-            >
-              <IconSendOutline16 />
-            </button>
-          )}
+          <ChatActionButton
+            mode={actionMode}
+            seconds={voice.seconds}
+            dimmed={actionDimmed}
+            unavailable={!voice.available}
+            onClick={onAction}
+          />
         </div>
       </div>
       {dragging ? <DragMask /> : null}

@@ -19,6 +19,12 @@ import { SettingsDialog } from '../components/settings/SettingsDialog.js'
 import { Toast } from '../components/base/Toast.js'
 import { showToast } from '../components/base/toastState.js'
 import { onUploadNotice } from '../services/attachments.js'
+import {
+  hasUpdate,
+  markReleaseNotified,
+  maybeAutoCheck,
+  shouldNotifyRelease,
+} from '../services/update.js'
 import { Button } from '../components/base/Button.js'
 import { stopReadAloud } from '../services/speech/readAloud.js'
 import { CollapsedSider } from '../components/sider/CollapsedSider.js'
@@ -73,10 +79,43 @@ export const App = () => {
     ensureApiKey()
   }, [])
 
+  // 自动检查更新：每次打开应用（含从后台回到前台）都查一次；
+  // 发现新版本时用带链接的 toast 提示，失败或已是最新保持安静
+  useEffect(() => {
+    let lastCheckAt = 0
+    const check = () => {
+      if (document.visibilityState !== 'visible') {
+        return
+      }
+      // 页面加载与首个 visibilitychange 可能挨得很近，避免重复请求
+      if (Date.now() - lastCheckAt < 2000) {
+        return
+      }
+      lastCheckAt = Date.now()
+      void maybeAutoCheck().then((state) => {
+        if (!state?.release || state.failed || !hasUpdate(state.release)) {
+          return
+        }
+        // 检查每次都做，但同一个版本只弹一次，避免每次回前台都重复提示
+        if (shouldNotifyRelease(state.release)) {
+          markReleaseNotified(state.release.version)
+          showToast({
+            key: 'updateAvailableToast',
+            params: { version: state.release.version },
+            link: { key: 'updateAvailableToastLink', href: state.release.url },
+          })
+        }
+      })
+    }
+    check()
+    document.addEventListener('visibilitychange', check)
+    return () => document.removeEventListener('visibilitychange', check)
+  }, [])
+
   return (
     <>
       <div ref={frameRef} className={styles.frame}>
-        {isMobile ? <MobileSider /> : siderCollapsed ? null : <Sider />}
+        {isMobile ? <MobileSider frameRef={frameRef} /> : siderCollapsed ? null : <Sider />}
         <main className={styles.main}>
           {saveError ? (
             <div className={styles.saveError} role="alert">

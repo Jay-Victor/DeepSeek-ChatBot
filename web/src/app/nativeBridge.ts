@@ -23,7 +23,9 @@ const bridge = () => (window as WindowWithBridge).DeepSeekNative
 const hasOpenLayer = () =>
   useSettingsDialog.getState().open ||
   useSearchPanel.getState().entry !== null ||
-  useMobileSider.getState().open
+  useMobileSider.getState().open ||
+  // 收起动画还没走完时也算有弹层，避免按返回键直接退出应用
+  useMobileSider.getState().closing
 
 const closeTopLayer = () => {
   if (useSettingsDialog.getState().open) {

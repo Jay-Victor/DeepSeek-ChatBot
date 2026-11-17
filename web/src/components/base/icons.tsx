@@ -263,6 +263,18 @@ export const IconStopFill16 = () => (
   </svg>
 )
 
+/** 关于页与设置导航使用的信息图标 */
+export const IconInfoOutline16 = () => (
+  <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm7.25 3.5v-4h1.5v4h-1.5ZM8 3.375a.95.95 0 1 0 0 1.9.95.95 0 0 0 0-1.9Z"
+      fill="currentColor"
+    />
+  </svg>
+)
+
 export const IconThinkOutline14 = () => (
   <svg width={14} height={14} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path

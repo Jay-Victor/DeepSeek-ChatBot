@@ -71,6 +71,8 @@ export const createConfig = ({
         type: 'javascript/auto',
       },
       { test: /\.(woff2?|ttf)$/, type: 'asset/resource' },
+      // 关于页的应用图标等图片资源，走与字体相同的 static/media 输出
+      { test: /\.(png|jpe?g|webp|gif|svg)$/, type: 'asset/resource' },
     ],
   },
   plugins: [
