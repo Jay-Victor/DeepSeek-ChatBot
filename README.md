@@ -24,7 +24,7 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.12（versionCode 13） |
+| 版本 | 0.1.13（versionCode 14） |
 | 体积 | 5.34 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
@@ -54,13 +54,14 @@
 - **会话页顶栏**：自动朗读开关；开启后每条新完成的回复自动朗读，切换时在屏幕中央显示 1.6 秒提示
 - **会话三点菜单**：置顶 / 取消置顶、多选
 - **设置与关于**：思考内容自动折叠、上下文占用环（DeepSeek-V4 分词器，1M 窗口）、版本与更新检查、应用内下载安装
+- **上下文与压缩**：设置里可开启自动压缩并设置压缩阈值 / 目标（默认 50% / 20%）；占用卡片可手动「压缩对话」，查看进度与摘要、随时撤销；消息列表在覆盖点显示「已压缩」分隔条
 
 ## 快速开始
 
 从 [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 下载签名 APK，或：
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.12-release.apk
+adb install -r DeepSeekChatBot-v0.1.13-release.apk
 ```
 
 首次启动在「设置 → 数据管理」填入自己的 DeepSeek API Key；Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
@@ -89,7 +90,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.12-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.13-release.apk
 ```
 
 手动分步：
@@ -140,6 +141,10 @@ KEYSTORE_FILE / KEYSTORE_PASSWORD / KEYSTORE_ALIAS / KEY_PASSWORD
 - 大附件（几十 MB）经 SAF 进内存再上传，低端机有 OOM 风险（已开 `largeHeap`）
 - 只支持 DeepSeek 官方接口（`/anthropic/v1/messages`、`/anthropic/v1/files`、`/v1/tools/asr|tts`）；换 OpenAI 兼容端点需要改 `web/src/services/api/`
 - 应用内更新需要访问 GitHub 资产（优先 `api.github.com` 资产入口）；受限网络可能下载失败，此时可用「在浏览器中下载」，首次安装还需在系统设置里允许未知来源
+- **压缩需要额外模型请求**：摘要由模型生成，阈值设得低或会话很大时会增加 token 消耗；原始消息仍在本地，可随时撤销，但被压缩轮次只以摘要形式进入后续回答
+- **压缩只覆盖当前分支**：在覆盖点之前重新生成、编辑提问或切换分支会让摘要自动失效；单条摘要记录，在另一条分支再压缩会覆盖前一条
+- **ZIP 导入导出不携带压缩摘要**：归档格式与上游一致，导入后回到完整上下文
+- **压缩目标是软目标**：最近一轮本身超过目标时，压缩后仍可能高于目标
 - 没有 iOS 版本：同样六类能力在 iOS 上要另写一份
 
 ## 验证状态
@@ -162,6 +167,11 @@ mock Release 新版本提示整条点击后进入「设置 → 关于」。真�
 
 v0.1.12 修复聊天页面可被双指放大的问题：viewport 增加 `maximum-scale=1,user-scalable=no`，并在 WebView 关闭
 `supportZoom`。CDP 双指手势实测修复前 `visualViewport.scale` 从 1 跳到 5，修复后保持 1；图片预览的点按原始尺寸不受影响。
+
+v0.1.13 在桌面 Chrome（1280×800 与 390×844 视口）核对压缩功能：设置默认 50% / 20% 与交叉校验、手动压缩
+1.59% → 0.59%（覆盖 19 轮）、请求体（system 含摘要、旧轮次被裁掉）、撤销恢复、自动压缩打开会话时只触发一次、
+在覆盖点之前重新生成后摘要失效并在切回旧版本后恢复；APK 核对 `0.1.13` / `versionCode 14` 与 v2 签名。
+真机安装、数字输入法与 WebView 键盘行为待设备验收。
 
 ## 仓库结构
 

@@ -5,6 +5,27 @@
 
 ## [Unreleased]
 
+## [0.1.13] - 2026-11-21
+
+### 新增
+
+- 设置新增「上下文与压缩」：自动压缩开关、压缩阈值（默认 50%，范围 1–99）与压缩目标（默认 20%，必须小于阈值），并提供按 1M 窗口换算的预览
+- 上下文占用卡片新增「压缩对话」：把较早轮次交给模型总结成摘要，后续请求只带摘要 + 最近轮次；支持分块进度、取消、查看摘要与撤销
+- 自动压缩：占用超过阈值时，在回复结束或打开会话后自动执行；只作用于当前会话，每次占用变化最多尝试一次，同一会话 5 分钟内不重复自动尝试
+- 消息列表在压缩覆盖点显示「已压缩 N 轮较早对话」分隔条，可展开查看摘要
+
+### 变更
+
+- 占用卡片新增「较早摘要」行；「系统与模板」不再包含摘要 token
+- 压缩只影响请求与占用统计，原始消息、分支版本与本地搜索索引保持不变；撤销后恢复完整上下文
+- 压缩摘要放在 system 中，不伪造 user / assistant 轮次
+
+### 已知限制
+
+- 压缩摘要不随 ZIP 导出 / 导入迁移，导入后回到完整上下文
+- 在压缩覆盖点之前重新生成、编辑提问或切换分支会使摘要自动失效；单条摘要记录，在另一条分支再压缩会覆盖前一条
+- 压缩会产生额外的模型请求；压缩目标是软目标，最近一轮本身过大时可能达不到
+
 ## [0.1.12] - 2026-11-21
 
 ### 修复
@@ -146,7 +167,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.12...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.13...HEAD
+[0.1.13]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.13
 [0.1.12]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.12
 [0.1.11]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.11
 [0.1.10]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.10
