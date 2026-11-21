@@ -24,7 +24,7 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.18（versionCode 19） |
+| 版本 | 0.1.19（versionCode 20） |
 | 体积 | 5.36 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
@@ -53,7 +53,8 @@
 - **移动端侧边栏**：会话搜索（标题 + 当前分支正文，命中高亮）、底部浮动「新建」、多选批量置顶 / 删除
 - **会话页顶栏**：自动朗读开关；开启后每条新完成的回复自动朗读，切换时在屏幕中央显示 1.6 秒提示
 - **会话三点菜单**：置顶 / 取消置顶、多选
-- **设置与关于**：思考内容自动折叠、上下文占用环（DeepSeek-V4 分词器，1M 窗口）、版本与更新检查、应用内下载安装
+- **设置与关于**：思考内容自动折叠、上下文占用环（DeepSeek-V4 分词器，按模型窗口）、版本与更新检查、应用内下载安装
+- **接入方案**：数据管理里可保存多套端点（DeepSeek / Anthropic / OpenAI 兼容）与各自的 API Key，输入端点后获取模型列表并切换；新会话绑定创建时的方案与模型，旧会话不受当前方案切换影响
 - **上下文与压缩**：设置里可开启自动压缩并设置压缩阈值 / 目标（默认 50% / 20%）；占用卡片可手动「压缩对话」，查看进度与摘要、随时撤销；消息列表在覆盖点显示「已压缩」分隔条
 - **身份声明**：设置里可创建多套方案（姓名 + 设定），聊天页顶栏按会话切换；新会话继承默认方案，系统提示、占用统计与压缩预算同步使用所选身份
 - **外观**：图片 / 视频自定义背景（两类各保留一份）、蒙层浓度（默认 20%）与 0–24px 模糊、色相主题色拖动条与恢复默认；有背景时聊天区、顶栏、输入框和侧边栏切换为半透明面板；视频背景静音循环，切后台自动暂停
@@ -63,7 +64,7 @@
 从 [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 下载签名 APK，或：
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.18-release.apk
+adb install -r DeepSeekChatBot-v0.1.19-release.apk
 ```
 
 首次启动在「设置 → 数据管理」填入自己的 DeepSeek API Key；Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
@@ -92,7 +93,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.18-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.19-release.apk
 ```
 
 手动分步：
@@ -141,7 +142,12 @@ KEYSTORE_FILE / KEYSTORE_PASSWORD / KEYSTORE_ALIAS / KEY_PASSWORD
 - **系统辅助功能的「强制启用缩放」仍可放大页面**：应用内已关闭 WebView 双指缩放，但系统无障碍能力不受应用控制
 - **PDF 打开依赖系统查看器**：没有可用的 PDF 应用时会弹出保存位置选择，文件仍可正常落盘
 - 大附件（几十 MB）经 SAF 进内存再上传，低端机有 OOM 风险（已开 `largeHeap`）
-- 只支持 DeepSeek 官方接口（`/anthropic/v1/messages`、`/anthropic/v1/files`、`/v1/tools/asr|tts`）；换 OpenAI 兼容端点需要改 `web/src/services/api/`
+- 原生支持 DeepSeek 官方接口（`/anthropic/v1/messages`、`/anthropic/v1/files`、`/v1/tools/asr|tts`）；也可在「接入方案」里选择 Anthropic 或 OpenAI 兼容端点（第一版只支持纯文本 + 思考）
+- **自定义端点要求 https 且允许跨域（CORS）**：WebView 页面 origin 固定，端点不放行预检时请求会失败；地址填 API 根，不要带 `/v1` 或 `/anthropic`
+- **非 DeepSeek 协议第一版只支持纯文本 + 思考**：智能搜索、附件、语音输入与服务端自动标题按能力降级；Anthropic / OpenAI 端点下这些入口会隐藏或置灰
+- **语音输入与朗读只走 DeepSeek 官方端点**：ASR / TTS 是 `/v1/tools` 专用接口；自定义 DeepSeek 端点若没有转发该路径，语音入口会自动隐藏
+- **上下文占用按 DeepSeek-V4 分词器估算**：切换到其他模型后占用环与压缩预览的数字是近似值
+- **接入方案不随 ZIP 迁移**：方案、Key 与默认模型只保存在本机；导入的会话回落到当前方案
 - 应用内更新需要访问 GitHub 资产（优先 `api.github.com` 资产入口）；受限网络可能下载失败，此时可用「在浏览器中下载」，首次安装还需在系统设置里允许未知来源
 - **压缩需要额外模型请求**：摘要由模型生成，阈值设得低或会话很大时会增加 token 消耗；原始消息仍在本地，可随时撤销，但被压缩轮次只以摘要形式进入后续回答
 - **压缩只覆盖当前分支**：在覆盖点之前重新生成、编辑提问或切换分支会让摘要自动失效；单条摘要记录，在另一条分支再压缩会覆盖前一条
@@ -201,6 +207,8 @@ v0.1.17 在 Android 16（API 36.1，x86_64 模拟器，release 签名包）核�
 恢复默认后注入样式移除。APK 核对 `0.1.17` / `versionCode 18` 与 v2 签名。
 
 v0.1.18 修复 v0.1.17 的浅色主题色对比度：色相拖到黄 / 绿等亮色时，链接、设置「恢复默认」、侧栏选中项与品牌文字在浅色底上按 4.5:1 收口；页面底色上的 appName、标题图标、上下文环与朗读波形改用可读的 brand-text，主色填充保持鲜艳。桌面 Chrome 以浅色 + 52° 复验：brand-text 计算为 `hsl(52,99%,26%)`，主按钮为 `hsl(52,99%,61%)` 配深色文字；APK 核对 `0.1.18` / `versionCode 19`。
+
+v0.1.19 在桌面 Chrome（390×844、1280×800）用 mock 端点核对：多方案新建 / 编辑 / 切换、DeepSeek `/models` 元数据解析、OpenAI 与 Anthropic 请求体、会话级绑定（切换当前方案后旧会话仍走创建时的端点）、占用环 128,000 / 1,048,576、`deepseek-v4-pro` 附件仅文件、欢迎页方案 chip；APK 核对 `0.1.19` / `versionCode 20` 与 v2 签名。真实第三方端点、CORS 与 Android WebView 待设备验收。
 
 ## 仓库结构
 

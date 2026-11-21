@@ -24,7 +24,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 | | |
 | --- | --- |
 | Application ID | `com.deepseekchatbot` |
-| Version | 0.1.18 (versionCode 19) |
+| Version | 0.1.19 (versionCode 20) |
 | Size | 5.36 MB (release) |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | Native deps | androidx only (webkit / browser / activity / core-splashscreen), no third-party runtime |
@@ -53,7 +53,8 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 - **Mobile sidebar**: session search (title + current branch text, highlighted hits), floating New button, multi-select with batch pin/delete
 - **Session header**: auto-read toggle; reads each completed reply aloud and shows a 1.6-second centered hint when toggled
 - **Session menu**: pin / unpin and multi-select
-- **Settings & About**: auto-collapse thinking, context-usage ring (DeepSeek-V4 tokenizer, 1M window), version and update check, in-app install
+- **Settings & About**: auto-collapse thinking, context-usage ring (DeepSeek-V4 tokenizer, per-model window), version and update check, in-app install
+- **API profiles**: Data settings stores multiple endpoints (DeepSeek / Anthropic / OpenAI-compatible) with their own API keys; fetch the model list after entering an endpoint and switch models. New chats bind to the profile and model they were created with, so switching the current profile does not retarget old chats
 - **Context & compression**: enable auto-compression in Settings with its own threshold / target (defaults 50% / 20%); the usage popover compresses manually, shows progress and the summary, and can undo; the message list marks the compressed boundary
 - **Identity statements**: create multiple name + setting profiles in Settings and switch per chat from the header; new chats inherit the default, and the system prompt, usage estimates and compression budget all follow the selected profile
 - **Appearance**: image / video wallpapers (one of each is kept), an overlay slider (20% by default), 0–24px blur, and a hue slider for the accent colour with reset. With a wallpaper active, the chat area, header, input and sidebar switch to translucent panels; video wallpapers play muted and loop, and pause in the background
@@ -63,7 +64,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 Download the signed APK from [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest), or:
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.18-release.apk
+adb install -r DeepSeekChatBot-v0.1.19-release.apk
 ```
 
 On first launch, add your DeepSeek API key in Settings → Data. The key is written only to the on-device WebView localStorage and is excluded from cloud backup (`allowBackup=false`).
@@ -89,7 +90,7 @@ scripts/build-apk.sh release        # or scripts/build-apk.sh debug
 The script does three things: `pnpm build` inside `web/`, sync `web/dist` into `android/app/src/main/assets/www`, then `./gradlew assembleRelease`. Output:
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.18-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.19-release.apk
 ```
 
 Step by step:
@@ -137,7 +138,12 @@ If any of them is missing, `assembleRelease` still produces an APK, just unsigne
 - **Android's accessibility "force enable zoom" can still magnify the page**: pinch zoom is disabled inside the WebView, but system accessibility is outside app control
 - **PDF opening depends on a system viewer**: without one the app opens a save-location picker instead; the file is still written normally
 - Large attachments (tens of MB) go through SAF into memory before upload; low-end devices risk OOM (`largeHeap` is enabled, which only helps)
-- DeepSeek endpoints only (`/anthropic/v1/messages`, `/anthropic/v1/files`, `/v1/tools/asr|tts`). Supporting an OpenAI-compatible endpoint means changing `web/src/services/api/`
+- DeepSeek official endpoints are supported natively (`/anthropic/v1/messages`, `/anthropic/v1/files`, `/v1/tools/asr|tts`); Anthropic and OpenAI-compatible endpoints can be added as API profiles (text + thinking only in this version)
+- **Custom endpoints must use HTTPS and allow CORS**: the WebView origin is fixed; if the endpoint does not allow the preflight, requests fail. Enter the API root, without `/v1` or `/anthropic`
+- **Non-DeepSeek protocols support text + thinking only in this version**: web search, attachments, speech input and server-side titles degrade by capability; those entries are hidden or disabled on Anthropic / OpenAI endpoints
+- **Speech input and read-aloud use the DeepSeek official endpoint only**: ASR / TTS live under `/v1/tools`; custom DeepSeek endpoints that do not forward that path hide the speech entry
+- **Context usage is estimated with the DeepSeek-V4 tokenizer**: numbers in the ring and compression preview are approximate on other models
+- **API profiles are not included in ZIP export/import**: profiles, keys and default models stay on the device; imported chats fall back to the current profile
 - In-app updates need access to GitHub release assets (the `api.github.com` asset endpoint is preferred). On restricted networks the download may fail; use "Download in browser" instead. The first install also requires allowing unknown sources in system settings
 - **Compression makes extra model requests**: summaries are generated by the model, so a low threshold or a very long chat increases token usage. Original messages stay local and compression can be undone, but compressed rounds only reach later replies as a summary
 - **Compression follows the current branch only**: regenerating, editing or switching branches before the covered point makes the summary inactive; a single summary record is kept, so compressing another branch replaces it
@@ -173,6 +179,8 @@ v0.1.16 was checked in desktop Chrome at 390×844, 360×800 and 1280×800 for id
 v0.1.17 was checked on Android 16 (API 36.1, x86_64 emulator, signed release build) for appearance: the six settings tabs and mobile horizontal scrolling, the Theme → Mode segmented control, image / video wallpaper picking and preview, live overlay and blur previews, keeping one image and one video when switching, removing one type without touching the other, surviving restart and force-stop, muted looping video that pauses in the background, and translucent header / input / sidebar panels. A `/userbg/` Range request returns 206 and the `bytes=100-199` response matches the source file's SHA-256. Desktop Chrome (758×426 and 1280×800 windows) checked the same settings plus the IndexedDB fallback across reloads; hue 286° and 52° recoloured buttons, links and bubbles together, primary text switched between black and white by contrast, and Reset removed the injected style. The APK reports `0.1.17` / `versionCode 18` with a v2 signature.
 
 v0.1.18 fixes the accent contrast in light mode: with a yellow / green hue, links, the Settings Reset action, the selected sidebar row and brand text now keep 4.5:1 against the light page; the app name, title icon, context ring and read-aloud waveform painted on the page background use the readable brand-text alias, while primary fills stay vivid. Desktop Chrome checked light mode at hue 52°: brand-text resolves to `hsl(52,99%,26%)` and the primary button to `hsl(52,99%,61%)` with dark text. The APK reports `0.1.18` / `versionCode 19`.
+
+v0.1.19 was checked in desktop Chrome (390×844 and 1280×800) with mocked endpoints: creating / editing / switching profiles, DeepSeek `/models` metadata parsing, OpenAI and Anthropic request bodies, session binding (an old chat keeps its original endpoint after switching the current profile), usage rings at 128,000 / 1,048,576, `deepseek-v4-pro` offering document attachments only, and the welcome-page profile chip. The APK reports `0.1.19` / `versionCode 20` and a v2 signature. Real third-party endpoints, CORS and Android WebView await device verification.
 
 ## Repository layout
 

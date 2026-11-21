@@ -5,6 +5,31 @@
 
 ## [Unreleased]
 
+## [0.1.19] - 2026-11-22
+
+### 新增
+
+- 设置 → 数据管理新增「接入方案」：可保存多套端点（DeepSeek / Anthropic / OpenAI 兼容）、各自的 API Key 与默认模型，随时切换当前方案
+- 输入端点与 API Key 后可获取模型列表；默认 DeepSeek 端点也走同一流程，并从 `/models` 读取上下文窗口、输出上限与图片能力
+- 会话级绑定：新会话记录创建时的方案与模型，之后切换当前方案不会改变旧会话的请求目标；方案被删除时旧会话回落到当前方案
+- 深度思考 / 智能搜索按协议与模型能力门控：不支持时置灰并保留用户偏好；请求构建时静默去掉不支持的字段，历史里的 DeepSeek 工具块与非 DeepSeek 协议的 `latest_reminder` 自动剥离
+- 占用卡片显示当前会话的接入方案与模型；上下文窗口按模型元数据换算，压缩预览与自动压缩同步
+- 欢迎页显示当前接入方案与模型，点击直接进入「设置 → 数据管理」
+- 非 DeepSeek 端点使用首条提问生成本地标题；无视觉模型（如 `deepseek-v4-pro`）只保留文档附件入口
+
+### 变更
+
+- 旧版本的单 API Key 自动迁移成默认「DeepSeek 官方」方案，旧键保留以便回滚
+- 上传、语音转写与编辑提问改用会话绑定的方案，不再依赖当前方案的 Key
+
+### 已知限制
+
+- 自定义端点必须允许跨域（CORS）且使用 https；不满足时请求会在 WebView 内失败
+- 非 DeepSeek 协议第一版只支持纯文本 + 思考：搜索、附件、语音与服务端标题按能力降级
+- 语音输入与朗读仍只调用 DeepSeek 官方 `/v1/tools`；自定义 DeepSeek 端点不转发该路径时会自动隐藏语音入口
+- 上下文占用仍按 DeepSeek-V4 分词器估算，其他模型的数字是近似值
+- 接入方案是设备级设置，不随 ZIP 导出 / 导入迁移
+
 ## [0.1.18] - 2026-11-22
 
 ### 修复
@@ -227,7 +252,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.18...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.19...HEAD
+[0.1.19]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.19
 [0.1.18]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.18
 [0.1.17]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.17
 [0.1.16]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.16
