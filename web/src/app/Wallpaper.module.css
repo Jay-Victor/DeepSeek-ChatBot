@@ -1,0 +1,27 @@
+.layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 模糊会吃掉边缘，向外多铺一圈，避免四周露底色 */
+.media {
+  position: absolute;
+  top: -32px;
+  left: -32px;
+  display: block;
+  width: calc(100% + 64px);
+  height: calc(100% + 64px);
+  object-fit: cover;
+  filter: blur(var(--wallpaper-blur, 0px));
+}
+
+/* 蒙层浓度 0=壁纸最清晰，1=完全遮住 */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background-color: var(--dsw-alias-bg-base);
+  opacity: var(--wallpaper-overlay, 0);
+}

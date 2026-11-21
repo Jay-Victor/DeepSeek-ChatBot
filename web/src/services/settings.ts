@@ -7,7 +7,10 @@ export type Locale = 'zh-CN' | 'en-US'
 /** 主题偏好；默认跟随系统 */
 export type ThemePreference = 'light' | 'dark' | 'system'
 
-/** 本机设置，存 localStorage：API Key、语言、主题、位置、朗读音色、深度思考与智能搜索开关、侧边栏收起状态、自动检查更新、思考内容自动折叠、自动朗读、上下文压缩 */
+/** 自定义背景的媒体类型 */
+export type WallpaperKind = 'image' | 'video'
+
+/** 本机设置，存 localStorage：API Key、语言、主题、位置、朗读音色、深度思考与智能搜索开关、侧边栏收起状态、自动检查更新、思考内容自动折叠、自动朗读、上下文压缩、外观 */
 type Settings = {
   apiKey: string | null
   locale: Locale
@@ -26,6 +29,14 @@ type Settings = {
   compressThreshold: number
   /** 压缩后希望达到的上下文占比（百分数，1–99，必须小于阈值） */
   compressTarget: number
+  /** 自定义主题色的色相（0–360）；null 表示使用 DeepSeek 蓝 */
+  accentHue: number | null
+  /** 壁纸上方蒙层浓度（0–100）：0 最清晰，100 完全遮住 */
+  wallpaperOverlay: number
+  /** 壁纸模糊半径（px，0–24） */
+  wallpaperBlur: number
+  /** 当前显示的背景类型 */
+  wallpaperKind: WallpaperKind
 }
 
 const KEYS = {
@@ -43,6 +54,10 @@ const KEYS = {
   autoCompress: 'chat-demo:auto-compress',
   compressThreshold: 'chat-demo:compress-threshold',
   compressTarget: 'chat-demo:compress-target',
+  accentHue: 'chat-demo:accent-hue',
+  wallpaperOverlay: 'chat-demo:wallpaper-overlay',
+  wallpaperBlur: 'chat-demo:wallpaper-blur',
+  wallpaperKind: 'chat-demo:wallpaper-kind',
 } as const
 
 const read = (key: string) => {
@@ -130,6 +145,31 @@ const initialCompressTarget = (): number => {
   return Math.min(value, initialCompressThreshold() - 1)
 }
 
+/** 外观数值统一存整数；缺失、损坏或越界时回退 */
+const readRangeInt = (key: string, fallback: number, min: number, max: number): number => {
+  const raw = read(key)
+  if (raw === null || raw.trim() === '') {
+    return fallback
+  }
+  return clampRangeInt(Number(raw), fallback, min, max)
+}
+
+const clampRangeInt = (value: number, fallback: number, min: number, max: number): number =>
+  Number.isFinite(value) ? Math.min(max, Math.max(min, Math.round(value))) : fallback
+
+/** 未拖动过色相条时为 null，保持上游 DeepSeek 蓝 */
+const initialAccentHue = (): number | null => {
+  const raw = read(KEYS.accentHue)
+  if (raw === null || raw.trim() === '') {
+    return null
+  }
+  const value = Number(raw)
+  return Number.isFinite(value) ? ((Math.round(value) % 360) + 360) % 360 : null
+}
+
+const initialWallpaperKind = (): WallpaperKind =>
+  read(KEYS.wallpaperKind) === 'video' ? 'video' : 'image'
+
 export const useSettings = create<Settings>(() => ({
   apiKey: read(KEYS.apiKey),
   locale: initialLocale(),
@@ -149,6 +189,11 @@ export const useSettings = create<Settings>(() => ({
   autoCompress: read(KEYS.autoCompress) === 'true',
   compressThreshold: initialCompressThreshold(),
   compressTarget: initialCompressTarget(),
+  // 未自定义主题色时保持 DeepSeek 蓝；默认留 20% 蒙层，避免亮壁纸压住正文
+  accentHue: initialAccentHue(),
+  wallpaperOverlay: readRangeInt(KEYS.wallpaperOverlay, 20, 0, 100),
+  wallpaperBlur: readRangeInt(KEYS.wallpaperBlur, 0, 0, 24),
+  wallpaperKind: initialWallpaperKind(),
 }))
 
 export const setLocale = (locale: Locale) => {
@@ -232,4 +277,29 @@ export const setCompressTarget = (value: number) => {
   )
   write(KEYS.compressTarget, String(compressTarget))
   useSettings.setState({ compressTarget })
+}
+
+/** 色相取整并回绕到 0–359；null 表示恢复默认主题色 */
+export const setAccentHue = (hue: number | null) => {
+  const accentHue =
+    hue === null || !Number.isFinite(hue) ? null : ((Math.round(hue) % 360) + 360) % 360
+  write(KEYS.accentHue, accentHue === null ? null : String(accentHue))
+  useSettings.setState({ accentHue })
+}
+
+export const setWallpaperOverlay = (value: number) => {
+  const wallpaperOverlay = clampRangeInt(value, useSettings.getState().wallpaperOverlay, 0, 100)
+  write(KEYS.wallpaperOverlay, String(wallpaperOverlay))
+  useSettings.setState({ wallpaperOverlay })
+}
+
+export const setWallpaperBlur = (value: number) => {
+  const wallpaperBlur = clampRangeInt(value, useSettings.getState().wallpaperBlur, 0, 24)
+  write(KEYS.wallpaperBlur, String(wallpaperBlur))
+  useSettings.setState({ wallpaperBlur })
+}
+
+export const setWallpaperKind = (wallpaperKind: WallpaperKind) => {
+  write(KEYS.wallpaperKind, wallpaperKind)
+  useSettings.setState({ wallpaperKind })
 }

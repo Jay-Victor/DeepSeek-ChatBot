@@ -313,6 +313,17 @@ export const IconIdentityOutline16 = () => (
   </svg>
 )
 
+/** 外观：调色盘，点与右下角的拇指孔 */
+export const IconAppearanceOutline16 = () => (
+  <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="8" cy="8" r="6.1" stroke="currentColor" strokeWidth="1.3" />
+    <circle cx="5.1" cy="6.2" r=".9" fill="currentColor" />
+    <circle cx="8" cy="4.6" r=".9" fill="currentColor" />
+    <circle cx="10.9" cy="6.2" r=".9" fill="currentColor" />
+    <circle cx="9.7" cy="10.7" r="1.35" stroke="currentColor" strokeWidth="1.2" />
+  </svg>
+)
+
 export const IconThinkOutline14 = () => (
   <svg width={14} height={14} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path

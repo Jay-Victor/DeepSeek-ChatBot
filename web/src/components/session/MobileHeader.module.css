@@ -5,6 +5,7 @@
   box-sizing: border-box;
   height: 60px;
   padding: 12px 10px 4px;
+  background: var(--ds-panel-bg);
 }
 
 .actions {

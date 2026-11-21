@@ -16,9 +16,7 @@ declare const styles: {
   readonly "citySelect": string;
   readonly "regionSelect": string;
   readonly "theme": string;
-  readonly "themeOptions": string;
-  readonly "themeOption": string;
-  readonly "themeOptionSelected": string;
+  readonly "modeControl": string;
   readonly "description": string;
   readonly "error": string;
   readonly "apiKey": string;

@@ -1,14 +1,12 @@
 import clsx from 'clsx'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
+  IconAppearanceOutline16,
   IconContextOutline16,
-  IconDarkOutline16,
   IconDataOutline16,
   IconDownloadOutline16,
-  IconFollowsystemOutline16,
   IconIdentityOutline16,
   IconInfoOutline16,
-  IconLightOutline16,
   IconSettingsOutline16,
   IconUploadOutline14,
 } from '../base/icons.js'
@@ -40,11 +38,13 @@ import { CONTEXT_WINDOW } from '../../services/tokenizer/contextUsage.js'
 import { useTranslate, type TranslationKey, type TranslationMessage } from '../../i18n/index.js'
 import { Button } from '../base/Button.js'
 import { Modal } from '../base/Modal.js'
+import { Segmented } from '../base/Segmented.js'
 import { Select } from '../base/Select.js'
 import { Switch } from '../base/Switch.js'
 import { showToast } from '../base/toastState.js'
 import { ApiKeyConfirm, ApiKeyField, useApiKeyEditor } from './ApiKeyField.js'
 import { AboutSetting } from './AboutSetting.js'
+import { AppearanceSetting } from './AppearanceSetting.js'
 import { IdentitySetting } from './IdentitySetting.js'
 import { closeSettings, useSettingsDialog, type SettingsSection } from './settingsDialogState.js'
 import styles from './Settings.module.css'
@@ -63,6 +63,11 @@ const sections: { value: SettingsSection; label: TranslationKey; icon: ReactNode
     value: 'general',
     label: 'settingDialogAsideGeneralOptionLabel',
     icon: <IconSettingsOutline16 />,
+  },
+  {
+    value: 'appearance',
+    label: 'settingDialogAsideAppearanceOptionLabel',
+    icon: <IconAppearanceOutline16 />,
   },
   {
     value: 'identity',
@@ -121,12 +126,14 @@ const SettingsContent = () => {
         <div role="tabpanel" className={styles.content}>
           {section === 'general' ? (
             <>
-              <ThemeSetting />
+              <ModeSetting />
               <LocaleSetting />
               <TtsVoiceSetting />
               <LocationSetting />
               <AutoCollapseThinkingSetting />
             </>
+          ) : section === 'appearance' ? (
+            <AppearanceSetting />
           ) : section === 'identity' ? (
             <IdentitySetting />
           ) : section === 'context' ? (
@@ -537,53 +544,29 @@ const ImportConfirm = ({
   )
 }
 
-const themeOptions: { value: ThemePreference; label: TranslationKey; icon: ReactNode }[] = [
-  {
-    value: 'light',
-    label: 'avatarMenuSettingsDialogThemeSelectLightOption',
-    icon: <IconLightOutline16 />,
-  },
-  {
-    value: 'dark',
-    label: 'avatarMenuSettingsDialogThemeSelectDarkOption',
-    icon: <IconDarkOutline16 />,
-  },
-  {
-    value: 'system',
-    label: 'avatarMenuSettingsDialogThemeSelectSystemOption',
-    icon: <IconFollowsystemOutline16 />,
-  },
-]
-
 /**
- * 主题项：标题下方浅色 / 深色 / 跟随系统三个选块。
+ * 模式项：浅色 / 深色 / 跟随系统改为分段控制器，排列顺序与设置保持一致。
  * 与下方语言选项连续排列。
  */
-const ThemeSetting = () => {
+const ModeSetting = () => {
   const t = useTranslate()
   const themePreference = useSettings((state) => state.themePreference)
-  const label = t('avatarMenuSettingsDialogThemeItemLabel')
+  const label = t('settingsMode')
+  const options: { value: ThemePreference; label: string }[] = [
+    { value: 'light', label: t('avatarMenuSettingsDialogThemeSelectLightOption') },
+    { value: 'dark', label: t('avatarMenuSettingsDialogThemeSelectDarkOption') },
+    { value: 'system', label: t('avatarMenuSettingsDialogThemeSelectSystemOption') },
+  ]
   return (
     <div className={styles.theme}>
-      {label}
-      <div role="radiogroup" aria-label={label} className={styles.themeOptions}>
-        {themeOptions.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            role="radio"
-            aria-checked={themePreference === option.value}
-            className={clsx(
-              styles.themeOption,
-              themePreference === option.value && styles.themeOptionSelected
-            )}
-            onClick={() => setThemePreference(option.value)}
-          >
-            {option.icon}
-            {t(option.label)}
-          </button>
-        ))}
-      </div>
+      <div className={styles.label}>{label}</div>
+      <Segmented
+        ariaLabel={label}
+        className={styles.modeControl}
+        value={themePreference}
+        options={options}
+        onChange={setThemePreference}
+      />
     </div>
   )
 }

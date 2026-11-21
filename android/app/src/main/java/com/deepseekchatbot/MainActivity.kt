@@ -63,8 +63,10 @@ class MainActivity : ComponentActivity() {
     private lateinit var updateInstaller: UpdateInstaller
     private lateinit var attachmentOpener: AttachmentOpener
     private lateinit var mediaBridge: MediaBridge
+    private lateinit var backgroundStore: BackgroundStore
     private var errorView: TextView? = null
     private var cameraFile: File? = null
+    private var pendingBackgroundKind: String? = null
 
     /** 页面首帧就绪前保持启动图 */
     @Volatile
@@ -159,6 +161,27 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+    /** 背景媒体：SAF 选择后复制到 filesDir/background/，复制在线程里做，完成后回传页面 */
+    private val backgroundPickLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val kind = pendingBackgroundKind
+            pendingBackgroundKind = null
+            if (kind == null) {
+                return@registerForActivityResult
+            }
+            val uri = result.data?.data
+            if (result.resultCode != RESULT_OK || uri == null) {
+                emitBackground(
+                    JSONObject().put("ok", false).put("kind", kind).put("error", "cancelled")
+                )
+                return@registerForActivityResult
+            }
+            Thread {
+                val payload = backgroundStore.save(kind, uri)
+                emitBackground(payload)
+            }.start()
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -170,6 +193,7 @@ class MainActivity : ComponentActivity() {
         root.setBackgroundColor(ContextCompat.getColor(this, R.color.window_bg))
         setContentView(root)
 
+        backgroundStore = BackgroundStore(this)
         webView = createWebView()
         updateInstaller = UpdateInstaller(this) { payload -> emitUpdateEvent(payload) }
         attachmentOpener = AttachmentOpener(this)
@@ -287,7 +311,8 @@ class MainActivity : ComponentActivity() {
         override fun shouldInterceptRequest(
             view: WebView,
             request: WebResourceRequest
-        ): WebResourceResponse? = assetLoader.shouldInterceptRequest(request.url)
+        ): WebResourceResponse? =
+            backgroundStore.serve(request) ?: assetLoader.shouldInterceptRequest(request.url)
 
         override fun shouldOverrideUrlLoading(
             view: WebView,
@@ -480,6 +505,18 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun emitBackground(payload: JSONObject) {
+        val json = payload.toString()
+        webView.post {
+            runCatching {
+                webView.evaluateJavascript(
+                    "window.__onBackground && window.__onBackground(${JSONObject.quote(json)})",
+                    null
+                )
+            }
+        }
+    }
+
     private fun requestGallery() {
         if (mediaBridge.hasPermission()) {
             mediaBridge.loadGallery()
@@ -655,6 +692,36 @@ class MainActivity : ComponentActivity() {
         @android.webkit.JavascriptInterface
         fun takePhoto() {
             runOnUiThread { startCamera() }
+        }
+
+        /** 自定义背景：选择图片 / 视频并复制到私有目录；结果通过 __onBackground 回传 */
+        @android.webkit.JavascriptInterface
+        fun pickBackground(kind: String) {
+            runOnUiThread {
+                if (pendingBackgroundKind != null) {
+                    return@runOnUiThread
+                }
+                pendingBackgroundKind = kind
+                val started = runCatching {
+                    backgroundPickLauncher.launch(backgroundStore.pickIntent(kind))
+                }.isSuccess
+                if (!started) {
+                    pendingBackgroundKind = null
+                    emitBackground(
+                        JSONObject().put("ok", false).put("kind", kind).put("error", "copy_failed")
+                    )
+                }
+            }
+        }
+
+        @android.webkit.JavascriptInterface
+        fun backgroundInfo(): String = runCatching {
+            backgroundStore.info().toString()
+        }.getOrDefault("{}")
+
+        @android.webkit.JavascriptInterface
+        fun clearBackground(kind: String) {
+            backgroundStore.clear(kind)
         }
 
         /** 页面只会传 Release 里的 HTTPS APK 地址；原生再次校验域名、路径与包签名 */

@@ -1,4 +1,6 @@
 .sider {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -7,7 +9,7 @@
   height: 100%;
   padding: 6px 12px 0;
   border-right: 1px solid var(--dsw-alias-border-l1);
-  background-color: var(--dsw-specific-sidebar-fill);
+  background-color: var(--ds-sidebar-bg);
 }
 
 .top {
@@ -172,7 +174,7 @@
   padding: 0;
   border: none;
   border-radius: 50%;
-  background-color: var(--dsw-specific-sidebar-fill);
+  background-color: var(--ds-sidebar-bg);
   color: var(--dsw-alias-label-secondary);
   cursor: pointer;
 
@@ -224,7 +226,7 @@
   line-height: 18px;
   font-weight: 500;
   color: var(--dsw-alias-label-tertiary);
-  background-color: var(--dsw-specific-sidebar-fill);
+  background-color: var(--ds-sidebar-bg);
   user-select: none;
 }
 
@@ -243,7 +245,7 @@
   margin: 0 -12px;
   padding: 0 4px;
   border-top: 1px solid var(--dsw-alias-border-l1);
-  background-color: var(--dsw-specific-sidebar-fill);
+  background-color: var(--ds-sidebar-bg);
 }
 
 .selectAction {

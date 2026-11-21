@@ -147,6 +147,25 @@
 | `src/components/chatInput/ContextUsageRing.tsx` | 身份方案改动后重新统计上下文占用 |
 | `src/i18n/zh.ts` / `en.ts` | 身份声明、顶栏切换、校验与内置方案文案 |
 | `src/i18n/zh.ts` / `en.ts` | 上下文与压缩设置、压缩状态 / 错误 / 分隔条文案 |
+| `src/services/settings.ts` | 新增 `accentHue` / `wallpaperOverlay` / `wallpaperBlur` / `wallpaperKind`，外观设置持久化与范围收口 |
+| `src/app/accent.ts`（新增） | 自定义主题色：按色相生成整套蓝色 ramp（明暗两份），按对比度自动选择主色上的黑 / 白文字；默认不注入样式 |
+| `src/services/wallpaper.ts`（新增） | 背景媒体：壳内走原生 SAF 桥，浏览器回退到独立 IndexedDB（不碰聊天主库）；启动恢复、移除、错误回落 |
+| `src/app/Wallpaper.tsx` / `.module.css`（新增） | 背景层：图片 / 视频 cover、视频静音循环、切后台暂停、可调蒙层与模糊 |
+| `src/app/App.tsx` / `App.module.css` | frame 内挂载背景层；有壁纸时 frame 透明，侧栏与主内容置于背景之上 |
+| `src/app/global.css` | `--ds-*` 面板色：默认回落到原色，`wallpaper-active` 时切到 82%–90% 半透明面板 |
+| `src/components/sider/Sider.module.css` | 侧边栏、分组标题、底部操作栏改用半透明侧栏底色 |
+| `src/components/session/SessionView.module.css` | 会话页顶栏与输入框渐变底改用半透明面板色 |
+| `src/components/session/MobileHeader.module.css` | 移动端顶栏使用半透明面板色 |
+| `src/components/chatInput/ChatInput.module.css` | 输入框底色改用半透明输入框色 |
+| `src/components/base/Segmented.tsx` / `.module.css`（新增） | 分段控制器：等分排列、选中浮起、方向键 / Home / End 切换 |
+| `src/components/base/Slider.tsx` / `.module.css`（新增） | 设置滑杆：数值、说明、彩虹色相轨道、实时进度与触控尺寸 |
+| `src/components/settings/AppearanceSetting.tsx` / `.module.css`（新增） | 「外观」分组：图片 / 视频切换、预览、移除 / 选择、蒙层、模糊、色相主题色与恢复默认 |
+| `src/components/settings/SettingsDialog.tsx` / `settingsDialogState.ts` | 新增第 2 个分组「外观」；「主题」改为「模式」并使用分段控制器 |
+| `src/components/settings/Settings.module.css` / `.css.d.ts` | 模式分段控制器的间距；移除旧的三选块样式 |
+| `src/components/base/icons.tsx` | 新增调色盘图标 `IconAppearanceOutline16` |
+| `src/i18n/zh.ts` / `en.ts` | 外观、背景、蒙层、模糊、主题色、模式与错误提示文案；移除旧主题标签 |
+| `android/app/src/main/java/.../BackgroundStore.kt`（新增） | 背景媒体复制到 `filesDir/background/`、两类各保留一份、按 MIME 限制体积、`/userbg/` 同源响应与 Range（206） |
+| `android/app/src/main/java/.../MainActivity.kt` | 新增 `pickBackground` / `backgroundInfo` / `clearBackground` 桥；`shouldInterceptRequest` 先处理 `/userbg/` |
 
 分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与
 Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch。计数实现见 `bpe.ts`。

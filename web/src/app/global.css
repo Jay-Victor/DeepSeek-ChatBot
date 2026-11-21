@@ -26,6 +26,25 @@ body {
 
   --scroll-color: rgba(0, 0, 0, 0.08);
   --scroll-color-hover: rgba(0, 0, 0, 0.15);
+
+  /* 自定义背景关闭时全部回落到原色，开启后由 wallpaper-active 切到半透明面板 */
+  --ds-app-bg: var(--dsw-alias-bg-base);
+  --ds-panel-bg: var(--dsw-alias-bg-base);
+  --ds-sidebar-bg: var(--dsw-specific-sidebar-fill);
+  --ds-input-bg: var(--dsw-specific-input-major);
+}
+
+body.wallpaper-active {
+  --ds-app-bg: transparent;
+  --ds-panel-bg: rgba(255, 255, 255, 0.82);
+  --ds-sidebar-bg: rgba(255, 255, 255, 0.9);
+  --ds-input-bg: rgba(255, 255, 255, 0.9);
+}
+
+body[data-ds-dark-theme].wallpaper-active {
+  --ds-panel-bg: rgba(21, 21, 23, 0.82);
+  --ds-sidebar-bg: rgba(21, 21, 23, 0.9);
+  --ds-input-bg: rgba(21, 21, 23, 0.9);
 }
 
 body.dark {
