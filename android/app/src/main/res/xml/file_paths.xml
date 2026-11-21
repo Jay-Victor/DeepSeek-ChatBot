@@ -2,4 +2,6 @@
 <!-- 更新包只放在应用私有 cache/updates，通过 FileProvider 临时授权给系统安装器 -->
 <paths>
     <cache-path name="updates" path="updates/" />
+    <!-- 附件预览：页面 Blob 写入 cache/attachments，再授权给系统查看器 -->
+    <cache-path name="attachments" path="attachments/" />
 </paths>

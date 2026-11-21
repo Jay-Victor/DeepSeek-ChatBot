@@ -38,6 +38,18 @@ const entryName = (name: string) => {
   return { name: normalized, byteLength: bytes.length }
 }
 
+/**
+ * Android WebView 把 SAF 选中的文件结构化克隆进 IndexedDB 后，读回的 File.size 为 0
+ * （arrayBuffer 仍有完整数据）。ZIP 需要按 size 计长并校验写入字节，先换成 size 正确的 Blob。
+ */
+const materialize = async (blob: Blob): Promise<Blob> => {
+  if (blob.size > 0) {
+    return blob
+  }
+  const bytes = await blob.arrayBuffer()
+  return bytes.byteLength === 0 ? blob : new Blob([bytes], { type: blob.type })
+}
+
 /** STORE 流式写入；成品必须能再次导入。 */
 export const writeArchive = async (entries: { name: string; blob: Blob }[]): Promise<Blob> => {
   if (entries.length >= ZIP64_COUNT) {
@@ -46,22 +58,25 @@ export const writeArchive = async (entries: { name: string; blob: Blob }[]): Pro
   const names = new Set<string>()
   let dataSize = 0
   let directorySize = 0
-  const prepared = entries.map(({ name, blob }) => {
-    const normalized = entryName(name)
-    if (names.has(normalized.name)) {
-      invalid()
-    }
-    names.add(normalized.name)
-    if (blob.size >= ZIP64_SIZE) {
-      throw new ArchiveLimitError()
-    }
-    dataSize += blob.size + 46 + normalized.byteLength
-    directorySize += 46 + normalized.byteLength
-    if (dataSize >= ZIP64_SIZE || directorySize >= ZIP64_SIZE) {
-      throw new ArchiveLimitError()
-    }
-    return { name: normalized.name, blob }
-  })
+  const prepared = await Promise.all(
+    entries.map(async ({ name, blob }) => {
+      const normalized = entryName(name)
+      if (names.has(normalized.name)) {
+        invalid()
+      }
+      names.add(normalized.name)
+      const source = await materialize(blob)
+      if (source.size >= ZIP64_SIZE) {
+        throw new ArchiveLimitError()
+      }
+      dataSize += source.size + 46 + normalized.byteLength
+      directorySize += 46 + normalized.byteLength
+      if (dataSize >= ZIP64_SIZE || directorySize >= ZIP64_SIZE) {
+        throw new ArchiveLimitError()
+      }
+      return { name: normalized.name, blob: source }
+    })
+  )
 
   const expectedSize = dataSize + directorySize + 22
   const chunks: Blob[] = []

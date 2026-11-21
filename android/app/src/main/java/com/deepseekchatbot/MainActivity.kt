@@ -1,7 +1,9 @@
 package com.deepseekchatbot
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -30,6 +32,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
@@ -55,6 +58,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var webView: WebView
     private lateinit var assetLoader: WebViewAssetLoader
     private lateinit var updateInstaller: UpdateInstaller
+    private lateinit var attachmentOpener: AttachmentOpener
     private var errorView: TextView? = null
 
     /** 页面首帧就绪前保持启动图 */
@@ -100,7 +104,7 @@ class MainActivity : ComponentActivity() {
         }
 
     private val createDocumentLauncher =
-        registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
+        registerForActivityResult(CreateDocumentContract()) { uri ->
             val id = pendingSaveId
             pendingSaveId = null
             if (id == null) {
@@ -131,6 +135,7 @@ class MainActivity : ComponentActivity() {
 
         webView = createWebView()
         updateInstaller = UpdateInstaller(this) { payload -> emitUpdateEvent(payload) }
+        attachmentOpener = AttachmentOpener(this)
         root.addView(
             webView,
             FrameLayout.LayoutParams(
@@ -189,6 +194,9 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         if (::updateInstaller.isInitialized) {
             updateInstaller.onDestroy()
+        }
+        if (::attachmentOpener.isInitialized) {
+            attachmentOpener.destroy()
         }
         synchronized(saveStreams) {
             saveStreams.values.forEach { stream -> runCatching { stream.close() } }
@@ -465,11 +473,12 @@ class MainActivity : ComponentActivity() {
         }
 
         @android.webkit.JavascriptInterface
-        fun saveBegin(id: String, name: String) {
+        fun saveBegin(id: String, name: String, mime: String) {
             runOnUiThread {
                 pendingSaveId = id
                 val suggested = name.ifBlank { DEFAULT_EXPORT_NAME }
-                val started = runCatching { createDocumentLauncher.launch(suggested) }.isSuccess
+                val type = mime.ifBlank { DEFAULT_EXPORT_MIME }
+                val started = runCatching { createDocumentLauncher.launch(Pair(suggested, type)) }.isSuccess
                 if (!started) {
                     pendingSaveId = null
                     notifySaveToken(id, null)
@@ -479,10 +488,16 @@ class MainActivity : ComponentActivity() {
 
         @android.webkit.JavascriptInterface
         fun saveChunk(token: String, base64: String): Boolean {
-            val stream = synchronized(saveStreams) { saveStreams[token] } ?: return false
+            val stream = synchronized(saveStreams) { saveStreams[token] }
+            if (stream == null) {
+                Log.w(TAG, "saveChunk: unknown token (${base64.length} chars)")
+                return false
+            }
             return runCatching {
                 stream.write(Base64.decode(base64, Base64.NO_WRAP))
                 true
+            }.onFailure { error ->
+                Log.w(TAG, "saveChunk: write failed (${base64.length} chars)", error)
             }.getOrDefault(false)
         }
 
@@ -512,6 +527,19 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        /** 附件预览：PDF / 图片写入 cache 后交给系统查看器；返回 false 时页面改为保存 */
+        @android.webkit.JavascriptInterface
+        fun openFileBegin(name: String, mime: String, size: Long): String? =
+            attachmentOpener.begin(name, mime, size)
+
+        @android.webkit.JavascriptInterface
+        fun openFileChunk(token: String, base64: String): Boolean =
+            attachmentOpener.chunk(token, base64)
+
+        @android.webkit.JavascriptInterface
+        fun openFileEnd(token: String, success: Boolean): Boolean =
+            attachmentOpener.end(token, success)
+
         /** 页面只会传 Release 里的 HTTPS APK 地址；原生再次校验域名、路径与包签名 */
         @android.webkit.JavascriptInterface
         fun downloadUpdate(
@@ -534,6 +562,20 @@ class MainActivity : ComponentActivity() {
         private const val ASSET_HOST = "appassets.androidplatform.net"
         private const val INDEX_URL = "https://$ASSET_HOST/assets/www/index.html"
         private const val DEFAULT_EXPORT_NAME = "deepseek-chat-history.zip"
+        private const val DEFAULT_EXPORT_MIME = "application/zip"
         private const val PROBE_TIMEOUT_MS = 3_000L
     }
+}
+
+/** ACTION_CREATE_DOCUMENT 的 MIME 与建议文件名由页面传入，不能再用固定 MIME 的 CreateDocument */
+private class CreateDocumentContract : ActivityResultContract<Pair<String, String>, Uri?>() {
+    override fun createIntent(context: Context, input: Pair<String, String>): Intent =
+        Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = input.second
+            putExtra(Intent.EXTRA_TITLE, input.first)
+        }
+
+    override fun parseResult(resultCode: Int, intent: Intent?): Uri? =
+        if (resultCode == Activity.RESULT_OK) intent?.data else null
 }

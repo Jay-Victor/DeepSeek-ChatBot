@@ -190,6 +190,7 @@ export const zh = {
   deactivatedSearchTooltip: '按需搜索网页',
   search: '智能搜索',
   uploadFile: '上传文件',
+  attachmentNoViewer: '没有可打开此文件的应用，请选择保存位置',
   chatInputStopButtonTooltip: '停止生成',
   uploadMaxMBSize: '单个文件大小超过限制（{size}MB），请调整后重试',
   uploadMaxFiles: '上传文件最多支持 {count} 个',

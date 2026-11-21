@@ -1,6 +1,6 @@
-# 相对上游 chat-demo 0.1.1 的改动
+# 相对上游 chat-demo 0.1.3 的改动
 
-上游：https://github.com/deepseek-ai/chat-demo （v0.1.1）
+上游：https://github.com/deepseek-ai/chat-demo （v0.1.3）
 原则：只新增文件 + 接线，不改业务逻辑；将来同步上游新版本时按本文件回放。
 
 | 文件 | 改动 |
@@ -88,6 +88,16 @@
 | `src/components/sider/SessionItem.tsx` | 会话三点菜单新增「置顶 / 取消置顶」与「多选」；顺序为重命名、置顶、多选、删除，仅移动端传入这两个动作 |
 | `src/components/sider/Sider.tsx` | 单条置顶写盘，失败时提示并保持原状；从会话菜单进入多选时预选当前会话 |
 | `src/i18n/zh.ts` / `en.ts` | 会话菜单的置顶 / 取消置顶 / 多选文案 |
+| `src/components/files/useFileView.ts`（0.1.3 新增） | 壳内不再用 `blob:` 的 `target=_blank` / `download`：图片交给应用内预览，PDF 走原生系统查看器，SVG / 其他文件走 SAF 保存；浏览器里保持上游行为。保留 Blob 以便原生分片读取 |
+| `src/components/files/ImageViewer.tsx` / `.module.css` / `imageViewerState.ts`（新增） | 应用内图片预览：全屏遮罩、文件名、关闭按钮、点图片在适应屏幕 / 原始尺寸间切换、Esc 关闭；Blob 由预览自己创建并释放 object URL |
+| `src/app/native.ts` | 保存桥增加 MIME；新增 `openBlob`（分片 → cache/attachments → FileProvider）；按块读取 Blob；兼容 Android WebView 从 IndexedDB 读回的 SAF 文件 `size=0`（`arrayBuffer` 仍有数据） |
+| `src/app/nativeBridge.ts` | 图片预览计入「有弹层」，返回键先关预览再关设置 / 搜索 / 抽屉 |
+| `src/app/App.tsx` | 挂载 `ImageViewer` |
+| `src/services/chat/history/zipWriter.ts` | 导出前把 `size=0` 的原件 materialize 成正常 Blob，否则 ZIP 的写入字节校验会失败 |
+| `src/i18n/zh.ts` / `en.ts` | 无查看器时回退保存的提示 `attachmentNoViewer` |
+| `android/app/src/main/java/.../AttachmentOpener.kt`（新增） | PDF / 图片写入 `cache/attachments/<uuid>/<原名>`，经 FileProvider 交给系统查看器；24 小时清理、100MB 上限、失败返回 false 由页面回退到保存 |
+| `android/app/src/main/java/.../MainActivity.kt` | `saveBegin` 接收 MIME（自定义 `CreateDocumentContract`）；新增 `openFileBegin/Chunk/End` 桥；退出时关闭未完成的附件流 |
+| `android/app/src/main/res/xml/file_paths.xml` | 暴露 `cache/attachments/` 给系统查看器 |
 
 分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与
 Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch。计数实现见 `bpe.ts`。
@@ -96,7 +106,7 @@ Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch
 
 ```bash
 git clone https://github.com/deepseek-ai/chat-demo /tmp/upstream
-cd /tmp/upstream && git checkout v0.1.1   # 或目标版本
+cd /tmp/upstream && git checkout v0.1.3   # 或目标版本
 diff -ru --exclude=node_modules . "E:/ALL_FOR_MY_PROJECTS/DeepSeek ChatBot/web" | less
 ```
 

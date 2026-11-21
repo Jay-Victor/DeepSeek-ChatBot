@@ -7,6 +7,7 @@
 import { closeSettings, useSettingsDialog } from '../components/settings/settingsDialogState.js'
 import { closeSearchPanel, useSearchPanel } from '../components/search/searchPanelState.js'
 import { closeMobileSider, useMobileSider } from '../components/sider/mobileSiderState.js'
+import { useImageViewer } from '../components/files/imageViewerState.js'
 
 type NativeBridge = {
   setOverlay?: (open: boolean) => void
@@ -21,6 +22,7 @@ type WindowWithBridge = Window & {
 const bridge = () => (window as WindowWithBridge).DeepSeekNative
 
 const hasOpenLayer = () =>
+  useImageViewer.getState().image !== null ||
   useSettingsDialog.getState().open ||
   useSearchPanel.getState().entry !== null ||
   useMobileSider.getState().open ||
@@ -28,6 +30,10 @@ const hasOpenLayer = () =>
   useMobileSider.getState().closing
 
 const closeTopLayer = () => {
+  if (useImageViewer.getState().image !== null) {
+    useImageViewer.getState().closeImage()
+    return true
+  }
   if (useSettingsDialog.getState().open) {
     closeSettings()
     return true
@@ -66,6 +72,7 @@ export const installNativeBridge = () => {
   ;(window as WindowWithBridge).__closeOverlay = closeTopLayer
 
   const syncOverlay = () => native.setOverlay?.(hasOpenLayer())
+  useImageViewer.subscribe(syncOverlay)
   useSettingsDialog.subscribe(syncOverlay)
   useSearchPanel.subscribe(syncOverlay)
   useMobileSider.subscribe(syncOverlay)
