@@ -8,6 +8,8 @@ import { closeSettings, useSettingsDialog } from '../components/settings/setting
 import { closeSearchPanel, useSearchPanel } from '../components/search/searchPanelState.js'
 import { closeMobileSider, useMobileSider } from '../components/sider/mobileSiderState.js'
 import { useImageViewer } from '../components/files/imageViewerState.js'
+import { useVoiceOverlay } from '../components/chatInput/voiceOverlayState.js'
+import { useAttachmentPanel } from '../components/chatInput/attachmentPanelState.js'
 
 type NativeBridge = {
   setOverlay?: (open: boolean) => void
@@ -22,7 +24,9 @@ type WindowWithBridge = Window & {
 const bridge = () => (window as WindowWithBridge).DeepSeekNative
 
 const hasOpenLayer = () =>
+  useVoiceOverlay.getState().open ||
   useImageViewer.getState().image !== null ||
+  useAttachmentPanel.getState().open ||
   useSettingsDialog.getState().open ||
   useSearchPanel.getState().entry !== null ||
   useMobileSider.getState().open ||
@@ -30,8 +34,16 @@ const hasOpenLayer = () =>
   useMobileSider.getState().closing
 
 const closeTopLayer = () => {
+  if (useVoiceOverlay.getState().open) {
+    useVoiceOverlay.getState().close()
+    return true
+  }
   if (useImageViewer.getState().image !== null) {
     useImageViewer.getState().closeImage()
+    return true
+  }
+  if (useAttachmentPanel.getState().open) {
+    useAttachmentPanel.getState().close()
     return true
   }
   if (useSettingsDialog.getState().open) {
@@ -72,7 +84,9 @@ export const installNativeBridge = () => {
   ;(window as WindowWithBridge).__closeOverlay = closeTopLayer
 
   const syncOverlay = () => native.setOverlay?.(hasOpenLayer())
+  useVoiceOverlay.subscribe(syncOverlay)
   useImageViewer.subscribe(syncOverlay)
+  useAttachmentPanel.subscribe(syncOverlay)
   useSettingsDialog.subscribe(syncOverlay)
   useSearchPanel.subscribe(syncOverlay)
   useMobileSider.subscribe(syncOverlay)

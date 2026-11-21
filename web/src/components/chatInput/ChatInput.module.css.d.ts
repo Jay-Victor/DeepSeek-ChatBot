@@ -12,6 +12,13 @@ declare const styles: {
   readonly "textarea": string;
   readonly "mirror": string;
   readonly "functionRow": string;
+  readonly "voiceWrapper": string;
+  readonly "voiceRow": string;
+  readonly "holdButton": string;
+  readonly "voiceFunctionRow": string;
+  readonly "attachmentSlot": string;
+  readonly "attachmentSlotOpen": string;
+  readonly "attachmentSlotInner": string;
   readonly "toggles": string;
   readonly "collapsedToggles": string;
   readonly "toggleLabel": string;

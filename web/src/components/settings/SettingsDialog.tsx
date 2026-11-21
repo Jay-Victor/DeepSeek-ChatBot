@@ -63,8 +63,9 @@ const sections: { value: SettingsSection; label: TranslationKey; icon: ReactNode
 const SettingsContent = () => {
   const t = useTranslate()
   const isMobile = useIsMobile()
-  // 打开时按调用方指定的分组选中，之后在弹窗内切换
-  const [section, setSection] = useState(() => useSettingsDialog.getState().section)
+  // 分组由状态库驱动：打开设置或从更新提示跳转时都能切换
+  const section = useSettingsDialog((state) => state.section)
+  const setSection = (next: SettingsSection) => useSettingsDialog.setState({ section: next })
   // 切换分组不丢失正在输入的 API Key 与导入状态
   const apiKeyEditor = useApiKeyEditor()
   const historyImport = useHistoryImport()

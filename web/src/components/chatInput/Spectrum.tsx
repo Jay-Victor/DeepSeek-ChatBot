@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import { useEffect, useRef, useState } from 'react'
 import styles from './Spectrum.module.css'
 
@@ -21,7 +22,14 @@ const TILT_DB_PER_OCTAVE = 4
  * 录音中的实时频谱：从左到右依次是低频到高频，按对数分段。
  * 每帧直接改 transform，不触发 React 渲染。
  */
-export const Spectrum = ({ getAnalyser }: { getAnalyser: () => AnalyserNode | null }) => {
+export const Spectrum = ({
+  getAnalyser,
+  variant = 'input',
+}: {
+  getAnalyser: () => AnalyserNode | null
+  /** input：覆盖输入框；overlay：录音浮层里单独一行 */
+  variant?: 'input' | 'overlay'
+}) => {
   const rootRef = useRef<HTMLDivElement>(null)
   const [count, setCount] = useState(0)
 
@@ -107,7 +115,11 @@ export const Spectrum = ({ getAnalyser }: { getAnalyser: () => AnalyserNode | nu
   }, [count, getAnalyser])
 
   return (
-    <div ref={rootRef} className={styles.spectrum} aria-hidden>
+    <div
+      ref={rootRef}
+      className={clsx(styles.spectrum, variant === 'overlay' && styles.overlay)}
+      aria-hidden
+    >
       {Array.from({ length: count }, (_, index) => (
         <span key={index} className={styles.bar} />
       ))}

@@ -16,6 +16,12 @@ const DURATION = 3000
 const LINK_DURATION = 5000
 let timer = 0
 
+/** 主动收起当前提示（例如用户点了提示里的动作按钮） */
+export const hideToast = () => {
+  window.clearTimeout(timer)
+  useToast.setState({ message: null })
+}
+
 /** 默认显示在顶部；placement 为 center 时是屏幕中央的胶囊，适合按钮状态提示 */
 export const showToast = (
   message: LinkedMessage | string,

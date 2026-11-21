@@ -243,6 +243,90 @@
   padding: 12px 8px;
 }
 
+/* 按住说话模式：顶部一行文字按钮，工具栏上方一条内缩分隔线 */
+.voiceWrapper {
+  cursor: default;
+}
+
+.voiceRow {
+  padding: 10px 12px 4px;
+}
+
+.holdButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 16px;
+  background-color: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
+  transition: background-color var(--ds-transition-duration) var(--ds-ease-in-out);
+
+  &:active:not(:disabled) {
+    background-color: var(--dsw-alias-interactive-bg-hover);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.voiceFunctionRow {
+  position: relative;
+  margin-top: 0;
+  padding-top: 10px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 12px;
+    right: 12px;
+    height: 1px;
+    background-color: var(--dsw-alias-border-l2);
+  }
+
+  .right {
+    gap: 8px;
+  }
+}
+
+/* 附件面板展开槽：0fr → 1fr 让输入框整体上滑，关闭时内容不占高度 */
+.attachmentSlot {
+  display: grid;
+  grid-template-rows: 0fr;
+  width: 100%;
+  visibility: hidden;
+  transition:
+    grid-template-rows 0.24s var(--ds-ease-in-out),
+    visibility 0s linear 0.24s;
+}
+
+.attachmentSlotOpen {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows 0.24s var(--ds-ease-in-out);
+}
+
+.attachmentSlotInner {
+  min-height: 0;
+  overflow: hidden;
+}
+
 .toggles {
   display: flex;
   flex: 1;

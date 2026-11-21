@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { useTranslate } from '../../i18n/index.js'
 import { IconToastError16 } from './icons.js'
-import { useToast } from './toastState.js'
+import { hideToast, useToast } from './toastState.js'
 import styles from './Toast.module.css'
 
 export const Toast = () => {
@@ -22,15 +22,37 @@ export const Toast = () => {
     )
   }
   const error = message.type === 'error'
+  const link = message.link
+  const action = link?.onClick
+  const activate = () => {
+    if (!action) {
+      return
+    }
+    action()
+    hideToast()
+  }
   return (
     <div
       key={id}
       className={clsx(
         styles.toast,
         placement === 'center' && styles.center,
-        error && styles.error
+        error && styles.error,
+        action && styles.action
       )}
-      role="status"
+      role={action ? 'button' : 'status'}
+      tabIndex={action ? 0 : undefined}
+      onClick={activate}
+      onKeyDown={
+        action
+          ? (event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                activate()
+              }
+            }
+          : undefined
+      }
     >
       {error ? (
         <span className={styles.icon}>
@@ -39,10 +61,14 @@ export const Toast = () => {
       ) : null}
       <span className={styles.content}>
         {t(message.key, message.params)}
-        {message.link ? (
-          <a className={styles.link} href={message.link.href} target="_blank" rel="noreferrer">
-            {t(message.link.key)}
-          </a>
+        {link ? (
+          action ? (
+            <span className={styles.link}>{t(link.key)}</span>
+          ) : (
+            <a className={styles.link} href={link.href} target="_blank" rel="noreferrer">
+              {t(link.key)}
+            </a>
+          )
         ) : null}
       </span>
     </div>

@@ -513,36 +513,145 @@ export const IconPlayMediaOutline16 = () => (
   </svg>
 )
 
-/** 自动朗读开启：喇叭 + 两道声波 */
-export const IconVolumeOutline20 = () => (
-  <svg width={20} height={20} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+/**
+ * 语音输入入口：圆圈内的声波（中心点 + 两道弧），与参考图的细线风格一致。
+ * 24 网格按 24px 渲染，正好落在 34px 的圆形按钮里。
+ */
+export const IconVoiceCircle20 = () => (
+  <svg width={24} height={24} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="9.8" stroke="currentColor" strokeWidth="1.6" />
+    <circle cx="9.3" cy="12" r="1.25" fill="currentColor" />
     <path
-      d="M3.4 7.3h2.4l3.5-2.8c.62-.5 1.55-.06 1.55.74v9.52c0 .8-.93 1.24-1.55.74l-3.5-2.8H3.4c-.55 0-1-.45-1-1V8.3c0-.55.45-1 1-1Z"
-      fill="currentColor"
-    />
-    <path
-      d="M13.4 7.6a3.2 3.2 0 0 1 0 4.8"
+      d="M12 9.4a3.5 3.5 0 0 1 0 5.2"
       stroke="currentColor"
-      strokeWidth="1.5"
+      strokeWidth="1.6"
       strokeLinecap="round"
     />
     <path
-      d="M15.7 5.3a6.4 6.4 0 0 1 0 9.4"
+      d="M14.8 7.2a6.8 6.8 0 0 1 0 9.6"
       stroke="currentColor"
-      strokeWidth="1.5"
+      strokeWidth="1.6"
       strokeLinecap="round"
     />
   </svg>
 )
 
-/** 自动朗读关闭：喇叭 + 斜杠 */
-export const IconVolumeMuteOutline20 = () => (
-  <svg width={20} height={20} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M3.4 7.3h2.4l3.5-2.8c.62-.5 1.55-.06 1.55.74v9.52c0 .8-.93 1.24-1.55.74l-3.5-2.8H3.4c-.55 0-1-.45-1-1V8.3c0-.55.45-1 1-1Z"
-      fill="currentColor"
+/** 切回键盘：圆圈内的键盘网格 */
+export const IconKeyboardCircle20 = () => (
+  <svg width={24} height={24} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="9.8" stroke="currentColor" strokeWidth="1.6" />
+    <rect
+      x="6.9"
+      y="8.9"
+      width="10.2"
+      height="6.2"
+      rx="1.3"
+      stroke="currentColor"
+      strokeWidth="1.5"
     />
-    <path d="M13.2 13.2 18.6 6.8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path
+      d="M9.2 11.2h.01M11 11.2h.01M12.8 11.2h.01M14.6 11.2h.01M9.2 13.2h.01M11 13.2h.01M12.8 13.2h.01M14.6 13.2h.01"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
+)
+
+/** 添加附件：圆圈加号 */
+export const IconPlusCircle20 = () => (
+  <svg width={24} height={24} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="9.8" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M12 7.4v9.2M7.4 12h9.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+)
+
+/** 拍照 */
+export const IconCameraOutline20 = () => (
+  <svg width={20} height={20} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M4.5 7.5h3l1.5-2.2h6L16.5 7.5h3A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5V9a1.5 1.5 0 0 1 1.5-1.5Z"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinejoin="round"
+    />
+    <circle cx="12" cy="13.2" r="3.6" stroke="currentColor" strokeWidth="1.6" />
+  </svg>
+)
+
+/** 相册 */
+export const IconImageOutline20 = () => (
+  <svg width={20} height={20} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect
+      x="3.2"
+      y="4.8"
+      width="17.6"
+      height="14.4"
+      rx="2.2"
+      stroke="currentColor"
+      strokeWidth="1.6"
+    />
+    <circle cx="8.2" cy="9.6" r="1.5" stroke="currentColor" strokeWidth="1.5" />
+    <path
+      d="m4.6 17 5-5 3 3 2.4-2.4 4.4 4.4"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
+
+/** 文件 */
+export const IconFileOutline20 = () => (
+  <svg width={20} height={20} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M6 3.5h8l4 4v13H6z"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinejoin="round"
+    />
+    <path d="M14 3.8V8h3.8" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+  </svg>
+)
+
+/** 自动朗读开启：描边喇叭 + 两道声波（24 网格，按 20px 渲染） */
+export const IconVolumeOutline20 = () => (
+  <svg width={20} height={20} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M16 9a5 5 0 0 1 0 6"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+    <path
+      d="M19.364 18.364a9 9 0 0 0 0-12.728"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+  </svg>
+)
+
+/** 自动朗读关闭：同样的描边喇叭 + 叉号 */
+export const IconVolumeMuteOutline20 = () => (
+  <svg width={20} height={20} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path d="M22 9 16 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    <path d="M16 9l6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
   </svg>
 )
 

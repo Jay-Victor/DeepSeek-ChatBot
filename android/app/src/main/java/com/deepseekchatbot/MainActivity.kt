@@ -11,6 +11,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.Message
+import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
 import android.view.Gravity
@@ -36,6 +37,7 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -43,6 +45,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.webkit.WebViewAssetLoader
 import org.json.JSONObject
+import java.io.File
 import java.io.OutputStream
 import java.util.UUID
 
@@ -59,7 +62,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var assetLoader: WebViewAssetLoader
     private lateinit var updateInstaller: UpdateInstaller
     private lateinit var attachmentOpener: AttachmentOpener
+    private lateinit var mediaBridge: MediaBridge
     private var errorView: TextView? = null
+    private var cameraFile: File? = null
 
     /** 页面首帧就绪前保持启动图 */
     @Volatile
@@ -122,6 +127,38 @@ class MainActivity : ComponentActivity() {
             notifySaveToken(id, token)
         }
 
+    private val galleryPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+            if (result.values.any { it } && mediaBridge.hasPermission()) {
+                mediaBridge.loadGallery()
+            } else {
+                emitGallery(JSONObject().put("error", "permission"))
+            }
+        }
+
+    private val cameraLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val file = cameraFile
+            cameraFile = null
+            if (result.resultCode != RESULT_OK || file == null || !file.exists() || file.length() == 0L) {
+                file?.delete()
+                emitCamera(JSONObject().put("cancelled", true))
+                return@registerForActivityResult
+            }
+            val token = mediaBridge.openFile(file)
+            if (token == null) {
+                file.delete()
+                emitCamera(JSONObject().put("error", "camera_failed"))
+            } else {
+                emitCamera(
+                    JSONObject()
+                        .put("token", token)
+                        .put("name", file.name)
+                        .put("type", "image/jpeg")
+                )
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -136,6 +173,7 @@ class MainActivity : ComponentActivity() {
         webView = createWebView()
         updateInstaller = UpdateInstaller(this) { payload -> emitUpdateEvent(payload) }
         attachmentOpener = AttachmentOpener(this)
+        mediaBridge = MediaBridge(this) { payload -> emitGallery(payload) }
         root.addView(
             webView,
             FrameLayout.LayoutParams(
@@ -197,6 +235,9 @@ class MainActivity : ComponentActivity() {
         }
         if (::attachmentOpener.isInitialized) {
             attachmentOpener.destroy()
+        }
+        if (::mediaBridge.isInitialized) {
+            mediaBridge.destroy()
         }
         synchronized(saveStreams) {
             saveStreams.values.forEach { stream -> runCatching { stream.close() } }
@@ -413,6 +454,57 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun emitGallery(payload: JSONObject) {
+        val json = payload.toString()
+        webView.post {
+            runCatching {
+                webView.evaluateJavascript(
+                    "window.__onGallery && window.__onGallery(${JSONObject.quote(json)})",
+                    null
+                )
+            }
+        }
+    }
+
+    private fun emitCamera(payload: JSONObject) {
+        val json = payload.toString()
+        webView.post {
+            runCatching {
+                webView.evaluateJavascript(
+                    "window.__onCamera && window.__onCamera(${JSONObject.quote(json)})",
+                    null
+                )
+            }
+        }
+    }
+
+    private fun requestGallery() {
+        if (mediaBridge.hasPermission()) {
+            mediaBridge.loadGallery()
+        } else {
+            galleryPermissionLauncher.launch(mediaBridge.permissions())
+        }
+    }
+
+    private fun startCamera() {
+        val directory = File(cacheDir, "camera").apply { mkdirs() }
+        val file = File(directory, "photo-${System.currentTimeMillis()}.jpg")
+        cameraFile = file
+        val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
+            putExtra(MediaStore.EXTRA_OUTPUT, uri)
+            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            cameraLauncher.launch(intent)
+        } catch (error: Exception) {
+            Log.w(TAG, "no camera app", error)
+            cameraFile = null
+            file.delete()
+            emitCamera(JSONObject().put("error", "camera_missing"))
+        }
+    }
+
     private fun applyTheme(dark: Boolean, background: String) {
         val color = runCatching { Color.parseColor(background) }
             .getOrDefault(ContextCompat.getColor(this, R.color.window_bg))
@@ -539,6 +631,29 @@ class MainActivity : ComponentActivity() {
         @android.webkit.JavascriptInterface
         fun openFileEnd(token: String, success: Boolean): Boolean =
             attachmentOpener.end(token, success)
+
+        /** 相册：最近照片缩略图与选中后的原图读取 */
+        @android.webkit.JavascriptInterface
+        fun loadGallery() {
+            runOnUiThread { requestGallery() }
+        }
+
+        @android.webkit.JavascriptInterface
+        fun openMedia(id: String): String? = mediaBridge.openMedia(id)
+
+        @android.webkit.JavascriptInterface
+        fun readMediaChunk(token: String): String? = mediaBridge.read(token)
+
+        @android.webkit.JavascriptInterface
+        fun closeMedia(token: String) {
+            mediaBridge.close(token)
+        }
+
+        /** 系统相机；结果通过 __onCamera 回传 token */
+        @android.webkit.JavascriptInterface
+        fun takePhoto() {
+            runOnUiThread { startCamera() }
+        }
 
         /** 页面只会传 Release 里的 HTTPS APK 地址；原生再次校验域名、路径与包签名 */
         @android.webkit.JavascriptInterface

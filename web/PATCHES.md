@@ -98,6 +98,25 @@
 | `android/app/src/main/java/.../AttachmentOpener.kt`（新增） | PDF / 图片写入 `cache/attachments/<uuid>/<原名>`，经 FileProvider 交给系统查看器；24 小时清理、100MB 上限、失败返回 false 由页面回退到保存 |
 | `android/app/src/main/java/.../MainActivity.kt` | `saveBegin` 接收 MIME（自定义 `CreateDocumentContract`）；新增 `openFileBegin/Chunk/End` 桥；退出时关闭未完成的附件流 |
 | `android/app/src/main/res/xml/file_paths.xml` | 暴露 `cache/attachments/` 给系统查看器 |
+| `src/components/base/icons.tsx` | 自动朗读开关改为 24 网格描边喇叭：开启为双声波，关闭为同形喇叭 + 叉号，与参考图的细线风格一致 |
+| `src/components/base/icons.tsx` | 新增圆圈声波 `IconVoiceCircle20` 与圆圈键盘 `IconKeyboardCircle20`，用于语音输入与切回键盘 |
+| `src/components/chatInput/ChatActionButton.tsx` | 空闲态语音入口换成圆圈声波图标；录音 / 转写态保留原光圈反馈 |
+| `src/components/chatInput/useVoiceInput.ts` | 拆出 `start` / `finish`，按住说话按 pointerdown / pointerup 驱动；转写结果仍走原有回调 |
+| `src/components/chatInput/ChatInput.tsx` | 新增按住说话模式：语音按钮切到「按住说话」行与键盘按钮；按住录音、上滑取消、松手转写并直接发送；转写中保持浮层 |
+| `src/components/chatInput/VoiceOverlay.tsx` / `.module.css`（新增） | 录音浮层：底部蓝色（取消时红色）渐变、松手发送 / 上滑取消提示、实时频谱与转写加载态 |
+| `src/components/chatInput/Spectrum.tsx` / `.module.css` | 新增 `overlay` 变体：白色柱体、左右淡出，用于录音浮层 |
+| `src/components/chatInput/voiceOverlayState.ts`（新增） / `src/app/nativeBridge.ts` | 录音浮层计入弹层状态，返回键先取消录音 / 转写再处理下一页 |
+| `src/components/base/icons.tsx` | 新增圆圈加号 `IconPlusCircle20` 与拍照 / 相册 / 文件图标，替换输入框的附件入口 |
+| `src/components/chatInput/AttachmentPanel.tsx` / `.module.css`（新增） | 添加附件面板：最近照片缩略图横排 + 拍照 / 相册 / 文件三个按钮；缩略图过滤掉上传白名单外的格式 |
+| `src/components/chatInput/attachmentPanelState.ts`（新增） / `src/app/nativeBridge.ts` | 附件面板计入弹层状态，返回键先收起面板 |
+| `src/app/media.ts`（新增） | 相册缩略图加载、选中原图分片读取、系统相机拍照的 JS 桥 |
+| `src/components/chatInput/ChatInput.tsx` / `ChatInput.module.css` | 附件按钮改为圆圈加号；面板用 `0fr → 1fr` 网格槽展开，输入框随之上滑；新增只选图片的隐藏 input；点输入框 / 发送 / 录音时收起面板 |
+| `android/app/src/main/java/.../MediaBridge.kt`（新增） | MediaStore 最近照片查询与 160px 缩略图、按 token 分片读原图、相机结果读取 |
+| `android/app/src/main/java/.../MainActivity.kt` / `AndroidManifest.xml` / `res/xml/file_paths.xml` | 相册权限申请（READ_MEDIA_IMAGES / READ_EXTERNAL_STORAGE）、`loadGallery` / `openMedia` / `readMediaChunk` / `takePhoto` 桥、`cache/camera` 拍照输出 |
+| `src/app/App.tsx` | 发现新版本时的提示不再跳 Release 网页，点击整条提示直接打开「设置 → 关于」 |
+| `src/components/base/Toast.tsx` / `.module.css` / `toastState.ts` / `src/i18n/index.ts` | 提示支持应用内动作：带 `onClick` 时整条提示可点、可键盘触发，动作完成后自动收起；文字链接保留原行为 |
+| `src/components/settings/SettingsDialog.tsx` | 设置分组改为状态库驱动，设置已打开时从更新提示跳转也能切到「关于」 |
+| `src/i18n/zh.ts` / `en.ts` | 输入框占位改为「发消息或按住说话」，新增按住说话、松手发送 / 取消、转写中、切换键盘、附件面板、相册权限与拍照失败文案 |
 
 分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与
 Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch。计数实现见 `bpe.ts`。

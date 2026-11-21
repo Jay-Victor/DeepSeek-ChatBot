@@ -14,7 +14,7 @@ import { closeSearchPanel } from '../components/search/searchPanelState.js'
 import { SessionView } from '../components/session/SessionView.js'
 import { MobileHeader } from '../components/session/MobileHeader.js'
 import { Welcome } from '../components/session/Welcome.js'
-import { ensureApiKey } from '../components/settings/settingsDialogState.js'
+import { ensureApiKey, openSettings } from '../components/settings/settingsDialogState.js'
 import { SettingsDialog } from '../components/settings/SettingsDialog.js'
 import { ImageViewer } from '../components/files/ImageViewer.js'
 import { Toast } from '../components/base/Toast.js'
@@ -103,7 +103,8 @@ export const App = () => {
           showToast({
             key: 'updateAvailableToast',
             params: { version: state.release.version },
-            link: { key: 'updateAvailableToastLink', href: state.release.url },
+            // 点提示直接打开「设置 → 关于」，由更新卡片负责下载，不再跳发布网页
+            link: { key: 'updateAvailableToastLink', onClick: () => openSettings('about') },
           })
         }
       })

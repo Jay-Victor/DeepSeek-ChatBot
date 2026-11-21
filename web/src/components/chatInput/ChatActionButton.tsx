@@ -5,6 +5,7 @@ import {
   IconMicOutline16,
   IconSendOutline16,
   IconStopFill16,
+  IconVoiceCircle20,
 } from '../base/icons.js'
 import { Tooltip } from '../base/Tooltip.js'
 import type { VoiceInputStatus } from './useVoiceInput.js'
@@ -82,7 +83,7 @@ export const ChatActionButton = ({
             ) : mode === 'send' ? (
               <IconSendOutline16 />
             ) : (
-              <IconMicOutline16 />
+              <IconVoiceCircle20 />
             )}
           </span>
         </button>
