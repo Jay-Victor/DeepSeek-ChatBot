@@ -24,7 +24,7 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.14（versionCode 15） |
+| 版本 | 0.1.15（versionCode 16） |
 | 体积 | 5.34 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
@@ -61,7 +61,7 @@
 从 [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 下载签名 APK，或：
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.14-release.apk
+adb install -r DeepSeekChatBot-v0.1.15-release.apk
 ```
 
 首次启动在「设置 → 数据管理」填入自己的 DeepSeek API Key；Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
@@ -90,7 +90,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.14-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.15-release.apk
 ```
 
 手动分步：
@@ -175,6 +175,9 @@ v0.1.13 在桌面 Chrome（1280×800 与 390×844 视口）核对压缩功能：
 
 v0.1.14 修复移动端设置四个分组在窄屏或较大字号下文字与图标重叠：导航改为 2×2 网格，不再把每项压缩到内容宽度以下，
 长标签允许换行。390×844 下以 14 / 16 / 22px 字号复验，无重叠；APK 核对 `0.1.14` / `versionCode 15` 与 v2 签名。
+
+v0.1.15 把移动端设置分组改为横向滚动：每个分组按内容宽度排列，字号变大时左右滑动，不再换行或与相邻项重叠。
+390×844 下以 14 / 16 / 22px 字号复验，无重叠；22px 时可横向滚动到「关于」。APK 核对 `0.1.15` / `versionCode 16` 与 v2 签名。
 
 ## 仓库结构
 

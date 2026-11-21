@@ -24,7 +24,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 | | |
 | --- | --- |
 | Application ID | `com.deepseekchatbot` |
-| Version | 0.1.14 (versionCode 15) |
+| Version | 0.1.15 (versionCode 16) |
 | Size | 5.34 MB (release) |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | Native deps | androidx only (webkit / browser / activity / core-splashscreen), no third-party runtime |
@@ -61,7 +61,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 Download the signed APK from [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest), or:
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.14-release.apk
+adb install -r DeepSeekChatBot-v0.1.15-release.apk
 ```
 
 On first launch, add your DeepSeek API key in Settings → Data. The key is written only to the on-device WebView localStorage and is excluded from cloud backup (`allowBackup=false`).
@@ -87,7 +87,7 @@ scripts/build-apk.sh release        # or scripts/build-apk.sh debug
 The script does three things: `pnpm build` inside `web/`, sync `web/dist` into `android/app/src/main/assets/www`, then `./gradlew assembleRelease`. Output:
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.14-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.15-release.apk
 ```
 
 Step by step:
@@ -158,6 +158,8 @@ v0.1.12 fixes page-level pinch zoom: the viewport now sets `maximum-scale=1,user
 v0.1.13 was checked in desktop Chrome at 1280×800 and 390×844: default 50% / 20% and cross-field validation, manual compression 1.59% → 0.59% (19 rounds), the request body (summary in `system`, old rounds removed), undo, one auto-compression attempt when opening a session, compression becoming inactive after regenerating before the covered point and returning when switching back; the APK reports `0.1.13` / `versionCode 14` with a v2 signature. Real-device install, numeric IME and WebView keyboard behaviour await the device check.
 
 v0.1.14 fixes overlapping labels and icons in the four mobile settings tabs on narrow screens or with larger text. The navigation is now a 2×2 grid instead of shrinking each item below its content width, and long labels wrap. Checked at 390×844 with 14 / 16 / 22px text without overlap; the APK reports `0.1.14` / `versionCode 15` with a v2 signature.
+
+v0.1.15 changes the mobile settings tabs to a horizontal scroll strip: each tab keeps its content width, and larger text or longer labels scroll sideways instead of wrapping or overlapping. Checked at 390×844 with 14 / 16 / 22px text without overlap; at 22px the strip scrolls to About. The APK reports `0.1.15` / `versionCode 16` with a v2 signature.
 
 ## Repository layout
 
