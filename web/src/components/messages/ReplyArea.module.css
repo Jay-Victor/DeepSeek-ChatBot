@@ -20,7 +20,7 @@
 .titleIcon {
   display: flex;
   margin-right: 6px;
-  color: var(--dsw-alias-brand-primary);
+  color: var(--dsw-alias-brand-text);
 }
 
 .stoppedIcon {

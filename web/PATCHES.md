@@ -148,7 +148,7 @@
 | `src/i18n/zh.ts` / `en.ts` | 身份声明、顶栏切换、校验与内置方案文案 |
 | `src/i18n/zh.ts` / `en.ts` | 上下文与压缩设置、压缩状态 / 错误 / 分隔条文案 |
 | `src/services/settings.ts` | 新增 `accentHue` / `wallpaperOverlay` / `wallpaperBlur` / `wallpaperKind`，外观设置持久化与范围收口 |
-| `src/app/accent.ts`（新增） | 自定义主题色：按色相生成整套蓝色 ramp（明暗两份），按对比度自动选择主色上的黑 / 白文字；默认不注入样式 |
+| `src/app/accent.ts`（新增） | 自定义主题色：按色相生成整套蓝色 ramp（明暗两份），按对比度自动选择主色上的黑 / 白文字，并单独收口 `brand-text` / `brand-primary-invert` 的页面底色对比度；默认不注入样式 |
 | `src/services/wallpaper.ts`（新增） | 背景媒体：壳内走原生 SAF 桥，浏览器回退到独立 IndexedDB（不碰聊天主库）；启动恢复、移除、错误回落 |
 | `src/app/Wallpaper.tsx` / `.module.css`（新增） | 背景层：图片 / 视频 cover、视频静音循环、切后台暂停、可调蒙层与模糊 |
 | `src/app/App.tsx` / `App.module.css` | frame 内挂载背景层；有壁纸时 frame 透明，侧栏与主内容置于背景之上 |
@@ -157,6 +157,7 @@
 | `src/components/session/SessionView.module.css` | 会话页顶栏与输入框渐变底改用半透明面板色 |
 | `src/components/session/MobileHeader.module.css` | 移动端顶栏使用半透明面板色 |
 | `src/components/chatInput/ChatInput.module.css` | 输入框底色改用半透明输入框色 |
+| `src/components/sider/Sider.module.css` / `messages/ReplyArea.module.css` / `chatInput/ContextUsageRing.module.css` / `messages/ReadingBars.module.css` | 画在页面底色上的主色文字 / 图标 / 环 / 波形改用 `--dsw-alias-brand-text`，避免浅色主题色下对比度不足 |
 | `src/components/base/Segmented.tsx` / `.module.css`（新增） | 分段控制器：等分排列、选中浮起、方向键 / Home / End 切换 |
 | `src/components/base/Slider.tsx` / `.module.css`（新增） | 设置滑杆：数值、说明、彩虹色相轨道、实时进度与触控尺寸 |
 | `src/components/settings/AppearanceSetting.tsx` / `.module.css`（新增） | 「外观」分组：图片 / 视频切换、预览、移除 / 选择、蒙层、模糊、色相主题色与恢复默认 |

@@ -309,7 +309,7 @@
 }
 
 .playing .bar {
-  fill: var(--dsw-alias-brand-primary);
+  fill: var(--dsw-alias-brand-text);
 }
 
 @keyframes tts-settle {

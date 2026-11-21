@@ -68,12 +68,35 @@ const foregroundFor = (hue: number, lightness: number): string => {
   return contrast(background, white) >= contrast(background, black) ? '#ffffff' : '#1b1b1c'
 }
 
-const declarations = (hue: number, primaryLightness: number): string =>
+/** 页面底色：浅色纯白、深色 #151517 */
+const WHITE_LUMINANCE = luminance({ r: 255, g: 255, b: 255 })
+const DARK_LUMINANCE = luminance({ r: 21, g: 21, b: 23 })
+
+/** 链接 / 强调文字在页面底色上至少 4.5:1；极黄、极绿会变暗或变亮到可读 */
+const brandTextFor = (hue: number, dark: boolean): string => {
+  const background = dark ? DARK_LUMINANCE : WHITE_LUMINANCE
+  let lightness = dark ? 70 : 61
+  const step = dark ? 1 : -1
+  while (
+    lightness > 0 &&
+    lightness < 100 &&
+    contrast(luminance(hslToRgb(hue, 99, lightness)), background) < 4.5
+  ) {
+    lightness += step
+  }
+  return `hsl(${hue},99%,${lightness}%)`
+}
+
+const declarations = (hue: number, primaryLightness: number, dark: boolean): string =>
   Object.entries(RAMP)
     .map(([token, [saturation, lightness]]) => {
       return `--dsw-static-blue-${token}:hsl(${hue},${saturation}%,${lightness}%);`
     })
-    .join('') + `--dsw-alias-label-primary-foreground:${foregroundFor(hue, primaryLightness)};`
+    .join('') +
+  `--dsw-alias-label-primary-foreground:${foregroundFor(hue, primaryLightness)};` +
+  `--dsw-alias-brand-text:${brandTextFor(hue, dark)};` +
+  // 侧栏选中项文字画在浅色 accent 底上；深色模式本来就是白字
+  (dark ? '' : `--dsw-alias-brand-primary-invert:${brandTextFor(hue, false)};`)
 
 /**
  * 自定义主题色：覆盖上游整套蓝色 ramp（浅色与深色各一份），
@@ -88,8 +111,8 @@ export const applyAccent = (hue: number | null) => {
   const style = existing ?? document.createElement('style')
   style.id = STYLE_ID
   style.textContent =
-    `body{${declarations(hue, 61)}}` +
-    `body[data-ds-dark-theme]{${declarations(hue, 67)}}`
+    `body{${declarations(hue, 61, false)}}` +
+    `body[data-ds-dark-theme]{${declarations(hue, 67, true)}}`
   if (!existing) {
     document.head.appendChild(style)
   }
