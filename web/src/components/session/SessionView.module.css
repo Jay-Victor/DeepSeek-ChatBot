@@ -9,6 +9,7 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  gap: 8px;
   height: 60px;
   padding: 12px 18px 0;
   box-sizing: border-box;
@@ -17,6 +18,7 @@
 
 .title {
   max-width: 480px;
+  min-width: 0;
   padding: 8px 12px;
   overflow: hidden;
   white-space: nowrap;

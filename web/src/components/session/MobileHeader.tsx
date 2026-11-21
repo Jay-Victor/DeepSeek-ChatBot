@@ -10,6 +10,7 @@ import { setAutoReadAloud, useSettings } from '../../services/settings.js'
 import { stopReadAloud } from '../../services/speech/readAloud.js'
 import { IconButton } from '../base/IconButton.js'
 import { showToast } from '../base/toastState.js'
+import { IdentitySwitcher } from './IdentitySwitcher.js'
 import { openMobileSider } from '../sider/mobileSiderState.js'
 import styles from './MobileHeader.module.css'
 
@@ -23,9 +24,18 @@ const HINT_DURATION = 1600
 export const MobileHeader = ({
   title,
   autoRead = false,
+  sessionId,
+  identityId,
+  showIdentity = true,
 }: {
   title?: string
   autoRead?: boolean
+  /** 会话页传入：切换只改这个会话 */
+  sessionId?: string
+  /** 会话使用的身份；缺省表示内置身份 */
+  identityId?: string
+  /** 会话加载中还没有身份可显示时隐藏切换器 */
+  showIdentity?: boolean
 }) => {
   const t = useTranslate()
   const autoReadOn = useSettings((state) => state.autoReadAloud)
@@ -49,6 +59,9 @@ export const MobileHeader = ({
         aria-label={t('expandSiderbarButton')}
         onClick={openMobileSider}
       />
+      {showIdentity ? (
+        <IdentitySwitcher sessionId={sessionId} identityId={identityId} />
+      ) : null}
       <div className={styles.title}>{title ?? ''}</div>
       <div className={styles.actions}>
         {autoRead ? (

@@ -137,6 +137,8 @@ export type Session = {
   rootMessageId?: string | null
   /** 较早对话的压缩摘要；缺省表示完整上下文 */
   compression?: ContextCompression
+  /** 使用的身份声明；缺省表示内置身份（本功能之前的旧会话） */
+  identityId?: string
 }
 
 /** 会话列表元数据；消息只在打开会话时加载。 */

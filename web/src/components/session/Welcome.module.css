@@ -4,6 +4,13 @@
   display: flex;
 }
 
+.identityCorner {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+}
+
 .welcome {
   display: flex;
   flex-direction: column;

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslate, type TranslationKey } from '../../i18n/index.js'
 import { useSettings } from '../../services/settings.js'
+import { useIdentities } from '../../services/identity.js'
 import { useChatStore } from '../../services/chat/store.js'
 import {
   cancelCompression,
@@ -60,6 +61,8 @@ export const ContextUsageRing = ({ sessionId }: { sessionId: string }) => {
   const session = useChatStore((state) => state.sessionCache[sessionId])
   const streaming = useChatStore((state) => Object.hasOwn(state.streaming, sessionId))
   const active = useChatStore((state) => state.activeId === sessionId)
+  // 身份方案的姓名/设定改动会影响系统提示 token，订阅数组以触发重新统计
+  const identities = useIdentities((state) => state.profiles)
   const running = useCompression((state) => state.running[sessionId])
   const [usage, setUsage] = useState<ContextUsage | null>(null)
   const [open, setOpen] = useState(false)
@@ -108,7 +111,7 @@ export const ContextUsageRing = ({ sessionId }: { sessionId: string }) => {
         window.clearTimeout(timer)
       }
     }
-  }, [session, streaming])
+  }, [session, streaming, identities])
 
   // 自动压缩：只在当前会话、超过阈值、没有生成/压缩任务时尝试一次
   useEffect(() => {

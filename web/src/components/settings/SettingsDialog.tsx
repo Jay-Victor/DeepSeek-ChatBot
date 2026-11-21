@@ -6,6 +6,7 @@ import {
   IconDataOutline16,
   IconDownloadOutline16,
   IconFollowsystemOutline16,
+  IconIdentityOutline16,
   IconInfoOutline16,
   IconLightOutline16,
   IconSettingsOutline16,
@@ -44,6 +45,7 @@ import { Switch } from '../base/Switch.js'
 import { showToast } from '../base/toastState.js'
 import { ApiKeyConfirm, ApiKeyField, useApiKeyEditor } from './ApiKeyField.js'
 import { AboutSetting } from './AboutSetting.js'
+import { IdentitySetting } from './IdentitySetting.js'
 import { closeSettings, useSettingsDialog, type SettingsSection } from './settingsDialogState.js'
 import styles from './Settings.module.css'
 
@@ -61,6 +63,11 @@ const sections: { value: SettingsSection; label: TranslationKey; icon: ReactNode
     value: 'general',
     label: 'settingDialogAsideGeneralOptionLabel',
     icon: <IconSettingsOutline16 />,
+  },
+  {
+    value: 'identity',
+    label: 'settingDialogAsideIdentityOptionLabel',
+    icon: <IconIdentityOutline16 />,
   },
   {
     value: 'context',
@@ -120,6 +127,8 @@ const SettingsContent = () => {
               <LocationSetting />
               <AutoCollapseThinkingSetting />
             </>
+          ) : section === 'identity' ? (
+            <IdentitySetting />
           ) : section === 'context' ? (
             <ContextCompressionSetting />
           ) : section === 'data' ? (

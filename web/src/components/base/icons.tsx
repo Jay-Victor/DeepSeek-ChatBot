@@ -295,6 +295,24 @@ export const IconContextOutline16 = () => (
   </svg>
 )
 
+/** 身份声明：人像剪影，与设置里的身份分组对应 */
+export const IconIdentityOutline16 = () => (
+  <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M8 1.75a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm-1.5 3a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"
+      fill="currentColor"
+    />
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M8 8.75c-3.2 0-5.5 2.05-5.5 4.5 0 .41.34.75.75.75h9.5c.41 0 .75-.34.75-.75 0-2.45-2.3-4.5-5.5-4.5Zm-3.94 3.75c.32-1.32 1.9-2.25 3.94-2.25s3.62.93 3.94 2.25H4.06Z"
+      fill="currentColor"
+    />
+  </svg>
+)
+
 export const IconThinkOutline14 = () => (
   <svg width={14} height={14} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path

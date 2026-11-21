@@ -1,7 +1,7 @@
 import type { AssistantMessage, Message, Session, UserMessage } from '../chat/types.js'
 import { getCompressionCut, getVisibleMessages } from '../chat/branches.js'
 import { getContextRounds } from '../chat/reply.js'
-import { SYSTEM_PROMPT } from '../chat/store.js'
+import { getIdentityPrompt } from '../identity.js'
 import { loadTokenCounter, type TokenCounter } from './index.js'
 
 /**
@@ -86,7 +86,7 @@ export const computeContextUsage = async (session: Session): Promise<ContextUsag
   }
 
   const count = await loadTokenCounter()
-  const systemTokens = count(SYSTEM_PROMPT)
+  const systemTokens = count(getIdentityPrompt(session.identityId))
   const summaryTokens = cut ? count(cut.compression.summary) : 0
   let total = systemTokens + summaryTokens
   let attachments = false

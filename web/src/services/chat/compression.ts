@@ -8,10 +8,10 @@ import {
   countMessageTokens,
 } from '../tokenizer/contextUsage.js'
 import { loadTokenCounter } from '../tokenizer/index.js'
+import { getIdentityPrompt } from '../identity.js'
 import { getCompressionCut, getVisibleMessages } from './branches.js'
 import { getContextRounds, getReplyText } from './reply.js'
 import {
-  SYSTEM_PROMPT,
   getSessionSnapshot,
   holdSessionForCompression,
   releaseSessionForCompression,
@@ -283,7 +283,7 @@ export const compressSession = async (
   }
 
   const count = await loadTokenCounter()
-  const systemTokens = count(SYSTEM_PROMPT)
+  const systemTokens = count(getIdentityPrompt(session.identityId))
   // 目标 = 保留最近轮次 + 摘要；先扣掉服务端开销与摘要预留
   const budget =
     (compressTarget / 100) * CONTEXT_WINDOW - usage.overhead - systemTokens - SUMMARY_RESERVE

@@ -36,7 +36,7 @@
 | `src/services/tokenizer/contextUsage.ts`（新增） | 复用 `getContextRounds` 重建当前分支上下文，按消息对象缓存；用最近一次 `usage.prompt` 校准模板与附件开销；窗口固定 1M |
 | `src/components/chatInput/ContextUsageRing.tsx` / `.module.css`（新增） | 输入框功能行右侧的圆形占用环；桌面与移动端点击都打开详情浮层 |
 | `src/components/chatInput/ChatInput.tsx` | 在 `.right` 中加入占用环（仅会话页） |
-| `src/services/chat/store.ts` | 导出 `SYSTEM_PROMPT` 供统计复用，值不变 |
+| `src/services/chat/store.ts` | 导出 `SYSTEM_PROMPT` 供统计复用（身份声明功能接入后改由 `identity.ts` 按会话解析） |
 | `src/i18n/zh.ts` / `en.ts` | 占用环、详情与估算提示的中英文案 |
 | `rspack.config.ts` / `src/env.d.ts` | `.txt` 走 `asset/resource`；声明 `*.txt` 模块 |
 | `package.json` | 新增 `tokenizer:build` / `tokenizer:verify` 脚本 |
@@ -130,7 +130,22 @@
 | `src/components/chatInput/ContextUsageRing.tsx` / `.module.css` / `.css.d.ts` | 占用卡片新增压缩按钮 / 进度 / 取消 / 摘要展开 / 撤销；自动压缩触发；`maxHeight` 防溢出 |
 | `src/components/messages/CompressionDivider.tsx` / `.module.css` / `.css.d.ts`（新增） | 消息列表的「已压缩 N 轮」分隔条与摘要展开 |
 | `src/components/messages/MessageList.tsx` | 在覆盖点后的第一条消息前插入分隔条，保留原有滚动与版本切换逻辑 |
-| `src/components/base/icons.tsx` | 新增 `IconContextOutline16` |
+| `src/components/base/icons.tsx` | 新增 `IconContextOutline16`；身份声明接入后新增 `IconIdentityOutline16` |
+| `src/services/identity.ts`（新增） | 身份声明方案：localStorage 读写、内置方案、增删改、默认方案、按 id 解析并拼成 `你是{姓名}。{设定}`；最多 20 套 |
+| `src/services/chat/types.ts` | `Session.identityId`：当前会话使用的身份方案；缺省表示内置身份（旧会话） |
+| `src/services/chat/store.ts` | 新会话写入默认身份；请求的 `system` 改为按当前会话解析；新增 `setSessionIdentity`（只改当前会话、不改变排序） |
+| `src/services/tokenizer/contextUsage.ts` | 「系统与模板」按当前会话的身份声明计数 |
+| `src/services/chat/compression.ts` | 压缩预算按当前会话的身份声明扣除 |
+| `src/components/session/IdentitySwitcher.tsx` / `.module.css`（新增） | 顶栏身份切换器：姓名 + 箭头，菜单列出方案、当前项打勾、管理入口；移动端与桌面共用 |
+| `src/components/session/identitySwitcherState.ts`（新增） | 切换器开合状态（带 owner），并登记到原生返回键的弹层白名单 |
+| `src/components/session/MobileHeader.tsx` | 菜单按钮右侧插入切换器；加载页隐藏 |
+| `src/components/session/SessionView.tsx` / `.module.css` | 移动端传入会话身份；桌面标题旁显示切换器，标题可收缩 |
+| `src/components/session/Welcome.tsx` / `.module.css` | 桌面右上角显示切换器；移动端沿用顶栏 |
+| `src/components/settings/IdentitySetting.tsx` / `.module.css`（新增） | 身份声明分组：方案列表、新建 / 编辑 / 删除、默认方案、字数校验与内置方案恢复 |
+| `src/components/settings/SettingsDialog.tsx` / `settingsDialogState.ts` | 新增第 5 个分组「身份声明」 |
+| `src/app/nativeBridge.ts` | 身份切换菜单打开时同步弹层状态，返回键先关闭菜单 |
+| `src/components/chatInput/ContextUsageRing.tsx` | 身份方案改动后重新统计上下文占用 |
+| `src/i18n/zh.ts` / `en.ts` | 身份声明、顶栏切换、校验与内置方案文案 |
 | `src/i18n/zh.ts` / `en.ts` | 上下文与压缩设置、压缩状态 / 错误 / 分隔条文案 |
 
 分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与

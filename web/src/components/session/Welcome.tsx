@@ -1,6 +1,7 @@
 import { useIsMobile } from '../../app/viewport.js'
 import { useTranslate } from '../../i18n/index.js'
 import { ChatInput } from '../chatInput/ChatInput.js'
+import { IdentitySwitcher } from './IdentitySwitcher.js'
 import { MobileHeader } from './MobileHeader.js'
 import styles from './Welcome.module.css'
 
@@ -11,6 +12,11 @@ export const Welcome = () => {
   return (
     <div className={styles.container}>
       {isMobile ? <MobileHeader /> : null}
+      {!isMobile ? (
+        <div className={styles.identityCorner}>
+          <IdentitySwitcher variant="desktop" />
+        </div>
+      ) : null}
       <div className={styles.welcome}>
         <div className={styles.greeting}>{t('welcomeMessageChat250808')}</div>
         <ChatInput sessionId={null} />

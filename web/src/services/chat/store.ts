@@ -12,6 +12,7 @@ import {
 } from '../attachments.js'
 import { maybeAutoReadReply } from '../speech/autoRead.js'
 import { useSettings } from '../settings.js'
+import { getDefaultIdentityId, getIdentityPrompt, hasIdentity } from '../identity.js'
 import { appendBranch, getVisibleMessages, normalizeSession, selectVersion, splitCompressedHistory } from './branches.js'
 import * as db from './db.js'
 import {
@@ -44,8 +45,6 @@ import {
 
 /** deepseek-flash 同时支持深度思考与图片输入 */
 const MODEL: ChatModel = 'deepseek-flash'
-/** 所有生成请求统一携带的助手身份说明 */
-export const SYSTEM_PROMPT = '该助手为DeepSeek，由深度求索公司创造。'
 /** 保留最近打开的详情；当前会话、生成中及尚未成功保存的会话不淘汰。 */
 const SESSION_CACHE_LIMIT = 5
 /** 安全审核固定开启，所有请求都走扩展模式 */
@@ -494,6 +493,23 @@ export const newChat = () => {
   }
 }
 
+/** 切换当前会话使用的身份声明；只影响之后的请求，不改变会话排序 */
+export const setSessionIdentity = (sessionId: string, identityId: string) => {
+  if (!hasIdentity(identityId)) {
+    return false
+  }
+  const session = getSession(sessionId)
+  if (!session) {
+    return false
+  }
+  if (session.identityId === identityId) {
+    return true
+  }
+  updateSession(sessionId, (current) => ({ ...current, identityId }))
+  persist(sessionId)
+  return true
+}
+
 export const selectSession = (id: string) => {
   if (!get().importingHistory && get().sessions.some((session) => session.id === id)) {
     touchSession(id)
@@ -646,6 +662,7 @@ export const sendMessage = (targetSessionId: string | null) => {
       updatedAt: now,
       messages: [],
       rootMessageId: null,
+      identityId: getDefaultIdentityId(),
     }
     sessionId = session.id
     touchSession(session.id)
@@ -1113,7 +1130,10 @@ const streamReply = async (sessionId: string, initial: AssistantMessage, request
           useSettings.getState().apiKey ?? '',
           {
             model: initial.model ?? MODEL,
-            system: buildSystemPrompt(SYSTEM_PROMPT, prepared.compression?.summary),
+            system: buildSystemPrompt(
+              getIdentityPrompt(getSession(sessionId)?.identityId),
+              prepared.compression?.summary
+            ),
             messages,
             thinking: { type: initial.thinking ? 'enabled' : 'disabled' },
             safety_check: SAFETY_CHECK,
