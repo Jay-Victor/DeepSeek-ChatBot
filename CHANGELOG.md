@@ -5,6 +5,21 @@
 
 ## [Unreleased]
 
+## [0.1.16] - 2026-11-21
+
+### 新增
+
+- 设置新增「身份声明」：可创建多套方案，每套由姓名与设定组成，发送时拼成「你是{姓名}。{设定}」作为系统提示；内置方案可编辑、不可删除，最多 20 套
+- 聊天页顶栏新增身份切换器：移动端在菜单按钮右侧，桌面在会话标题旁；每个会话单独记录所用方案，切换只影响之后的请求
+- 新会话继承「身份声明」里选定的默认方案；欢迎页切换的是新会话默认方案
+- 上下文占用的「系统与模板」与压缩预算改为按当前会话的身份声明统计
+
+### 变更
+
+- 原来固定的系统提示由当前会话的身份声明替代
+- 设置分组增加到五个，「身份声明」排在「通用设置」之后
+- 身份声明是设备级设置，不随 ZIP 历史导出 / 导入迁移；导入的会话回到内置身份，新建会话使用设置里的默认方案
+
 ## [0.1.15] - 2026-11-21
 
 ### 变更
@@ -180,7 +195,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.15...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.16...HEAD
+[0.1.16]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.16
 [0.1.15]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.15
 [0.1.14]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.14
 [0.1.13]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.13

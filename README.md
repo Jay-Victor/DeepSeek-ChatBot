@@ -24,8 +24,8 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.15（versionCode 16） |
-| 体积 | 5.34 MB（release） |
+| 版本 | 0.1.16（versionCode 17） |
+| 体积 | 5.35 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
 | 构建工具链 | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
@@ -55,13 +55,14 @@
 - **会话三点菜单**：置顶 / 取消置顶、多选
 - **设置与关于**：思考内容自动折叠、上下文占用环（DeepSeek-V4 分词器，1M 窗口）、版本与更新检查、应用内下载安装
 - **上下文与压缩**：设置里可开启自动压缩并设置压缩阈值 / 目标（默认 50% / 20%）；占用卡片可手动「压缩对话」，查看进度与摘要、随时撤销；消息列表在覆盖点显示「已压缩」分隔条
+- **身份声明**：设置里可创建多套方案（姓名 + 设定），聊天页顶栏按会话切换；新会话继承默认方案，系统提示、占用统计与压缩预算同步使用所选身份
 
 ## 快速开始
 
 从 [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 下载签名 APK，或：
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.15-release.apk
+adb install -r DeepSeekChatBot-v0.1.16-release.apk
 ```
 
 首次启动在「设置 → 数据管理」填入自己的 DeepSeek API Key；Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
@@ -90,7 +91,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.15-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.16-release.apk
 ```
 
 手动分步：
@@ -145,6 +146,7 @@ KEYSTORE_FILE / KEYSTORE_PASSWORD / KEYSTORE_ALIAS / KEY_PASSWORD
 - **压缩只覆盖当前分支**：在覆盖点之前重新生成、编辑提问或切换分支会让摘要自动失效；单条摘要记录，在另一条分支再压缩会覆盖前一条
 - **ZIP 导入导出不携带压缩摘要**：归档格式与上游一致，导入后回到完整上下文
 - **压缩目标是软目标**：最近一轮本身超过目标时，压缩后仍可能高于目标
+- **身份声明不随 ZIP 迁移**：身份方案是设备级设置；导入的历史会话回到内置身份，新建会话使用当前默认方案
 - 没有 iOS 版本：同样六类能力在 iOS 上要另写一份
 
 ## 验证状态
@@ -178,6 +180,12 @@ v0.1.14 修复移动端设置四个分组在窄屏或较大字号下文字与图
 
 v0.1.15 把移动端设置分组改为横向滚动：每个分组按内容宽度排列，字号变大时左右滑动，不再换行或与相邻项重叠。
 390×844 下以 14 / 16 / 22px 字号复验，无重叠；22px 时可横向滚动到「关于」。APK 核对 `0.1.15` / `versionCode 16` 与 v2 签名。
+
+v0.1.16 在桌面 Chrome（390×844、360×800、1280×800）核对身份声明：多套方案的新建 / 编辑 / 删除、
+默认方案切换、内置方案不可删除、空姓名与超长姓名校验；两个会话可分别使用不同方案并在刷新后保持，
+删除正在使用的方案后回落到内置身份；抓取请求体确认 `system` 为当前会话的 `你是{姓名}。{设定}`；
+长身份下占用卡片的「系统与模板」随身份变化；mock 原生桥确认菜单打开时 `setOverlay(true)`、
+返回键先关闭菜单。APK 核对 `0.1.16` / `versionCode 17` 与 v2 签名。
 
 ## 仓库结构
 
