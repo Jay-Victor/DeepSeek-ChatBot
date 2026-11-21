@@ -54,6 +54,11 @@ declare const styles: {
   readonly "aboutError": string;
   readonly "aboutLinks": string;
   readonly "aboutActionLink": string;
+  readonly "percentField": string;
+  readonly "percentInput": string;
+  readonly "percentInvalid": string;
+  readonly "percentSuffix": string;
+  readonly "contextNote": string;
 };
 export = styles;
 

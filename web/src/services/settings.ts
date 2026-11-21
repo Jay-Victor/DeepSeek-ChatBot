@@ -7,7 +7,7 @@ export type Locale = 'zh-CN' | 'en-US'
 /** 主题偏好；默认跟随系统 */
 export type ThemePreference = 'light' | 'dark' | 'system'
 
-/** 本机设置，存 localStorage：API Key、语言、主题、位置、朗读音色、深度思考与智能搜索开关、侧边栏收起状态、自动检查更新、思考内容自动折叠 */
+/** 本机设置，存 localStorage：API Key、语言、主题、位置、朗读音色、深度思考与智能搜索开关、侧边栏收起状态、自动检查更新、思考内容自动折叠、自动朗读、上下文压缩 */
 type Settings = {
   apiKey: string | null
   locale: Locale
@@ -20,6 +20,12 @@ type Settings = {
   autoCheckUpdates: boolean
   autoCollapseThinking: boolean
   autoReadAloud: boolean
+  /** 上下文占用超过阈值时自动摘要较早的对话 */
+  autoCompress: boolean
+  /** 触发自动压缩的上下文占比（百分数，1–99） */
+  compressThreshold: number
+  /** 压缩后希望达到的上下文占比（百分数，1–99，必须小于阈值） */
+  compressTarget: number
 }
 
 const KEYS = {
@@ -34,6 +40,9 @@ const KEYS = {
   autoCheckUpdates: 'chat-demo:auto-check-updates',
   autoCollapseThinking: 'chat-demo:auto-collapse-thinking',
   autoReadAloud: 'chat-demo:auto-read-aloud',
+  autoCompress: 'chat-demo:auto-compress',
+  compressThreshold: 'chat-demo:compress-threshold',
+  compressTarget: 'chat-demo:compress-target',
 } as const
 
 const read = (key: string) => {
@@ -93,6 +102,34 @@ const initialThemePreference = (): ThemePreference => {
 /** 未保存过时使用服务端默认音色 stella（海星） */
 const initialTtsVoice = (): TtsVoice => (read(KEYS.ttsVoice) === 'tide' ? 'tide' : 'stella')
 
+const PERCENT_MIN = 1
+const PERCENT_MAX = 99
+
+/** 设置项里的占比统一存百分数整数；越界或损坏时回退到默认值 */
+export const clampCompressPercent = (value: number, fallback: number): number =>
+  Number.isFinite(value)
+    ? Math.min(PERCENT_MAX, Math.max(PERCENT_MIN, Math.round(value)))
+    : fallback
+
+/** localStorage 里没有值时不能把 null 当成 0，否则默认值会被压到下限 */
+const readCompressPercent = (key: string, fallback: number): number => {
+  const saved = read(key)
+  if (saved === null || saved.trim() === '') {
+    return fallback
+  }
+  return clampCompressPercent(Number(saved), fallback)
+}
+
+/** 阈值至少为 2，保证目标仍能取到 1 */
+const initialCompressThreshold = (): number =>
+  Math.max(2, readCompressPercent(KEYS.compressThreshold, 50))
+
+/** 目标必须严格小于阈值；读取时若已不满足（例如手改过 localStorage），向下收口 */
+const initialCompressTarget = (): number => {
+  const value = readCompressPercent(KEYS.compressTarget, 20)
+  return Math.min(value, initialCompressThreshold() - 1)
+}
+
 export const useSettings = create<Settings>(() => ({
   apiKey: read(KEYS.apiKey),
   locale: initialLocale(),
@@ -108,6 +145,10 @@ export const useSettings = create<Settings>(() => ({
   autoCollapseThinking: read(KEYS.autoCollapseThinking) === 'true',
   // 自动朗读默认关闭，由顶栏开关主动打开
   autoReadAloud: read(KEYS.autoReadAloud) === 'true',
+  // 自动压缩默认关闭，避免未预期地产生摘要请求
+  autoCompress: read(KEYS.autoCompress) === 'true',
+  compressThreshold: initialCompressThreshold(),
+  compressTarget: initialCompressTarget(),
 }))
 
 export const setLocale = (locale: Locale) => {
@@ -164,4 +205,31 @@ export const setAutoCollapseThinking = (autoCollapseThinking: boolean) => {
 export const setAutoReadAloud = (autoReadAloud: boolean) => {
   write(KEYS.autoReadAloud, String(autoReadAloud))
   useSettings.setState({ autoReadAloud })
+}
+
+export const setAutoCompress = (autoCompress: boolean) => {
+  write(KEYS.autoCompress, String(autoCompress))
+  useSettings.setState({ autoCompress })
+}
+
+/** 阈值下调到目标以下时，把目标一并收口，保证始终“目标 < 阈值” */
+export const setCompressThreshold = (value: number) => {
+  const compressThreshold = Math.max(
+    2,
+    clampCompressPercent(value, useSettings.getState().compressThreshold)
+  )
+  const compressTarget = Math.min(useSettings.getState().compressTarget, compressThreshold - 1)
+  write(KEYS.compressThreshold, String(compressThreshold))
+  write(KEYS.compressTarget, String(compressTarget))
+  useSettings.setState({ compressThreshold, compressTarget })
+}
+
+export const setCompressTarget = (value: number) => {
+  const compressThreshold = useSettings.getState().compressThreshold
+  const compressTarget = Math.min(
+    clampCompressPercent(value, useSettings.getState().compressTarget),
+    compressThreshold - 1
+  )
+  write(KEYS.compressTarget, String(compressTarget))
+  useSettings.setState({ compressTarget })
 }

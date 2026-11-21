@@ -275,6 +275,26 @@ export const IconInfoOutline16 = () => (
   </svg>
 )
 
+/** 上下文占用环：与输入框里的占用环呼应 */
+export const IconContextOutline16 = () => (
+  <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M8 1.25a6.75 6.75 0 1 0 6.75 6.75h-1.5A5.25 5.25 0 1 1 8 2.75v-1.5Z"
+      fill="currentColor"
+    />
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M8 4.5a3.5 3.5 0 1 0 3.5 3.5h-1.5A2 2 0 1 1 8 6V4.5Z"
+      fill="currentColor"
+    />
+    <path
+      d="M9.75 1.25h-1.5v3.1L6.9 3 5.84 4.06 8 6.22l2.16-2.16L9.1 3l-.65.65v-2.4Z"
+      fill="currentColor"
+    />
+  </svg>
+)
+
 export const IconThinkOutline14 = () => (
   <svg width={14} height={14} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path

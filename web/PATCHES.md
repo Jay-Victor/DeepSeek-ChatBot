@@ -118,6 +118,20 @@
 | `src/components/base/Toast.tsx` / `.module.css` / `toastState.ts` / `src/i18n/index.ts` | 提示支持应用内动作：带 `onClick` 时整条提示可点、可键盘触发，动作完成后自动收起；文字链接保留原行为 |
 | `src/components/settings/SettingsDialog.tsx` | 设置分组改为状态库驱动，设置已打开时从更新提示跳转也能切到「关于」 |
 | `src/i18n/zh.ts` / `en.ts` | 输入框占位改为「发消息或按住说话」，新增按住说话、松手发送 / 取消、转写中、切换键盘、附件面板、相册权限与拍照失败文案 |
+| `src/services/chat/types.ts` | `Session.compression` 与 `ContextCompression`：摘要、覆盖到的 assistant、累计轮数 / token；缺省表示完整上下文 |
+| `src/services/chat/branches.ts` | 新增 `getCompressionCut` / `splitCompressedHistory`：按 `throughMessageId` 判断摘要是否在当前分支，并按覆盖点裁剪请求历史 |
+| `src/services/chat/reply.ts` | 新增 `buildSystemPrompt`：把摘要放进 system 的 `<earlier_conversation_summary>` 段，不伪造消息轮次 |
+| `src/services/chat/store.ts` | 五处请求入口按压缩切点裁剪历史；`setSessionCompression` / `getSessionSnapshot`；压缩不改 `updatedAt` |
+| `src/services/chat/compression.ts`（新增） | 压缩规划（目标预算、至少保留一轮）、8 万 token 分块滚动摘要、进度 / 取消 / 撤销、自动压缩冷却与写入前路径校验 |
+| `src/services/tokenizer/contextUsage.ts` | 跳过被覆盖轮次、统计摘要 token、导出 `countMessageTokens`；占用卡片新增 `summary` / `compression` |
+| `src/services/settings.ts` | 新增 `autoCompress` / `compressThreshold` / `compressTarget`；百分数校验与「目标 < 阈值」收口 |
+| `src/components/settings/settingsDialogState.ts` | 设置分组新增 `context` |
+| `src/components/settings/SettingsDialog.tsx` / `Settings.module.css` / `.css.d.ts` | 新增「上下文与压缩」分组、百分比输入、交叉校验与窗口换算预览 |
+| `src/components/chatInput/ContextUsageRing.tsx` / `.module.css` / `.css.d.ts` | 占用卡片新增压缩按钮 / 进度 / 取消 / 摘要展开 / 撤销；自动压缩触发；`maxHeight` 防溢出 |
+| `src/components/messages/CompressionDivider.tsx` / `.module.css` / `.css.d.ts`（新增） | 消息列表的「已压缩 N 轮」分隔条与摘要展开 |
+| `src/components/messages/MessageList.tsx` | 在覆盖点后的第一条消息前插入分隔条，保留原有滚动与版本切换逻辑 |
+| `src/components/base/icons.tsx` | 新增 `IconContextOutline16` |
+| `src/i18n/zh.ts` / `en.ts` | 上下文与压缩设置、压缩状态 / 错误 / 分隔条文案 |
 
 分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与
 Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch。计数实现见 `bpe.ts`。

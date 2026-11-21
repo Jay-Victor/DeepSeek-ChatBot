@@ -345,3 +345,12 @@ export const toRequestMessages = (
 /** 思考用时（秒），至少 1 秒 */
 export const getThinkingSeconds = (startedAt: number, endedAt: number) =>
   Math.max(1, Math.round((endedAt - startedAt) / 1000))
+
+/**
+ * 有压缩摘要时附加到 system：摘要是“已经发生的对话背景”，不伪造 user / assistant 轮次，
+ * 避免破坏角色交替、模板识别与续写位置。
+ */
+export const buildSystemPrompt = (system: string, summary?: string): string =>
+  summary?.trim()
+    ? `${system}\n\n<earlier_conversation_summary>\n以下内容是本次会话较早部分的摘要，请在回答时把它当作已经发生的对话背景：\n${summary.trim()}\n</earlier_conversation_summary>`
+    : system

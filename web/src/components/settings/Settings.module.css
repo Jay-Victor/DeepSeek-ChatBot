@@ -311,10 +311,12 @@
   }
 
   .navItem {
-    flex: 1 0 auto;
+    flex: 1 1 auto;
     justify-content: center;
     width: auto;
-    min-width: 108px;
+    min-width: 0;
+    padding-right: 8px;
+    padding-left: 8px;
     margin: 0;
     white-space: nowrap;
 
@@ -631,4 +633,51 @@
   .aboutBrand {
     padding: 12px 0 18px;
   }
+}
+
+/* 上下文与压缩：百分比输入与说明 */
+.percentField {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.percentInput {
+  box-sizing: border-box;
+  width: 58px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  background-color: var(--dsw-specific-login-input);
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  outline: none;
+  transition: border-color var(--ds-transition-duration) var(--ds-ease-in-out);
+}
+
+.percentInput:focus {
+  border-color: var(--dsw-alias-brand-primary);
+}
+
+.percentInvalid {
+  border-color: var(--dsw-alias-state-error-primary);
+}
+
+.percentSuffix {
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+}
+
+.contextNote {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background-color: var(--dsw-alias-bg-skeleton);
+  color: var(--dsw-alias-label-caption);
+  font-size: 12px;
+  line-height: 1.6;
 }

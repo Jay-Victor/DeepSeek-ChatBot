@@ -1,6 +1,7 @@
 import clsx from 'clsx'
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
+  IconContextOutline16,
   IconDarkOutline16,
   IconDataOutline16,
   IconDownloadOutline16,
@@ -21,8 +22,12 @@ import { saveBlob } from '../../app/native.js'
 import { useChatStore } from '../../services/chat/store.js'
 import { regionCodes, getRegionName, provinces } from '../../services/location.js'
 import {
+  clampCompressPercent,
   isChineseBrowser,
   setAutoCollapseThinking,
+  setAutoCompress,
+  setCompressTarget,
+  setCompressThreshold,
   setLocale,
   setLocation,
   setThemePreference,
@@ -30,6 +35,7 @@ import {
   useSettings,
   type ThemePreference,
 } from '../../services/settings.js'
+import { CONTEXT_WINDOW } from '../../services/tokenizer/contextUsage.js'
 import { useTranslate, type TranslationKey, type TranslationMessage } from '../../i18n/index.js'
 import { Button } from '../base/Button.js'
 import { Modal } from '../base/Modal.js'
@@ -55,6 +61,11 @@ const sections: { value: SettingsSection; label: TranslationKey; icon: ReactNode
     value: 'general',
     label: 'settingDialogAsideGeneralOptionLabel',
     icon: <IconSettingsOutline16 />,
+  },
+  {
+    value: 'context',
+    label: 'settingDialogAsideContextOptionLabel',
+    icon: <IconContextOutline16 />,
   },
   { value: 'data', label: 'settingDialogAsideDataOptionLabel', icon: <IconDataOutline16 /> },
   { value: 'about', label: 'settingDialogAsideAboutOptionLabel', icon: <IconInfoOutline16 /> },
@@ -109,6 +120,8 @@ const SettingsContent = () => {
               <LocationSetting />
               <AutoCollapseThinkingSetting />
             </>
+          ) : section === 'context' ? (
+            <ContextCompressionSetting />
           ) : section === 'data' ? (
             <>
               <ApiKeyField editor={apiKeyEditor} />
@@ -296,6 +309,149 @@ const AutoCollapseThinkingSetting = () => {
         />
       }
     />
+  )
+}
+
+/** 百分比输入：失焦或回车提交；跨字段校验不通过时回退并标红 */
+const PercentInput = ({
+  value,
+  label,
+  onCommit,
+}: {
+  value: number
+  label: string
+  /** 返回 false 表示未接受（例如目标不小于阈值），输入框回退到原值 */
+  onCommit: (value: number) => boolean
+}) => {
+  const [draft, setDraft] = useState(String(value))
+  const [invalid, setInvalid] = useState(false)
+
+  useEffect(() => {
+    setDraft(String(value))
+    setInvalid(false)
+  }, [value])
+
+  const commit = () => {
+    const parsed = Number.parseInt(draft, 10)
+    if (!Number.isFinite(parsed)) {
+      setDraft(String(value))
+      setInvalid(true)
+      return
+    }
+    const next = clampCompressPercent(parsed, value)
+    if (!onCommit(next)) {
+      setDraft(String(value))
+      setInvalid(true)
+      return
+    }
+    setDraft(String(next))
+    setInvalid(false)
+  }
+
+  return (
+    <div className={styles.percentField}>
+      <input
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        className={clsx(styles.percentInput, invalid && styles.percentInvalid)}
+        value={draft}
+        aria-label={label}
+        aria-invalid={invalid || undefined}
+        onChange={(event) => {
+          setDraft(event.target.value.replace(/[^\d]/g, ''))
+          setInvalid(false)
+        }}
+        onBlur={commit}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.currentTarget.blur()
+          }
+        }}
+      />
+      <span className={styles.percentSuffix}>%</span>
+    </div>
+  )
+}
+
+/** 上下文与压缩：自动压缩开关、触发阈值与压缩目标 */
+const ContextCompressionSetting = () => {
+  const t = useTranslate()
+  const locale = useSettings((state) => state.locale)
+  const autoCompress = useSettings((state) => state.autoCompress)
+  const compressThreshold = useSettings((state) => state.compressThreshold)
+  const compressTarget = useSettings((state) => state.compressTarget)
+  const [error, setError] = useState<'threshold' | 'target' | null>(null)
+  const formatTokens = (percent: number) =>
+    new Intl.NumberFormat(locale).format(Math.round((percent / 100) * CONTEXT_WINDOW))
+
+  return (
+    <>
+      <SettingCell
+        label={t('settingsAutoCompress')}
+        description={t('settingsAutoCompressDescription')}
+        status={null}
+        action={
+          <Switch
+            checked={autoCompress}
+            label={t('settingsAutoCompress')}
+            onChange={setAutoCompress}
+          />
+        }
+      />
+      <SettingCell
+        label={t('settingsCompressThreshold')}
+        description={t('settingsCompressThresholdDescription')}
+        status={
+          error === 'threshold'
+            ? { key: 'settingsCompressThresholdInvalid', error: true }
+            : null
+        }
+        action={
+          <PercentInput
+            value={compressThreshold}
+            label={t('settingsCompressThreshold')}
+            onCommit={(next) => {
+              if (next <= compressTarget) {
+                setError('threshold')
+                return false
+              }
+              setError(null)
+              setCompressThreshold(next)
+              return true
+            }}
+          />
+        }
+      />
+      <SettingCell
+        label={t('settingsCompressTarget')}
+        description={t('settingsCompressTargetDescription')}
+        status={error === 'target' ? { key: 'settingsCompressTargetInvalid', error: true } : null}
+        action={
+          <PercentInput
+            value={compressTarget}
+            label={t('settingsCompressTarget')}
+            onCommit={(next) => {
+              if (next >= compressThreshold) {
+                setError('target')
+                return false
+              }
+              setError(null)
+              setCompressTarget(next)
+              return true
+            }}
+          />
+        }
+      />
+      <div className={styles.contextNote}>
+        {t('settingsCompressPreview', {
+          threshold: `${compressThreshold}%`,
+          thresholdTokens: formatTokens(compressThreshold),
+          target: `${compressTarget}%`,
+          targetTokens: formatTokens(compressTarget),
+        })}
+      </div>
+    </>
   )
 }
 

@@ -12,7 +12,7 @@ import {
 } from '../attachments.js'
 import { maybeAutoReadReply } from '../speech/autoRead.js'
 import { useSettings } from '../settings.js'
-import { appendBranch, getVisibleMessages, normalizeSession, selectVersion } from './branches.js'
+import { appendBranch, getVisibleMessages, normalizeSession, selectVersion, splitCompressedHistory } from './branches.js'
 import * as db from './db.js'
 import {
   clearAllDrafts,
@@ -25,6 +25,7 @@ import { createLatestReminder } from './latestReminder.js'
 import { invalidateSessionSearch } from './sessionSearch.js'
 import {
   applyEvent,
+  buildSystemPrompt,
   canContinueReply,
   getContextRounds,
   settleReply,
@@ -33,6 +34,7 @@ import {
 import {
   toSessionSummary,
   type AssistantMessage,
+  type ContextCompression,
   type FileAttachment,
   type Message,
   type Session,
@@ -107,6 +109,9 @@ const getSession = (id: string) => {
   return Object.hasOwn(cache, id) ? cache[id] : undefined
 }
 
+/** 压缩服务读取会话快照；只读，不改变当前选中会话 */
+export const getSessionSnapshot = (id: string): Session | undefined => getSession(id)
+
 const getStreamController = (id: string) => {
   const streams = get().streaming
   return Object.hasOwn(streams, id) ? streams[id] : undefined
@@ -117,6 +122,8 @@ const sameSummary = (a: SessionSummary, b: SessionSummary) =>
 
 const sessionAccess = new Map<string, number>()
 const unsavedSessions = new Set<string>()
+/** 压缩进行中：这些会话不参与缓存淘汰，避免摘要写完时找不到会话 */
+const compressionHolds = new Set<string>()
 /** 保存失败时保留原件，重试成功后才释放。 */
 const pendingFiles = new Map<string, db.StoredFile[]>()
 const deletingSessions = new Set<string>()
@@ -141,7 +148,8 @@ const trimSessionCache = () => {
         id !== state.activeId &&
         !Object.hasOwn(state.streaming, id) &&
         !unsavedSessions.has(id) &&
-        !deletingSessions.has(id)
+        !deletingSessions.has(id) &&
+        !compressionHolds.has(id)
     )
     .sort((a, b) => (sessionAccess.get(a) ?? 0) - (sessionAccess.get(b) ?? 0))
   const evicted = new Set(removable.slice(0, ids.length - SESSION_CACHE_LIMIT))
@@ -155,6 +163,17 @@ const trimSessionCache = () => {
       ),
     })
   }
+}
+
+/** 压缩期间保持会话在缓存中，避免用户切换会话后被淘汰、摘要无处写入 */
+export const holdSessionForCompression = (id: string) => {
+  compressionHolds.add(id)
+  touchSession(id)
+}
+
+export const releaseSessionForCompression = (id: string) => {
+  compressionHolds.delete(id)
+  trimSessionCache()
 }
 
 const updateSession = (id: string, update: (session: Session) => Session) =>
@@ -232,6 +251,22 @@ export const retrySaveSessions = () => {
   if (!get().importingHistory) {
     unsavedSessions.forEach(persist)
   }
+}
+
+/**
+ * 写入 / 撤销压缩记录。压缩不改变会话内容，因此不动 updatedAt，
+ * 避免一次后台压缩把会话顶到列表最前面。
+ */
+export const setSessionCompression = (
+  id: string,
+  compression: ContextCompression | undefined
+): boolean => {
+  if (get().importingHistory || deletingSessions.has(id) || !getSession(id)) {
+    return false
+  }
+  updateSession(id, (session) => ({ ...session, compression }))
+  persist(id)
+  return true
 }
 
 /** 离开前先合并尚未绘制的增量；隐藏期间浏览器可能暂停动画帧。 */
@@ -624,7 +659,9 @@ export const sendMessage = (targetSessionId: string | null) => {
   if (!current) {
     return false
   }
-  const history = getVisibleMessages(current)
+  const path = getVisibleMessages(current)
+  // 请求只带压缩覆盖点之后的历史；新消息仍挂在完整路径末端
+  const { history, compression } = splitCompressedHistory(current, path)
   const question: UserMessage = {
     id: createId(),
     role: 'user',
@@ -643,7 +680,7 @@ export const sendMessage = (targetSessionId: string | null) => {
   }
   const reply = createReply()
   updateSession(sessionId, (session) => ({
-    ...appendBranch(session, history.at(-1)?.id ?? null, [question, reply]),
+    ...appendBranch(session, path.at(-1)?.id ?? null, [question, reply]),
     updatedAt: now,
   }))
   if (files.length > 0) {
@@ -654,7 +691,7 @@ export const sendMessage = (targetSessionId: string | null) => {
   }
   persist(sessionId)
   clearSentDraft(targetSessionId)
-  void streamReply(sessionId, reply, { history, question })
+  void streamReply(sessionId, reply, { history, question, compression })
   return true
 }
 
@@ -674,14 +711,16 @@ export const regenerateReply = (sessionId: string, messageId?: string) => {
   if (question?.role !== 'user' || path[index]?.role !== 'assistant') {
     return
   }
-  const history = path.slice(0, index - 1)
+  const rawHistory = path.slice(0, index - 1)
+  // 重生成发生在压缩覆盖点之前时，压缩自然失效；之后则继续沿用摘要
+  const { history, compression } = splitCompressedHistory(session, rawHistory)
   const reply = createReply()
   updateSession(sessionId, (s) => ({
     ...appendBranch(s, question.id, [reply]),
     updatedAt: Date.now(),
   }))
   persist(sessionId)
-  void streamReply(sessionId, reply, { history, question })
+  void streamReply(sessionId, reply, { history, question, compression })
 }
 
 /** 编辑提问后新增同父版本，保留原文件；旧问题的所有回答与后续对话仍可切回。 */
@@ -708,12 +747,13 @@ export const editMessage = (sessionId: string, messageId: string, content: strin
     createdAt: Date.now(),
   }
   const reply = createReply()
+  const { history, compression } = splitCompressedHistory(session, path.slice(0, index))
   updateSession(sessionId, (s) => ({
     ...appendBranch(s, path[index - 1]?.id ?? null, [question, reply]),
     updatedAt: Date.now(),
   }))
   persist(sessionId)
-  void streamReply(sessionId, reply, { history: path.slice(0, index), question })
+  void streamReply(sessionId, reply, { history, question, compression })
   return true
 }
 
@@ -763,7 +803,13 @@ export const continueReply = (sessionId: string, messageId: string) => {
   updateReply(sessionId, reply)
   updateSession(sessionId, (s) => ({ ...s, updatedAt: Date.now() }))
   persist(sessionId)
-  void streamReply(sessionId, reply, { history: path.slice(0, -2), question, prefix: previous })
+  const { history, compression } = splitCompressedHistory(session, path.slice(0, -2))
+  void streamReply(sessionId, reply, {
+    history,
+    question,
+    prefix: previous,
+    compression,
+  })
 }
 
 /** 附件补传失败后重试：保留原回答位置，重新补传并请求 */
@@ -789,10 +835,16 @@ export const retryUpload = (sessionId: string, messageId: string) => {
   const reply: AssistantMessage = { ...previous, status: 'pending', error: undefined }
   updateReply(sessionId, reply)
   persist(sessionId)
-  void streamReply(sessionId, reply, { history: path.slice(0, index - 1), question })
+  const { history, compression } = splitCompressedHistory(session, path.slice(0, index - 1))
+  void streamReply(sessionId, reply, { history, question, compression })
 }
 
-type Request = { history: Message[]; question: UserMessage; prefix?: AssistantMessage }
+type Request = {
+  history: Message[]
+  question: UserMessage
+  prefix?: AssistantMessage
+  compression?: ContextCompression
+}
 
 /**
  * 将 serverId 写回所有引用同一附件的消息。传入 null 会清除超限旧图的 ID，触发补传。
@@ -853,6 +905,7 @@ const refreshRequest = (sessionId: string, request: Request): Request => {
     history: request.history.map(pick),
     question: pick(request.question),
     prefix: request.prefix,
+    compression: request.compression,
   }
 }
 
@@ -931,6 +984,7 @@ const prepareFiles = async (sessionId: string, request: Request, signal: AbortSi
     history: request.history.map(resolve),
     question: resolve(request.question),
     prefix: request.prefix,
+    compression: request.compression,
   }
 }
 
@@ -1059,7 +1113,7 @@ const streamReply = async (sessionId: string, initial: AssistantMessage, request
           useSettings.getState().apiKey ?? '',
           {
             model: initial.model ?? MODEL,
-            system: SYSTEM_PROMPT,
+            system: buildSystemPrompt(SYSTEM_PROMPT, prepared.compression?.summary),
             messages,
             thinking: { type: initial.thinking ? 'enabled' : 'disabled' },
             safety_check: SAFETY_CHECK,

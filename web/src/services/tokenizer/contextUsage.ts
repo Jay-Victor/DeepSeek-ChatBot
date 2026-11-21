@@ -1,5 +1,5 @@
 import type { AssistantMessage, Message, Session, UserMessage } from '../chat/types.js'
-import { getVisibleMessages } from '../chat/branches.js'
+import { getCompressionCut, getVisibleMessages } from '../chat/branches.js'
 import { getContextRounds } from '../chat/reply.js'
 import { SYSTEM_PROMPT } from '../chat/store.js'
 import { loadTokenCounter, type TokenCounter } from './index.js'
@@ -15,8 +15,12 @@ export type ContextUsage = {
   used: number
   window: number
   percent: number
-  /** 系统提示之外的本地文本 */
+  /** 系统提示之外的本地文本（不含压缩摘要） */
   dialog: number
+  /** 压缩摘要自身的 token；没有压缩时为 0 */
+  summary: number
+  /** 当前生效的压缩；用于卡片展示 */
+  compression: { rounds: number; coveredTokens: number } | null
   /** 服务端模板、工具声明、附件、网页正文等本地看不到的部分 */
   overhead: number
   /** 含附件/网页时为 attachments；没有服务端用量可校准时为 uncalibrated；纯文本且已校准为 null */
@@ -60,6 +64,10 @@ const hasOpaqueContent = (message: AssistantMessage) =>
       block.type === 'web_fetch_tool_result'
   )
 
+/** 单条消息进入上下文时的本地 token 估算；压缩规划与占用统计共用同一份缓存 */
+export const countMessageTokens = (message: Message, count: TokenCounter): number =>
+  message.role === 'user' ? countUser(message, count) : countAssistant(message, count)
+
 const usagePrompt = (usage: NonNullable<AssistantMessage['usage']>) =>
   usage.input_tokens + usage.cache_creation_input_tokens + usage.cache_read_input_tokens
 
@@ -69,14 +77,18 @@ const usagePrompt = (usage: NonNullable<AssistantMessage['usage']>) =>
  */
 export const computeContextUsage = async (session: Session): Promise<ContextUsage | null> => {
   const visible = getVisibleMessages(session)
-  const rounds = getContextRounds(visible)
+  // 有适用压缩时只统计覆盖点之后的轮次；摘要单独计入
+  const cut = getCompressionCut(session, visible)
+  const effective = cut ? visible.slice(cut.index + 1) : visible
+  const rounds = getContextRounds(effective)
   if (rounds.length === 0) {
     return null
   }
 
   const count = await loadTokenCounter()
   const systemTokens = count(SYSTEM_PROMPT)
-  let total = systemTokens
+  const summaryTokens = cut ? count(cut.compression.summary) : 0
+  let total = systemTokens + summaryTokens
   let attachments = false
   let opaque = false
   let lastReply: AssistantMessage | null = null
@@ -110,7 +122,7 @@ export const computeContextUsage = async (session: Session): Promise<ContextUsag
     await yieldToUi()
   }
 
-  const tip = visible.at(-1)
+  const tip = effective.at(-1)
   const usage = lastReply?.usage
   let overhead = 0
   let measured: ContextUsage['measured'] = null
@@ -118,7 +130,13 @@ export const computeContextUsage = async (session: Session): Promise<ContextUsag
 
   // 只有「末条就是这轮回复」时，usage.prompt 才和当前分支对得上。
   // 续写会把多轮文本并进同一条 assistant，此时 prompt 与本地重建不一致，直接放弃校准。
-  if (lastReply && usage && tip?.id === lastReply.id) {
+  // 压缩之前测得的用量对应完整上下文，和新摘要拼不起来，也不展示。
+  if (
+    lastReply &&
+    usage &&
+    tip?.id === lastReply.id &&
+    (!cut || lastReply.createdAt >= cut.compression.createdAt)
+  ) {
     const prompt = usagePrompt(usage)
     measured = {
       prompt,
@@ -141,7 +159,11 @@ export const computeContextUsage = async (session: Session): Promise<ContextUsag
     used,
     window: CONTEXT_WINDOW,
     percent: used / CONTEXT_WINDOW,
-    dialog: total - systemTokens,
+    dialog: total - systemTokens - summaryTokens,
+    summary: summaryTokens,
+    compression: cut
+      ? { rounds: cut.compression.coveredRounds, coveredTokens: cut.compression.coveredTokens }
+      : null,
     overhead,
     approximate,
     measured,

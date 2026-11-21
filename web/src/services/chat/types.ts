@@ -107,6 +107,23 @@ export type AssistantMessage = MessageBranch & {
 
 export type Message = UserMessage | AssistantMessage
 
+/**
+ * 上下文压缩记录：较早的轮次被摘要替换，只影响请求与占用统计，不改动原始消息。
+ * throughMessageId 必须落在当前分支上才生效；分支在它之前分叉时回到完整历史。
+ */
+export type ContextCompression = {
+  summary: string
+  /** 摘要覆盖到的最后一条消息；必须是当前分支上的 assistant */
+  throughMessageId: string
+  /** 累计覆盖的轮次数，含更早的压缩 */
+  coveredRounds: number
+  /** 累计被替换掉的本地 token 估算，仅用于展示 */
+  coveredTokens: number
+  /** 摘要自身的 token 估算 */
+  summaryTokens: number
+  createdAt: number
+}
+
 export type Session = {
   id: string
   title: string
@@ -118,6 +135,8 @@ export type Session = {
   messages: Message[]
   /** undefined 表示线性消息列表；null 表示空会话。 */
   rootMessageId?: string | null
+  /** 较早对话的压缩摘要；缺省表示完整上下文 */
+  compression?: ContextCompression
 }
 
 /** 会话列表元数据；消息只在打开会话时加载。 */

@@ -1,0 +1,56 @@
+.divider {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 12px;
+  color: var(--dsw-alias-label-caption);
+  font-size: 12px;
+}
+
+.line {
+  flex: 1;
+  min-width: 12px;
+  height: 1px;
+  background-color: var(--dsw-alias-border-l1);
+}
+
+.label {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 999px;
+  background-color: var(--dsw-alias-bg-skeleton);
+  color: var(--dsw-alias-label-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background-color var(--ds-transition-duration) var(--ds-ease-in-out);
+}
+
+.label:hover {
+  background-color: var(--dsw-alias-interactive-bg-hover);
+}
+
+.toggle {
+  color: var(--dsw-alias-brand-text);
+}
+
+.summary {
+  flex-basis: 100%;
+  box-sizing: border-box;
+  max-height: 220px;
+  padding: 10px 12px;
+  overflow-y: auto;
+  border-radius: 10px;
+  background-color: var(--dsw-alias-bg-skeleton);
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

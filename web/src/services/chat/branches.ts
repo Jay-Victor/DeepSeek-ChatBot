@@ -1,4 +1,4 @@
-import type { Message, Session } from './types.js'
+import type { ContextCompression, Message, Session } from './types.js'
 
 /** 将线性消息列表规范化为单分支，保留消息 ID、内容及时间。 */
 export const normalizeSession = (session: Session): Session =>
@@ -32,6 +32,39 @@ export const getVisibleMessages = (session: Session): Message[] => {
     id = message.selectedChildId ?? null
   }
   return path
+}
+
+/** 压缩记录在当前路径上的切点；不在路径上（分支已分叉）时返回 null */
+export type CompressionCut = {
+  compression: ContextCompression
+  /** 被覆盖的最后一条消息在 path 中的下标，必定是 assistant */
+  index: number
+}
+
+export const getCompressionCut = (
+  session: Session,
+  path: Message[] = getVisibleMessages(session)
+): CompressionCut | null => {
+  const compression = session.compression
+  if (!compression) {
+    return null
+  }
+  const index = path.findIndex((message) => message.id === compression.throughMessageId)
+  return index >= 0 && path[index].role === 'assistant' ? { compression, index } : null
+}
+
+/**
+ * 请求上下文：有适用压缩时，丢掉覆盖点之前的轮次，由调用方把摘要放进 system。
+ * path 必须是当前分支；返回的 history 从覆盖点之后开始，保持以 user 开头。
+ */
+export const splitCompressedHistory = (
+  session: Session,
+  path: Message[]
+): { history: Message[]; compression?: ContextCompression } => {
+  const cut = getCompressionCut(session, path)
+  return cut
+    ? { history: path.slice(cut.index + 1), compression: cut.compression }
+    : { history: path }
 }
 
 export type MessageVersions = { ids: string[]; index: number }

@@ -12,5 +12,11 @@ declare const styles: {
   readonly "row": string;
   readonly "num": string;
   readonly "note": string;
+  readonly "compress": string;
+  readonly "compressRow": string;
+  readonly "compressState": string;
+  readonly "compressButton": string;
+  readonly "textButton": string;
+  readonly "summaryText": string;
 };
 export = styles;
