@@ -24,7 +24,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 | | |
 | --- | --- |
 | Application ID | `com.deepseekchatbot` |
-| Version | 0.1.17 (versionCode 18) |
+| Version | 0.1.18 (versionCode 19) |
 | Size | 5.36 MB (release) |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | Native deps | androidx only (webkit / browser / activity / core-splashscreen), no third-party runtime |
@@ -63,7 +63,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 Download the signed APK from [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest), or:
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.17-release.apk
+adb install -r DeepSeekChatBot-v0.1.18-release.apk
 ```
 
 On first launch, add your DeepSeek API key in Settings → Data. The key is written only to the on-device WebView localStorage and is excluded from cloud backup (`allowBackup=false`).
@@ -89,7 +89,7 @@ scripts/build-apk.sh release        # or scripts/build-apk.sh debug
 The script does three things: `pnpm build` inside `web/`, sync `web/dist` into `android/app/src/main/assets/www`, then `./gradlew assembleRelease`. Output:
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.17-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.18-release.apk
 ```
 
 Step by step:
@@ -171,6 +171,8 @@ v0.1.15 changes the mobile settings tabs to a horizontal scroll strip: each tab 
 v0.1.16 was checked in desktop Chrome at 390×844, 360×800 and 1280×800 for identity statements: creating, editing and deleting profiles, switching the default, the undeletable built-in profile, and empty / over-long name validation; two chats can use different profiles and keep them across a reload, and deleting the profile in use falls back to the built-in identity; captured request bodies confirm `system` is the chat's `你是{姓名}。{设定}`; the usage popover's "system & template" figure follows a long identity; a mocked native bridge confirms the menu sets `setOverlay(true)` and the back button closes it first. The APK reports `0.1.16` / `versionCode 17` with a v2 signature.
 
 v0.1.17 was checked on Android 16 (API 36.1, x86_64 emulator, signed release build) for appearance: the six settings tabs and mobile horizontal scrolling, the Theme → Mode segmented control, image / video wallpaper picking and preview, live overlay and blur previews, keeping one image and one video when switching, removing one type without touching the other, surviving restart and force-stop, muted looping video that pauses in the background, and translucent header / input / sidebar panels. A `/userbg/` Range request returns 206 and the `bytes=100-199` response matches the source file's SHA-256. Desktop Chrome (758×426 and 1280×800 windows) checked the same settings plus the IndexedDB fallback across reloads; hue 286° and 52° recoloured buttons, links and bubbles together, primary text switched between black and white by contrast, and Reset removed the injected style. The APK reports `0.1.17` / `versionCode 18` with a v2 signature.
+
+v0.1.18 fixes the accent contrast in light mode: with a yellow / green hue, links, the Settings Reset action, the selected sidebar row and brand text now keep 4.5:1 against the light page; the app name, title icon, context ring and read-aloud waveform painted on the page background use the readable brand-text alias, while primary fills stay vivid. Desktop Chrome checked light mode at hue 52°: brand-text resolves to `hsl(52,99%,26%)` and the primary button to `hsl(52,99%,61%)` with dark text. The APK reports `0.1.18` / `versionCode 19`.
 
 ## Repository layout
 

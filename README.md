@@ -24,7 +24,7 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.17（versionCode 18） |
+| 版本 | 0.1.18（versionCode 19） |
 | 体积 | 5.36 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
@@ -63,7 +63,7 @@
 从 [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 下载签名 APK，或：
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.17-release.apk
+adb install -r DeepSeekChatBot-v0.1.18-release.apk
 ```
 
 首次启动在「设置 → 数据管理」填入自己的 DeepSeek API Key；Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
@@ -92,7 +92,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.17-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.18-release.apk
 ```
 
 手动分步：
@@ -199,6 +199,8 @@ v0.1.17 在 Android 16（API 36.1，x86_64 模拟器，release 签名包）核�
 与源文件同段 SHA-256 一致。桌面 Chrome（窗口 758×426 与 1280×800）核对同一套设置与浏览器 IndexedDB 回退，
 刷新后壁纸恢复；286° 与 52° 色相下按钮 / 链接 / 气泡同步变色，主色文字按对比度切换黑 / 白，
 恢复默认后注入样式移除。APK 核对 `0.1.17` / `versionCode 18` 与 v2 签名。
+
+v0.1.18 修复 v0.1.17 的浅色主题色对比度：色相拖到黄 / 绿等亮色时，链接、设置「恢复默认」、侧栏选中项与品牌文字在浅色底上按 4.5:1 收口；页面底色上的 appName、标题图标、上下文环与朗读波形改用可读的 brand-text，主色填充保持鲜艳。桌面 Chrome 以浅色 + 52° 复验：brand-text 计算为 `hsl(52,99%,26%)`，主按钮为 `hsl(52,99%,61%)` 配深色文字；APK 核对 `0.1.18` / `versionCode 19`。
 
 ## 仓库结构
 

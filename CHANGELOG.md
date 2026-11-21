@@ -5,6 +5,13 @@
 
 ## [Unreleased]
 
+## [0.1.18] - 2026-11-22
+
+### 修复
+
+- 浅色模式下把主题色拖到黄 / 绿等亮色时，链接、设置里的「恢复默认」、侧栏选中项与品牌文字对比度不足：现在按 4.5:1 单独收口 `brand-text` 与侧栏选中项反色
+- 画在页面底色上的品牌文字 / 图标 / 上下文环 / 朗读波形改用可读的 `brand-text`，主色填充仍保持原有鲜艳度
+
 ## [0.1.17] - 2026-11-22
 
 ### 新增
@@ -220,7 +227,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.17...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.18...HEAD
+[0.1.18]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.18
 [0.1.17]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.17
 [0.1.16]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.16
 [0.1.15]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.15
