@@ -5,6 +5,12 @@
 
 ## [Unreleased]
 
+## [0.1.14] - 2026-11-21
+
+### 修复
+
+- 移动端设置分组在窄屏或较大字号下文字与图标重叠：导航改为 2×2 网格，不再把每项压缩到内容宽度以下；长标签允许换行，四个分组全部可见
+
 ## [0.1.13] - 2026-11-21
 
 ### 新增
@@ -167,7 +173,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.13...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.14...HEAD
+[0.1.14]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.14
 [0.1.13]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.13
 [0.1.12]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.12
 [0.1.11]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.11
