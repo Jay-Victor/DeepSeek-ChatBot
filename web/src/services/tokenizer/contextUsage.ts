@@ -1,14 +1,15 @@
 import type { AssistantMessage, Message, Session, UserMessage } from '../chat/types.js'
 import { getCompressionCut, getVisibleMessages } from '../chat/branches.js'
 import { getContextRounds } from '../chat/reply.js'
+import { resolveContextWindow } from '../endpoints.js'
 import { getIdentityPrompt } from '../identity.js'
 import { loadTokenCounter, type TokenCounter } from './index.js'
 
 /**
- * DeepSeek-V4 模型卡与 vLLM 文档给出的上下文长度。API 不返回窗口大小，
- * 只能集中在这里维护；接口实际限制若更小，改这一个常量即可。
+ * DeepSeek-V4 模型卡与 vLLM 文档给出的上下文长度；自定义模型优先用
+ * /models 返回的 context_window，没有时回落到方案里配置的值。
  */
-export const CONTEXT_WINDOW = 1_000_000
+export const CONTEXT_WINDOW = 1_048_576
 
 export type ContextUsage = {
   /** 下一次请求大致会占用的 token：本地文本 + 服务端开销 */
@@ -155,10 +156,11 @@ export const computeContextUsage = async (session: Session): Promise<ContextUsag
   }
 
   const used = total + overhead
+  const window = resolveContextWindow(session)
   return {
     used,
-    window: CONTEXT_WINDOW,
-    percent: used / CONTEXT_WINDOW,
+    window,
+    percent: used / window,
     dialog: total - systemTokens - summaryTokens,
     summary: summaryTokens,
     compression: cut

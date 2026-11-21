@@ -9,7 +9,8 @@ import { stopReadAloud } from '../../services/speech/readAloud.js'
 import type { UserMessage as UserMessageType } from '../../services/chat/types.js'
 import { Button } from '../base/Button.js'
 import { IconButton } from '../base/IconButton.js'
-import { ensureApiKey } from '../settings/settingsDialogState.js'
+import { ensureProfileKey } from '../settings/settingsDialogState.js'
+import { useSessionEndpoint } from '../../services/useCapabilities.js'
 import {
   BranchSwitcher,
   type MessageVersions,
@@ -44,6 +45,7 @@ export const UserMessage = memo(function UserMessage({
   const [draft, setDraft] = useState(message.content)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const isMobile = useIsMobile()
+  const { profile } = useSessionEndpoint(sessionId)
   const canSend = !busy && (draft.trim() !== '' || message.files.length > 0)
 
   useLayoutEffect(() => {
@@ -55,7 +57,7 @@ export const UserMessage = memo(function UserMessage({
   }, [editing, draft])
 
   const sendEdit = () => {
-    if (canSend && ensureApiKey() && editMessage(sessionId, message.id, draft.trim())) {
+    if (canSend && ensureProfileKey(profile) && editMessage(sessionId, message.id, draft.trim())) {
       stopReadAloud()
       setEditing(false)
     }

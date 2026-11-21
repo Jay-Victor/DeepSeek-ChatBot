@@ -16,6 +16,7 @@ import { computeContextUsage, type ContextUsage } from '../../services/tokenizer
 import { useAnchoredPosition, useDismiss } from '../base/anchored.js'
 import { showToast } from '../base/toastState.js'
 import { openSettings } from '../settings/settingsDialogState.js'
+import { useSessionEndpoint } from '../../services/useCapabilities.js'
 import styles from './ContextUsageRing.module.css'
 
 const RADIUS = 9
@@ -61,6 +62,7 @@ export const ContextUsageRing = ({ sessionId }: { sessionId: string }) => {
   const session = useChatStore((state) => state.sessionCache[sessionId])
   const streaming = useChatStore((state) => Object.hasOwn(state.streaming, sessionId))
   const active = useChatStore((state) => state.activeId === sessionId)
+  const { profile, model } = useSessionEndpoint(sessionId)
   // 身份方案的姓名/设定改动会影响系统提示 token，订阅数组以触发重新统计
   const identities = useIdentities((state) => state.profiles)
   const running = useCompression((state) => state.running[sessionId])
@@ -262,6 +264,14 @@ export const ContextUsageRing = ({ sessionId }: { sessionId: string }) => {
               aria-busy={running ? true : undefined}
             >
               <div className={styles.title}>{t('contextUsage')}</div>
+              <div className={styles.row}>
+                <span>{t('endpointProfiles')}</span>
+                <span className={styles.num}>{profile.name}</span>
+              </div>
+              <div className={styles.row}>
+                <span>{t('endpointModel')}</span>
+                <span className={styles.num}>{model}</span>
+              </div>
               <div className={styles.value}>
                 {format(used)}
                 <span> / {format(usage.window)}</span>

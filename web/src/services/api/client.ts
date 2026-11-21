@@ -84,8 +84,10 @@ export const request = async (url: string, init: RequestInit): Promise<Response>
 }
 
 const anthropicHeaders = (apiKey: string, beta: boolean): Record<string, string> => ({
-  // DeepSeek 兼容接口的鉴权方式，也可使用 Authorization: Bearer。
+  // DeepSeek 兼容接口也接受 Authorization: Bearer。
   'x-api-key': apiKey,
+  // 同时带 Bearer，兼容只认 Authorization 的自定义 DeepSeek 端点
+  Authorization: `Bearer ${apiKey}`,
   // Files API 和通过 file_id 引用图片时必传；纯文本聊天无需携带。
   ...(beta ? { 'anthropic-beta': FILES_BETA } : {}),
 })
@@ -103,7 +105,8 @@ export const verifyApiKey = async (apiKey: string, signal?: AbortSignal): Promis
  * POST /anthropic/v1/files 上传附件（不设过期时间，会话里的历史附件一直可用）。
  * purpose 为 null 时不传该字段（图片）；purpose 必须排在 file 之前。
  */
-export const uploadFile = async (
+export const uploadFileAt = async (
+  filesUrl: string,
   apiKey: string,
   file: File,
   purpose: FilePurpose | null,
@@ -114,7 +117,7 @@ export const uploadFile = async (
     form.append('purpose', purpose)
   }
   form.append('file', purpose === null ? await resizeUploadImage(file, signal) : file)
-  const response = await request(`${ANTHROPIC_BASE_URL}/files`, {
+  const response = await request(filesUrl, {
     method: 'POST',
     headers: anthropicHeaders(apiKey, true),
     body: form,
@@ -122,6 +125,13 @@ export const uploadFile = async (
   })
   return (await response.json()) as FileObject
 }
+
+export const uploadFile = async (
+  apiKey: string,
+  file: File,
+  purpose: FilePurpose | null,
+  signal?: AbortSignal
+): Promise<FileObject> => uploadFileAt(`${ANTHROPIC_BASE_URL}/files`, apiKey, file, purpose, signal)
 
 /** DELETE /anthropic/v1/files/{file_id} */
 export const deleteFile = async (apiKey: string, fileId: string): Promise<void> => {
@@ -142,15 +152,18 @@ const hasFile = (body: CreateMessageRequest) =>
  * POST /anthropic/v1/messages（stream: true），逐个产出流式事件，收到 message_stop 时结束。
  * ping、保活注释与无法解析的内容不产出；中止请求时抛出 signal 的 AbortError。
  */
-export async function* streamMessage(
+export async function* streamMessageAt(
+  messagesUrl: string,
   apiKey: string,
   body: CreateMessageRequest,
-  signal: AbortSignal
+  signal: AbortSignal,
+  extraHeaders: Record<string, string> = {}
 ): AsyncGenerator<MessageStreamEvent> {
-  const response = await request(`${ANTHROPIC_BASE_URL}/messages`, {
+  const response = await request(messagesUrl, {
     method: 'POST',
     headers: {
       ...anthropicHeaders(apiKey, hasFile(body)),
+      ...extraHeaders,
       'Content-Type': 'application/json',
       Accept: 'text/event-stream',
     },
@@ -187,4 +200,13 @@ export async function* streamMessage(
   }
   // 服务端没有提供错误内容时保持为空，不推测断流原因。
   throw new ApiError('interrupted', '')
+}
+
+/** 默认 DeepSeek 端点；自定义端点用 streamMessageAt */
+export async function* streamMessage(
+  apiKey: string,
+  body: CreateMessageRequest,
+  signal: AbortSignal
+): AsyncGenerator<MessageStreamEvent> {
+  yield* streamMessageAt(`${ANTHROPIC_BASE_URL}/messages`, apiKey, body, signal)
 }

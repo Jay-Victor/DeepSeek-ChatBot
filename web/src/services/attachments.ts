@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { LinkedMessage, TranslationMessage } from '../i18n/index.js'
 import { isUploadImageOversized } from '../utils/resizeUploadImage.js'
-import { uploadFile } from './api/client.js'
+import { uploadFileAt } from './api/client.js'
 import { classifyApiError, getUploadErrorInfo, isRetryableApiError } from './api/errors.js'
 import type { FilePurpose } from './api/types.js'
 import { loadFile } from './chat/db.js'
@@ -122,6 +122,7 @@ const next = () => {
 /** 排队上传，最多同时上传 MAX_CONCURRENT 个；排队期间中止的任务不会发出请求 */
 const enqueueUpload = (
   apiKey: string,
+  filesUrl: string | undefined,
   file: Blob,
   name: string,
   isImage: boolean,
@@ -135,7 +136,17 @@ const enqueueUpload = (
       }
       try {
         const body = file instanceof File ? file : new File([file], name, { type: file.type })
-        resolve((await uploadFile(apiKey, body, getUploadPurpose(name, isImage), signal)).id)
+        const purpose = getUploadPurpose(name, isImage)
+        const uploaded = filesUrl
+          ? await uploadFileAt(filesUrl, apiKey, body, purpose, signal)
+          : await uploadFileAt(
+              'https://api.deepseek.com/anthropic/v1/files',
+              apiKey,
+              body,
+              purpose,
+              signal
+            )
+        resolve(uploaded.id)
       } catch (error) {
         reject(error)
       }
@@ -169,6 +180,7 @@ const pending = new Map<string, { promise: Promise<string>; controller: AbortCon
 /** 开始（或复用进行中的）上传，返回服务端 file_id；失败时任务记为 error 并抛出原错误 */
 export const uploadAttachment = (
   apiKey: string,
+  filesUrl: string | undefined,
   id: string,
   blob: Blob,
   name: string,
@@ -180,7 +192,7 @@ export const uploadAttachment = (
   }
   const controller = new AbortController()
   setTask(id, { status: 'uploading' })
-  const promise = enqueueUpload(apiKey, blob, name, isImage, controller.signal)
+  const promise = enqueueUpload(apiKey, filesUrl, blob, name, isImage, controller.signal)
     .then((serverId) => {
       setTask(id, { status: 'done', serverId })
       return serverId

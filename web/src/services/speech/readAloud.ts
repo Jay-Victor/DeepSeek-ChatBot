@@ -77,7 +77,8 @@ export const describeReadAloudError = (error: unknown): TranslationMessage | str
 export const startReadAloud = (
   messageId: string,
   text: string,
-  onError: (error: unknown) => void
+  onError: (error: unknown) => void,
+  apiKeyOverride?: string
 ) => {
   stopReadAloud()
   const controller = new AbortController()
@@ -88,13 +89,14 @@ export const startReadAloud = (
   useReadAloud.setState({ messageId, status: 'loading' })
   // 音色在开始朗读时读取，设置中切换后下一次朗读生效
   const { apiKey, ttsVoice } = useSettings.getState()
+  const key = apiKeyOverride ?? apiKey ?? ''
 
   void (async () => {
     let nextTime = 0
     let lastSource: AudioBufferSourceNode | null = null
     let rest = new Uint8Array(0)
     try {
-      const stream = await synthesize(apiKey ?? '', text, ttsVoice, controller.signal)
+      const stream = await synthesize(key, text, ttsVoice, controller.signal)
       const reader = stream.getReader()
       controller.signal.addEventListener('abort', () => void reader.cancel().catch(() => {}))
       for (;;) {
@@ -145,11 +147,12 @@ export const startReadAloud = (
 export const toggleReadAloud = (
   messageId: string,
   text: string,
-  onError: (error: unknown) => void
+  onError: (error: unknown) => void,
+  apiKeyOverride?: string
 ) => {
   if (useReadAloud.getState().messageId === messageId) {
     stopReadAloud()
     return
   }
-  startReadAloud(messageId, text, onError)
+  startReadAloud(messageId, text, onError, apiKeyOverride)
 }

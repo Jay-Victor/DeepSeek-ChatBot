@@ -168,8 +168,37 @@
 | `android/app/src/main/java/.../BackgroundStore.kt`（新增） | 背景媒体复制到 `filesDir/background/`、两类各保留一份、按 MIME 限制体积、`/userbg/` 同源响应与 Range（206） |
 | `android/app/src/main/java/.../MainActivity.kt` | 新增 `pickBackground` / `backgroundInfo` / `clearBackground` 桥；`shouldInterceptRequest` 先处理 `/userbg/` |
 
+| `src/services/endpoints.ts`（新增） | API 接入方案：多方案 localStorage 存储、旧单 Key 迁移、DeepSeek/Anthropic/OpenAI 协议与能力推断、端点地址规范化、模型窗口解析 |
+| `src/services/api/protocols.ts`（新增） | 三协议请求适配：DeepSeek 保留 safety_check/title/服务端搜索；Anthropic 去掉 DeepSeek 扩展并按 budget_tokens 发 thinking；OpenAI 兼容把 chat/completions 的 SSE 合成为统一事件；`listModels` 统一解析 `data[]` 元数据 |
+| `src/services/useCapabilities.ts`（新增） | 按会话绑定的方案/模型返回 `{ profile, model, capabilities }`，供输入框、附件、语音、朗读门控 |
+| `src/services/api/client.ts` | 抽出 `streamMessageAt` / `uploadFileAt`，消息请求可带自定义端点与额外鉴权头；默认 DeepSeek 入口保留 |
+| `src/services/chat/types.ts` | `Session.endpointId` / `modelId` 会话级绑定；`AssistantMessage.model` 改为任意模型 ID 字符串 |
+| `src/services/chat/store.ts` | 新会话写入当前方案与模型；请求按会话方案构造；能力不足时静默去掉 thinking/search/title；非 DeepSeek 协议用首条提问生成本地标题；附件上传按会话方案与 Files 地址 |
+| `src/services/chat/reply.ts` | `toRequestMessages` 增加 `{ protocol, filesCapable }`：非 DeepSeek 剥离 latest_reminder、DeepSeek 工具块与文件块，OpenAI 不传 thinking 块 |
+| `src/services/chat/compression.ts` | 摘要请求按会话方案/模型发；窗口改用 `usage.window`；不再固定 DeepSeek 模型与 safety_check |
+| `src/services/tokenizer/contextUsage.ts` | 占用环分母改为会话模型窗口；DeepSeek 默认 1,048,576 |
+| `src/services/attachments.ts` / `src/services/chat/drafts.ts` | 上传可指定 Files API 地址，支持自定义 DeepSeek 协议端点 |
+| `src/components/settings/EndpointSetting.tsx` / `.module.css` / `.css.d.ts`（新增） | 数据管理里的「接入方案」：方案列表切换、新建/编辑/删除、获取模型、模型下拉与手动 ID、上下文窗口 |
+| `src/components/settings/SettingsDialog.tsx` | 数据管理改用 `EndpointSetting`；压缩百分比预览按当前会话模型窗口换算 |
+| `src/components/settings/settingsDialogState.ts` | `ensureProfileKey` 按会话方案校验 Key；`ensureEndpoint` 用于新会话 |
+| `src/components/chatInput/ChatInput.tsx` | 深度思考/智能搜索按能力置灰；附件与语音按能力隐藏/提示；上传与转写使用会话方案的 Key；v4-pro 等无视觉模型拒绝图片 |
+| `src/components/chatInput/AttachmentPanel.tsx` | `allowImages`：无视觉模型只保留「文件」入口 |
+| `src/components/chatInput/useVoiceInput.ts` | 转写 Key 改为调用方传入，按会话方案取值 |
+| `src/services/speech/readAloud.ts` / `autoRead.ts` / `src/components/messages/ReadAloudButton.tsx` | 手动朗读与自动朗读按会话方案的 Key 调用 TTS；非 DeepSeek 官方端点隐藏朗读入口 |
+| `src/components/chatInput/ContextUsageRing.tsx` | 占用卡片显示当前接入方案与模型；窗口取 `usage.window` |
+| `src/components/session/SessionView.tsx` / `src/components/messages/UserMessage.tsx` | 自动朗读按语音能力显示；编辑提问按会话方案校验 Key |
+| `src/components/session/Welcome.tsx` / `Welcome.module.css`（新增 chip） | 欢迎页显示当前接入方案与模型，点击进入「设置 → 数据管理」 |
+| `src/app/App.tsx` | 首启改为 `ensureEndpoint()` |
+| `src/i18n/zh.ts` / `en.ts` | 接入方案、模型、协议、能力降级与错误文案 |
+
 分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与
 Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch。计数实现见 `bpe.ts`。
+
+**接入方案的行为约定**：方案配置是设备级设置，不随 ZIP 导出 / 导入迁移；会话创建时记录 `endpointId` 与 `modelId`，
+之后切换当前方案不会改变旧会话的请求目标；方案被删除时旧会话回落到当前方案。非 DeepSeek 协议第一版只支持纯文本 + 思考，
+搜索、附件、语音、服务端标题按能力降级（附件入口隐藏，语音与搜索开关置灰）。
+
+
 
 同步上游的做法：
 

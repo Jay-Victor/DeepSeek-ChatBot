@@ -1,12 +1,13 @@
 import { create } from 'zustand'
-import type { ChatModel, CreateMessageRequest } from '../api/types.js'
-import { streamMessage } from '../api/client.js'
+import { streamChat } from '../api/protocols.js'
 import { useSettings } from '../settings.js'
 import {
-  CONTEXT_WINDOW,
-  computeContextUsage,
-  countMessageTokens,
-} from '../tokenizer/contextUsage.js'
+  capabilitiesFor,
+  resolveSessionModel,
+  resolveSessionProfile,
+  type EndpointProfile,
+} from '../endpoints.js'
+import { computeContextUsage, countMessageTokens } from '../tokenizer/contextUsage.js'
 import { loadTokenCounter } from '../tokenizer/index.js'
 import { getIdentityPrompt } from '../identity.js'
 import { getCompressionCut, getVisibleMessages } from './branches.js'
@@ -25,7 +26,6 @@ import type { AssistantMessage, ContextCompression, UserMessage } from './types.
  * 原始消息不动；摘要在 request 里替换覆盖点之前的轮次，撤销即恢复完整上下文。
  */
 
-const MODEL: ChatModel = 'deepseek-flash'
 /** 摘要输出预留：选切点时先从目标预算里扣掉，避免摘要本身把比例顶回去 */
 const SUMMARY_RESERVE = 4096
 /** 单次摘要请求的最大输入；更大的前缀滚动分块，避免接近窗口上限 */
@@ -45,12 +45,6 @@ const SUMMARY_SYSTEM_PROMPT = `你是一个对话压缩器。把用户提供的�
 - 只输出摘要正文，不要加标题、解释或 Markdown 代码围栏。
 - 控制在约 ${SUMMARY_MAX_CHARS} 字以内。`
 
-/** 与聊天请求保持一致的工具声明，避免“扩展模式 + 空 tools”的参数组合 */
-const SUMMARY_TOOLS: CreateMessageRequest['tools'] = [
-  { type: 'deepseek_read_url', name: 'deepseek_read_url' },
-]
-const SUMMARY_SAFETY = { level: 'high' } as const
-
 export type CompressionProgress = { done: number; total: number }
 type CompressionState = { running: Record<string, CompressionProgress> }
 
@@ -68,9 +62,7 @@ const setProgress = (sessionId: string, progress: CompressionProgress) => {
 
 const clearProgress = (sessionId: string) => {
   useCompression.setState((state) => ({
-    running: Object.fromEntries(
-      Object.entries(state.running).filter(([id]) => id !== sessionId)
-    ),
+    running: Object.fromEntries(Object.entries(state.running).filter(([id]) => id !== sessionId)),
   }))
 }
 
@@ -79,13 +71,14 @@ const canAutoCompress = (sessionId: string) => {
   return last === undefined || Date.now() - last >= AUTO_COOLDOWN_MS
 }
 
-const hasStream = (sessionId: string) =>
-  Object.hasOwn(useChatStore.getState().streaming, sessionId)
+const hasStream = (sessionId: string) => Object.hasOwn(useChatStore.getState().streaming, sessionId)
 
 const isBusy = () => useChatStore.getState().importingHistory
 
-const roundTokens = (round: [UserMessage, AssistantMessage], count: Awaited<ReturnType<typeof loadTokenCounter>>) =>
-  countMessageTokens(round[0], count) + countMessageTokens(round[1], count)
+const roundTokens = (
+  round: [UserMessage, AssistantMessage],
+  count: Awaited<ReturnType<typeof loadTokenCounter>>
+) => countMessageTokens(round[0], count) + countMessageTokens(round[1], count)
 
 /** 把最近轮次留到目标预算内；至少保留最后一轮，返回需要被摘要覆盖的轮次数 */
 const planCoveredRounds = (
@@ -127,7 +120,8 @@ const renderRound = ([user, reply]: [UserMessage, AssistantMessage], index: numb
 /** 按 token 分组，避免一次摘要请求塞进接近窗口上限的前缀 */
 const chunkRounds = (
   rounds: [UserMessage, AssistantMessage][],
-  count: Awaited<ReturnType<typeof loadTokenCounter>>
+  count: Awaited<ReturnType<typeof loadTokenCounter>>,
+  limit = CHUNK_TOKENS
 ): string[] => {
   const chunks: string[] = []
   let current = ''
@@ -135,7 +129,7 @@ const chunkRounds = (
   rounds.forEach((round, index) => {
     const text = renderRound(round, index)
     const tokens = count(text)
-    if (current && currentTokens + tokens > CHUNK_TOKENS) {
+    if (current && currentTokens + tokens > limit) {
       chunks.push(current)
       current = ''
       currentTokens = 0
@@ -151,19 +145,21 @@ const chunkRounds = (
 
 /** 流式读完一次摘要请求，只累计文本块 */
 const requestSummary = async (
-  apiKey: string,
+  profile: EndpointProfile,
+  model: string,
   prompt: string,
   signal: AbortSignal
 ): Promise<string> => {
-  const events = streamMessage(
-    apiKey,
+  const events = streamChat(
     {
-      model: MODEL,
+      profile,
+      model,
       system: SUMMARY_SYSTEM_PROMPT,
       messages: [{ role: 'user', content: prompt }],
-      thinking: { type: 'disabled' },
-      safety_check: SUMMARY_SAFETY,
-      tools: SUMMARY_TOOLS,
+      thinking: false,
+      search: false,
+      title: false,
+      capabilities: capabilitiesFor(profile, model),
     },
     signal
   )
@@ -185,7 +181,8 @@ const requestSummary = async (
 }
 
 const summarizeChunks = async (
-  apiKey: string,
+  profile: EndpointProfile,
+  model: string,
   chunks: string[],
   previousSummary: string,
   signal: AbortSignal,
@@ -196,7 +193,7 @@ const summarizeChunks = async (
     signal.throwIfAborted()
     onProgress(index, chunks.length)
     const prompt = `${summary ? `已有摘要：\n${summary}\n\n` : ''}新增对话：\n${chunks[index]}\n\n请把以上内容合并成一份新的摘要。`
-    summary = await requestSummary(apiKey, prompt, signal)
+    summary = await requestSummary(profile, model, prompt, signal)
     if (!summary) {
       throw new Error('Summary is empty')
     }
@@ -250,11 +247,13 @@ export const compressSession = async (
   if (!session) {
     return { status: 'skipped', reason: 'no-session' }
   }
+  const profile = resolveSessionProfile(session)
+  const model = resolveSessionModel(session, profile)
   if (mode === 'auto' && !canAutoCompress(sessionId)) {
     return { status: 'skipped', reason: 'cooldown' }
   }
 
-  const { autoCompress, compressThreshold, compressTarget, apiKey } = useSettings.getState()
+  const { autoCompress, compressThreshold, compressTarget } = useSettings.getState()
   if (mode === 'auto' && !autoCompress) {
     return { status: 'skipped', reason: 'below-target' }
   }
@@ -278,15 +277,15 @@ export const compressSession = async (
   if (mode === 'manual' && currentPercent <= compressTarget) {
     return { status: 'skipped', reason: 'below-target' }
   }
-  if (!apiKey) {
+  if (!profile.apiKey) {
     return { status: 'skipped', reason: 'no-key' }
   }
 
   const count = await loadTokenCounter()
   const systemTokens = count(getIdentityPrompt(session.identityId))
-  // 目标 = 保留最近轮次 + 摘要；先扣掉服务端开销与摘要预留
+  // 目标 = 保留最近轮次 + 摘要；先扣掉服务端开销与摘要预留；窗口按会话模型
   const budget =
-    (compressTarget / 100) * CONTEXT_WINDOW - usage.overhead - systemTokens - SUMMARY_RESERVE
+    (compressTarget / 100) * usage.window - usage.overhead - systemTokens - SUMMARY_RESERVE
   const plan = planCoveredRounds(rounds, budget, count)
   if (!plan) {
     return { status: 'skipped', reason: 'nothing-to-compress' }
@@ -297,7 +296,11 @@ export const compressSession = async (
   if (!cutReply) {
     return { status: 'skipped', reason: 'nothing-to-compress' }
   }
-  const chunks = chunkRounds(covered, count)
+  const chunks = chunkRounds(
+    covered,
+    count,
+    Math.min(CHUNK_TOKENS, Math.max(2000, Math.floor(usage.window * 0.5)))
+  )
   if (chunks.length === 0) {
     return { status: 'skipped', reason: 'nothing-to-compress' }
   }
@@ -313,7 +316,8 @@ export const compressSession = async (
 
   try {
     const summary = await summarizeChunks(
-      apiKey,
+      profile,
+      model,
       chunks,
       cut?.compression.summary ?? '',
       controller.signal,

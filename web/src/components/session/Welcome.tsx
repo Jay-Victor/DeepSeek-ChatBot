@@ -1,11 +1,30 @@
 import { useIsMobile } from '../../app/viewport.js'
 import { useTranslate } from '../../i18n/index.js'
+import { useSessionEndpoint } from '../../services/useCapabilities.js'
 import { ChatInput } from '../chatInput/ChatInput.js'
+import { openSettings } from '../settings/settingsDialogState.js'
 import { IdentitySwitcher } from './IdentitySwitcher.js'
 import { MobileHeader } from './MobileHeader.js'
 import styles from './Welcome.module.css'
 
-/** 新对话：问候语 + 输入框。桌面端居中；移动端输入框吸底 */
+/** 新会话当前使用的接入方案与模型；点击进入数据管理 */
+const EndpointChip = () => {
+  const t = useTranslate()
+  const { profile, model } = useSessionEndpoint(null)
+  return (
+    <button
+      type="button"
+      className={styles.endpointChip}
+      aria-label={`${t('endpointProfiles')}: ${profile.name} · ${model}`}
+      onClick={() => openSettings('data')}
+    >
+      <span className={styles.endpointName}>{profile.name}</span>
+      <span className={styles.endpointModel}>{model || t('endpointModelsEmpty')}</span>
+    </button>
+  )
+}
+
+/** 新对话：问候语 + 当前接入方案 + 输入框。桌面端居中；移动端输入框吸底 */
 export const Welcome = () => {
   const t = useTranslate()
   const isMobile = useIsMobile()
@@ -19,6 +38,7 @@ export const Welcome = () => {
       ) : null}
       <div className={styles.welcome}>
         <div className={styles.greeting}>{t('welcomeMessageChat250808')}</div>
+        <EndpointChip />
         <ChatInput sessionId={null} />
         {isMobile ? <div className={styles.caveat}>{t('contentCaveat')}</div> : null}
       </div>

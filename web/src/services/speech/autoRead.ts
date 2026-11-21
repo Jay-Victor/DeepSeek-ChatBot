@@ -15,7 +15,8 @@ const lastAutoRead = new Map<string, string>()
 export const maybeAutoReadReply = (
   sessionId: string,
   activeId: string | null,
-  reply: AssistantMessage
+  reply: AssistantMessage,
+  apiKeyOverride?: string
 ) => {
   if (!useSettings.getState().autoReadAloud) {
     return
@@ -44,7 +45,12 @@ export const maybeAutoReadReply = (
   }
   lastAutoRead.set(reply.id, text)
   try {
-    startReadAloud(reply.id, text, (error) => showToast(describeReadAloudError(error)))
+    startReadAloud(
+      reply.id,
+      text,
+      (error) => showToast(describeReadAloudError(error)),
+      apiKeyOverride
+    )
   } catch {
     // 自动朗读是附加能力：AudioContext 不可用时不能影响回复收尾
   }

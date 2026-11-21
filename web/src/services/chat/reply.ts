@@ -185,8 +185,7 @@ export const canContinueReply = (reply: AssistantMessage): boolean => {
     return false
   }
   return (
-    reply.status === 'stopped' ||
-    (reply.status === 'done' && reply.stopReason === 'max_tokens')
+    reply.status === 'stopped' || (reply.status === 'done' && reply.stopReason === 'max_tokens')
   )
 }
 
@@ -201,9 +200,19 @@ const isUsableReply = (message: Message): message is AssistantMessage =>
   !message.blocks.some((block) => block.type === 'text' && block.isTemplate) &&
   getReplyText(message) !== ''
 
+/**
+ * 目标端点的协议与附件能力：
+ * - deepseek 保留 latest_reminder、DeepSeek 工具块与文件块；
+ * - anthropic / openai 剥掉 DeepSeek 专有角色与工具块，附件第一版只支持 DeepSeek。
+ */
+export type RequestOptions = {
+  protocol: 'deepseek' | 'anthropic' | 'openai'
+  filesCapable: boolean
+}
+
 /** 有文件时用内容块数组：先文件后文本，文件按 Files API 的 file_id 引用 */
-const toUserParam = ({ content, files }: UserMessage): MessageParam => {
-  const blocks = toFileBlocks(files)
+const toUserParam = ({ content, files }: UserMessage, filesCapable = true): MessageParam => {
+  const blocks = filesCapable ? toFileBlocks(files) : []
   return blocks.length === 0
     ? { role: 'user', content }
     : {
@@ -223,7 +232,8 @@ const toUserParam = ({ content, files }: UserMessage): MessageParam => {
 const toAssistantParam = (
   { blocks }: AssistantMessage,
   prefix = false,
-  thinking = false
+  thinking = false,
+  protocol: RequestOptions['protocol'] = 'deepseek'
 ): Extract<MessageParam, { role: 'assistant' }> => {
   const content: AssistantBlockParam[] = []
   // 成功阅读的网页靠签名恢复正文；缺少有效签名时，调用与结果都不回传。
@@ -258,11 +268,12 @@ const toAssistantParam = (
       continue
     }
     text = null
-    if (prefix && thinking && block.type === 'thinking') {
-      // 续写保留本轮思考，历史轮次的思考省略。
+    if (prefix && thinking && block.type === 'thinking' && protocol !== 'openai') {
+      // 续写保留本轮思考，历史轮次的思考省略；OpenAI 不接受 thinking 块。
       const { type, thinking, signature } = block
       content.push({ type, thinking, signature: signature ?? '' })
     } else if (
+      protocol === 'deepseek' &&
       block.type === 'server_tool_use' &&
       block.kind === 'read_link' &&
       !unsignedReadLinks.has(block.id)
@@ -270,6 +281,7 @@ const toAssistantParam = (
       const { type, id, name, input, kind } = block
       content.push({ type, id, name, input, kind })
     } else if (
+      protocol === 'deepseek' &&
       block.type === 'web_fetch_tool_result' &&
       block.kind === 'read_link' &&
       !unsignedReadLinks.has(block.tool_use_id)
@@ -305,11 +317,16 @@ export const toRequestMessages = (
   question: UserMessage,
   prefix?: AssistantMessage,
   thinking = prefix?.thinking ?? false,
-  latestReminder?: string
+  latestReminder?: string,
+  options: RequestOptions = { protocol: 'deepseek', filesCapable: true }
 ): MessageParam[] => {
   const messages: MessageParam[] = []
   let previousReminder: string | undefined
   const appendReminder = (reminder: string | undefined) => {
+    // 仅 DeepSeek 协议支持 latest_reminder；其他协议没有这个角色。
+    if (options.protocol !== 'deepseek') {
+      return
+    }
     // 仅在当前分支首次出现或内容变化时插入快照；缺少快照的消息保持原有内容。
     if (reminder && reminder !== previousReminder) {
       messages.push({ role: 'latest_reminder', content: reminder })
@@ -318,16 +335,21 @@ export const toRequestMessages = (
   }
   for (const [user, reply] of getContextRounds(history)) {
     // 历史提问没有文字、附件也都没有 serverId 时，提问为空，连同回答一起省略。
-    if (!user.content && toFileBlocks(user.files).length === 0) {
+    if (!user.content && (!options.filesCapable || toFileBlocks(user.files).length === 0)) {
       continue
     }
     appendReminder(reply.latestReminder)
-    messages.push(toUserParam(user), toAssistantParam(reply))
+    const assistant = toAssistantParam(reply, false, false, options.protocol)
+    // 非 DeepSeek 协议剥离工具块后可能只剩空内容；跳过整轮，避免发出空 assistant。
+    if (assistant.content.length === 0) {
+      continue
+    }
+    messages.push(toUserParam(user, options.filesCapable), assistant)
   }
   appendReminder(latestReminder)
-  messages.push(toUserParam(question))
+  messages.push(toUserParam(question, options.filesCapable))
   if (prefix?.prefix) {
-    const assistant = toAssistantParam(prefix, true, thinking)
+    const assistant = toAssistantParam(prefix, true, thinking, options.protocol)
     // 没有非空白正文或有效思考时直接重发原问题，避免服务端拒绝空 Prefill。
     if (
       assistant.content.some(

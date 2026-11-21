@@ -1,0 +1,33 @@
+declare const styles: {
+  readonly "section": string;
+  readonly "header": string;
+  readonly "headerText": string;
+  readonly "label": string;
+  readonly "description": string;
+  readonly "list": string;
+  readonly "profile": string;
+  readonly "profileActive": string;
+  readonly "profileMain": string;
+  readonly "profileTitle": string;
+  readonly "profileName": string;
+  readonly "badge": string;
+  readonly "badgeActive": string;
+  readonly "profileMeta": string;
+  readonly "profileActions": string;
+  readonly "iconButton": string;
+  readonly "deleteButton": string;
+  readonly "form": string;
+  readonly "formTitle": string;
+  readonly "field": string;
+  readonly "fieldLabel": string;
+  readonly "input": string;
+  readonly "select": string;
+  readonly "hint": string;
+  readonly "modelRow": string;
+  readonly "message": string;
+  readonly "messageError": string;
+  readonly "actions": string;
+  readonly "deleteActions": string;
+};
+
+export = styles;

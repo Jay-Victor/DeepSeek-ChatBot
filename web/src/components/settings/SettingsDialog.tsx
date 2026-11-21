@@ -16,8 +16,6 @@ import {
   exportHistory,
   importHistory,
 } from '../../services/chat/backup.js'
-import { useIsMobile } from '../../app/viewport.js'
-import { saveBlob } from '../../app/native.js'
 import { useChatStore } from '../../services/chat/store.js'
 import { regionCodes, getRegionName, provinces } from '../../services/location.js'
 import {
@@ -34,7 +32,8 @@ import {
   useSettings,
   type ThemePreference,
 } from '../../services/settings.js'
-import { CONTEXT_WINDOW } from '../../services/tokenizer/contextUsage.js'
+import { resolveContextWindow } from '../../services/endpoints.js'
+import { saveBlob } from '../../app/native.js'
 import { useTranslate, type TranslationKey, type TranslationMessage } from '../../i18n/index.js'
 import { Button } from '../base/Button.js'
 import { Modal } from '../base/Modal.js'
@@ -42,9 +41,9 @@ import { Segmented } from '../base/Segmented.js'
 import { Select } from '../base/Select.js'
 import { Switch } from '../base/Switch.js'
 import { showToast } from '../base/toastState.js'
-import { ApiKeyConfirm, ApiKeyField, useApiKeyEditor } from './ApiKeyField.js'
 import { AboutSetting } from './AboutSetting.js'
 import { AppearanceSetting } from './AppearanceSetting.js'
+import { EndpointSetting } from './EndpointSetting.js'
 import { IdentitySetting } from './IdentitySetting.js'
 import { closeSettings, useSettingsDialog, type SettingsSection } from './settingsDialogState.js'
 import styles from './Settings.module.css'
@@ -85,12 +84,27 @@ const sections: { value: SettingsSection; label: TranslationKey; icon: ReactNode
 
 const SettingsContent = () => {
   const t = useTranslate()
-  const isMobile = useIsMobile()
   // 分组由状态库驱动：打开设置或从更新提示跳转时都能切换
   const section = useSettingsDialog((state) => state.section)
   const setSection = (next: SettingsSection) => useSettingsDialog.setState({ section: next })
-  // 切换分组不丢失正在输入的 API Key 与导入状态
-  const apiKeyEditor = useApiKeyEditor()
+  const navRef = useRef<HTMLDivElement>(null)
+  // 移动端分组横向滚动：从更新提示 / 首启跳到「数据管理」时把选中项滚进可视区
+  useEffect(() => {
+    const nav = navRef.current
+    const active = nav?.querySelector<HTMLButtonElement>('[aria-selected="true"]')
+    if (nav && active && nav.scrollWidth > nav.clientWidth) {
+      const navRect = nav.getBoundingClientRect()
+      const itemRect = active.getBoundingClientRect()
+      nav.scrollTo({
+        left:
+          nav.scrollLeft +
+          (itemRect.left - navRect.left) -
+          (nav.clientWidth - itemRect.width) / 2,
+        behavior: 'smooth',
+      })
+    }
+  }, [section])
+  // 切换分组不丢失导入状态
   const historyImport = useHistoryImport()
   const historyDelete = useHistoryDelete()
   const replacingHistory = useChatStore((state) => state.importingHistory)
@@ -108,7 +122,7 @@ const SettingsContent = () => {
           }
         }}
       >
-        <div role="tablist" className={styles.navigation}>
+        <div role="tablist" ref={navRef} className={styles.navigation}>
           {sections.map((item) => (
             <button
               key={item.value}
@@ -140,7 +154,7 @@ const SettingsContent = () => {
             <ContextCompressionSetting />
           ) : section === 'data' ? (
             <>
-              <ApiKeyField editor={apiKeyEditor} />
+              <EndpointSetting />
               <ImportHistory historyImport={historyImport} disabled={historyBusy} />
               <ExportHistory disabled={historyBusy} />
               <SettingCell
@@ -158,7 +172,6 @@ const SettingsContent = () => {
                   </Button>
                 }
               />
-              {isMobile ? <ApiKeyConfirm editor={apiKeyEditor} /> : null}
             </>
           ) : (
             <AboutSetting />
@@ -398,8 +411,15 @@ const ContextCompressionSetting = () => {
   const compressThreshold = useSettings((state) => state.compressThreshold)
   const compressTarget = useSettings((state) => state.compressTarget)
   const [error, setError] = useState<'threshold' | 'target' | null>(null)
+  const session = useChatStore((state) =>
+    state.activeId !== null && Object.hasOwn(state.sessionCache, state.activeId)
+      ? state.sessionCache[state.activeId]
+      : undefined
+  )
+  // 百分比预览按当前会话绑定的模型窗口换算；没有会话时按当前方案
+  const contextWindow = resolveContextWindow(session)
   const formatTokens = (percent: number) =>
-    new Intl.NumberFormat(locale).format(Math.round((percent / 100) * CONTEXT_WINDOW))
+    new Intl.NumberFormat(locale).format(Math.round((percent / 100) * contextWindow))
 
   return (
     <>

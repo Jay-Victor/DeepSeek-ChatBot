@@ -7,7 +7,8 @@ import { canContinueReply } from '../../services/chat/reply.js'
 import { continueReply, regenerateReply } from '../../services/chat/store.js'
 import { stopReadAloud } from '../../services/speech/readAloud.js'
 import type { AssistantMessage as AssistantMessageType } from '../../services/chat/types.js'
-import { openSettings } from '../settings/settingsDialogState.js'
+import { ensureProfileKey, openSettings } from '../settings/settingsDialogState.js'
+import { useSessionEndpoint } from '../../services/useCapabilities.js'
 import { IconButton } from '../base/IconButton.js'
 import { Button } from '../base/Button.js'
 import { Markdown } from '../markdown/Markdown.js'
@@ -44,6 +45,7 @@ export const AssistantMessage = memo(function AssistantMessage({
   onSelectVersion: SelectMessageVersion
 }) {
   const t = useTranslate()
+  const { profile, capabilities } = useSessionEndpoint(sessionId)
   const view = useReplyView(message, streaming)
   const panelEntry = useSearchPanel((state) => state.entry)
   const notice = streaming ? null : describeReply(message)
@@ -143,8 +145,8 @@ export const AssistantMessage = memo(function AssistantMessage({
           <BranchSwitcher versions={versions} disabled={busy} onSelect={onSelectVersion} />
           <div className={clsx(styles.actions, isLast && styles.alwaysShow)}>
             {copyText ? <CopyButton text={copyText} /> : null}
-            {responseText && !refused ? (
-              <ReadAloudButton messageId={message.id} text={responseText} />
+            {responseText && !refused && capabilities.speech ? (
+              <ReadAloudButton messageId={message.id} text={responseText} apiKey={profile.apiKey} />
             ) : null}
             <IconButton
               icon={<IconRefreshOutline16 />}
@@ -153,7 +155,9 @@ export const AssistantMessage = memo(function AssistantMessage({
               disabled={busy || refused}
               onClick={() => {
                 stopReadAloud()
-                regenerateReply(sessionId, message.id)
+                if (ensureProfileKey(profile)) {
+                  regenerateReply(sessionId, message.id)
+                }
               }}
             />
           </div>
@@ -165,7 +169,9 @@ export const AssistantMessage = memo(function AssistantMessage({
               disabled={busy}
               onClick={() => {
                 stopReadAloud()
-                continueReply(sessionId, message.id)
+                if (ensureProfileKey(profile)) {
+                  continueReply(sessionId, message.id)
+                }
               }}
             >
               {t('continueGenerating')}

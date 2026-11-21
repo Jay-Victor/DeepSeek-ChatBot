@@ -1,7 +1,6 @@
 import type { TranslationMessage } from '../../i18n/index.js'
 import type { ApiErrorKind } from '../api/client.js'
 import type {
-  ChatModel,
   MessageUsage,
   ServerToolBlock,
   StopDetails,
@@ -77,8 +76,8 @@ export type AssistantMessage = MessageBranch & {
   id: string
   role: 'assistant'
   createdAt: number
-  /** 未记录模型时为 null，续写使用当前默认模型。 */
-  model: ChatModel | null
+  /** 未记录模型时为 null，续写使用会话绑定的默认模型。 */
+  model: string | null
   /** 请求时是否开启深度思考 */
   thinking?: boolean
   /** 请求时是否声明 deepseek_web_search；关闭时仍声明 deepseek_read_url */
@@ -139,6 +138,10 @@ export type Session = {
   compression?: ContextCompression
   /** 使用的身份声明；缺省表示内置身份（本功能之前的旧会话） */
   identityId?: string
+  /** 绑定的 API 接入方案；缺省表示当前方案（旧会话或导入的会话） */
+  endpointId?: string
+  /** 绑定的模型；缺省表示方案默认模型 */
+  modelId?: string
 }
 
 /** 会话列表元数据；消息只在打开会话时加载。 */

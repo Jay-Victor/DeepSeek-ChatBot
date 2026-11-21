@@ -29,7 +29,10 @@ const describeRecordingError = (error: unknown): TranslationMessage => {
  * 语音输入（oneshot）：点击开始录音，再次点击结束并转写，结果交给 onText 填入输入框。
  * 转写中再次点击取消。录满 120 秒自动结束。
  */
-export const useVoiceInput = (onText: (text: string) => void) => {
+export const useVoiceInput = (
+  onText: (text: string) => void,
+  getApiKey?: () => string
+) => {
   const [status, setStatus] = useState<VoiceInputStatus>('idle')
   /** 本次录音已录秒数，只在录音中递增 */
   const [seconds, setSeconds] = useState(0)
@@ -38,6 +41,9 @@ export const useVoiceInput = (onText: (text: string) => void) => {
   const operationRef = useRef(0)
   const onTextRef = useRef(onText)
   onTextRef.current = onText
+  // 会话绑定的方案可能与当前方案不同，转写必须用会话自己的 Key
+  const apiKeyRef = useRef(getApiKey)
+  apiKeyRef.current = getApiKey
 
   const cancelOperation = useCallback(() => {
     operationRef.current++
@@ -75,7 +81,11 @@ export const useVoiceInput = (onText: (text: string) => void) => {
       controller = new AbortController()
       controllerRef.current = controller
       setStatus('transcribing')
-      const text = await transcribe(useSettings.getState().apiKey ?? '', audio, controller.signal)
+      const text = await transcribe(
+        apiKeyRef.current?.() ?? useSettings.getState().apiKey ?? '',
+        audio,
+        controller.signal
+      )
       if (controller.signal.aborted || operationRef.current !== operation) {
         return
       }

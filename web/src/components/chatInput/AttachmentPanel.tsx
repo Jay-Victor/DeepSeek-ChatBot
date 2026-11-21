@@ -23,11 +23,14 @@ type GalleryState = 'idle' | 'loading' | 'ready' | 'permission' | 'failed'
  */
 export const AttachmentPanel = ({
   active,
+  allowImages = true,
   onPickFiles,
   onOpenAlbum,
   onOpenFiles,
 }: {
   active: boolean
+  /** 当前模型是否接受图片；不支持时只保留文件入口 */
+  allowImages?: boolean
   onPickFiles: (files: File[]) => void
   onOpenAlbum: () => void
   onOpenFiles: () => void
@@ -38,7 +41,7 @@ export const AttachmentPanel = ({
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    if (!active) {
+    if (!active || !allowImages) {
       return
     }
     let alive = true
@@ -58,10 +61,10 @@ export const AttachmentPanel = ({
     return () => {
       alive = false
     }
-  }, [active])
+  }, [active, allowImages])
 
   const pickPhoto = async (item: GalleryItem) => {
-    if (busy) {
+    if (busy || !allowImages) {
       return
     }
     setBusy(true)
@@ -75,7 +78,7 @@ export const AttachmentPanel = ({
   }
 
   const takePhoto = async () => {
-    if (busy) {
+    if (busy || !allowImages) {
       return
     }
     setBusy(true)
@@ -106,55 +109,65 @@ export const AttachmentPanel = ({
 
   return (
     <div className={styles.panel}>
-      <div className={styles.gallery} aria-busy={state === 'loading'}>
-        {state === 'loading' ? (
-          Array.from({ length: 6 }, (_, index) => (
-            <span key={index} className={styles.skeleton} />
-          ))
-        ) : state === 'permission' ? (
-          <div className={styles.notice}>
-            <span>
-              {t('attachmentGalleryPermission')} · {t('attachmentGalleryPermissionHint')}
-            </span>
-            <button type="button" className={styles.retry} onClick={retry}>
-              {t('attachmentGalleryRetry')}
-            </button>
-          </div>
-        ) : state === 'failed' ? (
-          <div className={styles.notice}>
-            <span>{t('attachmentGalleryPermission')}</span>
-            <button type="button" className={styles.retry} onClick={retry}>
-              {t('attachmentGalleryRetry')}
-            </button>
-          </div>
-        ) : items.length === 0 ? (
-          <div className={styles.notice}>
-            <span>{t('attachmentGalleryEmpty')}</span>
-          </div>
-        ) : (
-          items.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={styles.thumb}
-              title={item.name}
-              aria-label={item.name}
-              onClick={() => void pickPhoto(item)}
-            >
-              <img src={item.thumb} alt={item.name} loading="lazy" />
-            </button>
-          ))
-        )}
-      </div>
+      {allowImages ? (
+        <div className={styles.gallery} aria-busy={state === 'loading'}>
+          {state === 'loading' ? (
+            Array.from({ length: 6 }, (_, index) => (
+              <span key={index} className={styles.skeleton} />
+            ))
+          ) : state === 'permission' ? (
+            <div className={styles.notice}>
+              <span>
+                {t('attachmentGalleryPermission')} · {t('attachmentGalleryPermissionHint')}
+              </span>
+              <button type="button" className={styles.retry} onClick={retry}>
+                {t('attachmentGalleryRetry')}
+              </button>
+            </div>
+          ) : state === 'failed' ? (
+            <div className={styles.notice}>
+              <span>{t('attachmentGalleryPermission')}</span>
+              <button type="button" className={styles.retry} onClick={retry}>
+                {t('attachmentGalleryRetry')}
+              </button>
+            </div>
+          ) : items.length === 0 ? (
+            <div className={styles.notice}>
+              <span>{t('attachmentGalleryEmpty')}</span>
+            </div>
+          ) : (
+            items.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={styles.thumb}
+                title={item.name}
+                aria-label={item.name}
+                onClick={() => void pickPhoto(item)}
+              >
+                <img src={item.thumb} alt={item.name} loading="lazy" />
+              </button>
+            ))
+          )}
+        </div>
+      ) : (
+        <div className={styles.notice}>
+          <span>{t('endpointNoVision')}</span>
+        </div>
+      )}
       <div className={styles.actions}>
-        <button type="button" className={styles.action} disabled={busy} onClick={takePhoto}>
-          <IconCameraOutline20 />
-          <span>{t('attachmentCamera')}</span>
-        </button>
-        <button type="button" className={styles.action} disabled={busy} onClick={onOpenAlbum}>
-          <IconImageOutline20 />
-          <span>{t('attachmentAlbum')}</span>
-        </button>
+        {allowImages ? (
+          <>
+            <button type="button" className={styles.action} disabled={busy} onClick={takePhoto}>
+              <IconCameraOutline20 />
+              <span>{t('attachmentCamera')}</span>
+            </button>
+            <button type="button" className={styles.action} disabled={busy} onClick={onOpenAlbum}>
+              <IconImageOutline20 />
+              <span>{t('attachmentAlbum')}</span>
+            </button>
+          </>
+        ) : null}
         <button type="button" className={styles.action} disabled={busy} onClick={onOpenFiles}>
           <IconFileOutline20 />
           <span>{t('attachmentFiles')}</span>
