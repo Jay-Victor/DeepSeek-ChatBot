@@ -10,7 +10,7 @@
 [![Download APK](https://img.shields.io/badge/download-APK-3DDC84?logo=android&logoColor=white)](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest)
 [![DeepSeek](https://img.shields.io/badge/DeepSeek-4D6BFE?logo=deepseek&logoColor=white)](https://www.deepseek.com/)
 
-把 [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.1 原样装进 Android：
+把 [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 原样装进 Android：
 **上游前端产物 + 一层 Kotlin WebView 壳**，不重写界面，也不改协议。
 
 | 会话 | 侧边栏 |
@@ -24,8 +24,8 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.9（versionCode 10） |
-| 体积 | 5.32 MB（release） |
+| 版本 | 0.1.10（versionCode 11） |
+| 体积 | 5.33 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
 | 构建工具链 | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
@@ -37,13 +37,16 @@
 - 多会话与自动标题、编辑提问、重新生成、消息分支
 - 流式回答、深度思考、智能搜索与来源引用
 - 附件上传（粘贴 / 拖拽）、语音输入与朗读
+- 附件直接打开：图片 / PDF 新标签打开，SVG 与其他文件下载原件；搜索结果、引用与网页读取记录只接受 HTTP(S) 链接
+- 长边超过 4096 像素的图片上传前等比缩小；历史图片再次引用时自动补传
 - Markdown / 代码高亮 / KaTeX 公式 / Mermaid 图表
 - 中英文、浅色深色、ZIP 历史导入导出
 
 ### 壳补上的部分
 
 - **系统能力**：返回键、状态栏配色、安全区与键盘避让、麦克风、文件选择、外链
-- **导出**：ZIP 走 SAF 落盘（WebView 会丢弃 `blob:` 下载）
+- **附件打开**：图片走应用内全屏预览（点图片切换原始尺寸），PDF 交给系统查看器（无查看器回退 SAF 保存），SVG / 其他文件走 SAF 下载
+- **导出**：ZIP 与附件下载走 SAF 落盘（WebView 会丢弃 `blob:` 下载），保存桥按文件 MIME 创建文档
 - **移动端侧边栏**：会话搜索（标题 + 当前分支正文，命中高亮）、底部浮动「新建」、多选批量置顶 / 删除
 - **会话页顶栏**：自动朗读开关；开启后每条新完成的回复自动朗读，切换时在屏幕中央显示 1.6 秒提示
 - **会话三点菜单**：置顶 / 取消置顶、多选
@@ -54,7 +57,7 @@
 从 [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 下载签名 APK，或：
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.9-release.apk
+adb install -r DeepSeekChatBot-v0.1.10-release.apk
 ```
 
 首次启动在「设置 → 数据管理」填入自己的 DeepSeek API Key；Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
@@ -83,7 +86,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.9-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.10-release.apk
 ```
 
 手动分步：
@@ -127,6 +130,8 @@ KEYSTORE_FILE / KEYSTORE_PASSWORD / KEYSTORE_ALIAS / KEY_PASSWORD
 - **会话搜索、置顶与多选只在移动端侧边栏**：搜索匹配标题、当前分支正文与附件名，不含思考内容；首次搜索需建本地索引，历史很多时会有短暂延迟
 - **后台 / 锁屏**：WebView 会被系统节流，长时间生成可能中断；「锁屏继续跑」需要前台服务，未实现
 - **系统深色模式**：页面按启动时的系统主题渲染（`configChanges` 含 `uiMode`，为的是不重建 Activity、不丢流式回复），运行中切系统主题要重启应用才生效；应用内「设置 → 主题」可立即切换
+- **超过 4096 像素的动图**：上传前缩放时只保留一帧，动效会丢失（上游行为）
+- **PDF 打开依赖系统查看器**：没有可用的 PDF 应用时会弹出保存位置选择，文件仍可正常落盘
 - 大附件（几十 MB）经 SAF 进内存再上传，低端机有 OOM 风险（已开 `largeHeap`）
 - 只支持 DeepSeek 官方接口（`/anthropic/v1/messages`、`/anthropic/v1/files`、`/v1/tools/asr|tts`）；换 OpenAI 兼容端点需要改 `web/src/services/api/`
 - 应用内更新需要访问 GitHub 资产（优先 `api.github.com` 资产入口）；受限网络可能下载失败，此时可用「在浏览器中下载」，首次安装还需在系统设置里允许未知来源
@@ -141,10 +146,15 @@ ZIP 导出落盘（下载文件 md5 与源数据一致）、麦克风授权链�
 v0.1.9 的移动端侧边栏（搜索、多选、置顶分组、批量删除、浮动新建、顶栏常驻）、会话菜单（置顶 / 取消置顶 / 多选）
 与顶栏自动朗读开关（含 1.6 秒居中提示与自动朗读触发）在 390×844 视口核对；自动朗读的真实出声与真机输入法待确认。
 
+v0.1.10 在 Android 16（API 36.1，x86_64 模拟器）上核对：6000×3000 图片上传前缩到 4096×2048、
+历史图片清掉 `serverId` 后自动补传并写回新 ID、聊天记录与草稿图片的应用内预览（含返回键关闭与原始尺寸切换）、
+PDF 进入系统查看器、SVG 经 SAF 保存后字节一致、ZIP 导出重新下载校验 CRC 与原件字节、`javascript:` 搜索结果与
+阅读链接不渲染为可点链接；`isWebUrl` 12 条用例通过。真机网络与 IME 行为仍由发布前的设备验收覆盖。
+
 ## 仓库结构
 
 ```
-web/        上游 chat-demo 0.1.1 源码；相对上游的改动见 web/PATCHES.md
+web/        上游 chat-demo 0.1.3 源码；相对上游的改动见 web/PATCHES.md
 android/    Kotlin WebView 壳（Gradle 工程）
 scripts/    build-apk.sh：构建 Web → 同步 assets → 出 APK
 docs/       截图与按版本归档的 Release 正文

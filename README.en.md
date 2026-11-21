@@ -10,7 +10,7 @@ English | [简体中文](README.md)
 [![Download APK](https://img.shields.io/badge/download-APK-3DDC84?logo=android&logoColor=white)](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest)
 [![DeepSeek](https://img.shields.io/badge/DeepSeek-4D6BFE?logo=deepseek&logoColor=white)](https://www.deepseek.com/)
 
-Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.1 into an installable Android app:
+Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 into an installable Android app:
 **the upstream web build, wrapped in a thin Kotlin WebView shell**. No UI rewrite, no protocol changes.
 
 | Chat | Sidebar |
@@ -24,8 +24,8 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.1 in
 | | |
 | --- | --- |
 | Application ID | `com.deepseekchatbot` |
-| Version | 0.1.9 (versionCode 10) |
-| Size | 5.32 MB (release) |
+| Version | 0.1.10 (versionCode 11) |
+| Size | 5.33 MB (release) |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | Native deps | androidx only (webkit / browser / activity / core-splashscreen), no third-party runtime |
 | Toolchain | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
@@ -37,13 +37,16 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.1 in
 - Multiple sessions with auto-generated titles, edit / regenerate / branch switching
 - Streaming answers, deep thinking, web search with source citations
 - Attachments (paste / drag-drop), voice input and read-aloud
+- Open attachments directly: images and PDFs in a new tab, SVG and other files downloaded; search results, citations and page links accept HTTP(S) only
+- Images with a long edge over 4096 px are downscaled before upload; historical images are re-uploaded automatically
 - Markdown / syntax highlighting / KaTeX / Mermaid
 - Chinese and English, light and dark themes, ZIP history import/export
 
 ### Added by the shell
 
 - **System capabilities**: back button, status bar appearance, safe areas and keyboard avoidance, microphone, file picker, external links
-- **Export**: ZIP through SAF (WebView drops `blob:` downloads)
+- **Attachments**: images open in a full-screen in-app preview (tap to toggle actual size), PDFs go to the system viewer (fallback to SAF save), SVG and other files are saved through SAF
+- **Export**: ZIP and attachment downloads use SAF (WebView drops `blob:` downloads); the save bridge creates documents with the right MIME type
 - **Mobile sidebar**: session search (title + current branch text, highlighted hits), floating New button, multi-select with batch pin/delete
 - **Session header**: auto-read toggle; reads each completed reply aloud and shows a 1.6-second centered hint when toggled
 - **Session menu**: pin / unpin and multi-select
@@ -54,7 +57,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.1 in
 Download the signed APK from [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest), or:
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.9-release.apk
+adb install -r DeepSeekChatBot-v0.1.10-release.apk
 ```
 
 On first launch, add your DeepSeek API key in Settings → Data. The key is written only to the on-device WebView localStorage and is excluded from cloud backup (`allowBackup=false`).
@@ -80,7 +83,7 @@ scripts/build-apk.sh release        # or scripts/build-apk.sh debug
 The script does three things: `pnpm build` inside `web/`, sync `web/dist` into `android/app/src/main/assets/www`, then `./gradlew assembleRelease`. Output:
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.9-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.10-release.apk
 ```
 
 Step by step:
@@ -123,6 +126,8 @@ If any of them is missing, `assembleRelease` still produces an APK, just unsigne
 - **Session search, pinning and multi-select are mobile-only**: search matches titles, current branch text and attachment names, not thinking blocks; the first search builds a local index, so a large history may pause briefly
 - **Background / lock screen**: the system throttles WebView, so long generations may be interrupted. Keeping it running while locked needs a foreground service, which is not implemented
 - **System dark mode**: the page renders with the theme present at launch (`configChanges` includes `uiMode` so the activity is never recreated and streaming survives). A system theme switch takes effect on the next launch; the in-app Settings → Theme switch applies immediately
+- **Animated images over 4096 px** lose their animation when downscaled before upload (upstream behaviour)
+- **PDF opening depends on a system viewer**: without one the app opens a save-location picker instead; the file is still written normally
 - Large attachments (tens of MB) go through SAF into memory before upload; low-end devices risk OOM (`largeHeap` is enabled, which only helps)
 - DeepSeek endpoints only (`/anthropic/v1/messages`, `/anthropic/v1/files`, `/v1/tools/asr|tts`). Supporting an OpenAI-compatible endpoint means changing `web/src/services/api/`
 - In-app updates need access to GitHub release assets (the `api.github.com` asset endpoint is preferred). On restricted networks the download may fail; use "Download in browser" instead. The first install also requires allowing unknown sources in system settings
@@ -134,10 +139,12 @@ Checked on Android 16 (API 36.1, x86_64 emulator) for the shell: page origin and
 
 v0.1.9's mobile sidebar (search, multi-select, pinned group, batch delete, floating New, persistent header button), session menu (pin / unpin / multi-select) and auto-read toggle (including the 1.6-second centered hint and the auto-read trigger) were checked in a 390×844 viewport; real audio output and the Android IME behaviour still need an on-device check.
 
+v0.1.10 was checked on Android 16 (API 36.1, x86_64 emulator): a 6000×3000 image is downscaled to 4096×2048 before upload, a historical image with its `serverId` cleared is re-uploaded and gets a new ID, chat and draft images open in the in-app preview (back button closes, tap toggles actual size), PDFs reach the system viewer, SVG saves through SAF byte-for-byte, the exported ZIP re-downloads with a valid CRC and the original image bytes, and `javascript:` search results / page links never become clickable anchors; all 12 `isWebUrl` cases pass. Real-device network and IME behaviour are covered by the pre-release device check.
+
 ## Repository layout
 
 ```
-web/        upstream chat-demo 0.1.1 sources; see web/PATCHES.md for local changes
+web/        upstream chat-demo 0.1.3 sources; see web/PATCHES.md for local changes
 android/    Kotlin WebView shell (Gradle project)
 scripts/    build-apk.sh: build web → sync assets → build APK
 docs/       screenshots and per-version release notes

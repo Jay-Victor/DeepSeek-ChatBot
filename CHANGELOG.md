@@ -5,6 +5,25 @@
 
 ## [Unreleased]
 
+## [0.1.10] - 2026-11-21
+
+### 新增
+
+- 同步上游 chat-demo 0.1.3：草稿与聊天记录中的附件可以直接打开，图片 / PDF 在新标签页显示，SVG 与其他文件下载原件
+- 回复中的搜索结果、引用与网页读取记录只允许打开 HTTP 或 HTTPS 链接
+- 长边超过 4096 像素的图片在上传前等比缩小；历史对话再次引用这类图片时自动补传
+- 壳内补上 Android 的附件打开方式：图片走应用内全屏预览（点按切换原始尺寸、返回键关闭），PDF 交给系统查看器，SVG / 其他文件走 SAF 下载
+
+### 变更
+
+- 保存桥按文件 MIME 创建文档（ZIP、PDF、SVG 等），不再固定为 `application/zip`；Blob 改为按块读取
+- 图片预览计入弹层状态，返回键优先关闭预览
+
+### 修复
+
+- Android WebView 从 IndexedDB 读回的 SAF 文件 `size` 为 0，导致聊天记录缩略图空白、ZIP 导出失败
+- `blob:` 附件链接在 WebView 里既不能新开标签也不能下载
+
 ## [0.1.9] - 2026-11-18
 
 ### 新增
@@ -103,7 +122,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.9...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.10...HEAD
+[0.1.10]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.10
 [0.1.9]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.9
 [0.1.8]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.8
 [0.1.7]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.7
