@@ -24,8 +24,8 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 | | |
 | --- | --- |
 | Application ID | `com.deepseekchatbot` |
-| Version | 0.1.10 (versionCode 11) |
-| Size | 5.33 MB (release) |
+| Version | 0.1.11 (versionCode 12) |
+| Size | 5.34 MB (release) |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | Native deps | androidx only (webkit / browser / activity / core-splashscreen), no third-party runtime |
 | Toolchain | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
@@ -45,7 +45,10 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 ### Added by the shell
 
 - **System capabilities**: back button, status bar appearance, safe areas and keyboard avoidance, microphone, file picker, external links
-- **Attachments**: images open in a full-screen in-app preview (tap to toggle actual size), PDFs go to the system viewer (fallback to SAF save), SVG and other files are saved through SAF
+- **Voice input**: circled sound-wave entry; tapping switches to "Hold to talk" — hold to record, release to transcribe and send, swipe up to cancel, with a live spectrum overlay
+- **Attachment panel**: circled plus opens a panel with recent photos plus Camera / Photos / Files
+- **Update prompt**: tapping the new-version prompt opens Settings → About
+- **Attachment preview**: images open in a full-screen in-app preview (tap to toggle actual size), PDFs go to the system viewer (fallback to SAF save), SVG and other files are saved through SAF
 - **Export**: ZIP and attachment downloads use SAF (WebView drops `blob:` downloads); the save bridge creates documents with the right MIME type
 - **Mobile sidebar**: session search (title + current branch text, highlighted hits), floating New button, multi-select with batch pin/delete
 - **Session header**: auto-read toggle; reads each completed reply aloud and shows a 1.6-second centered hint when toggled
@@ -57,7 +60,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 Download the signed APK from [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest), or:
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.10-release.apk
+adb install -r DeepSeekChatBot-v0.1.11-release.apk
 ```
 
 On first launch, add your DeepSeek API key in Settings → Data. The key is written only to the on-device WebView localStorage and is excluded from cloud backup (`allowBackup=false`).
@@ -83,7 +86,7 @@ scripts/build-apk.sh release        # or scripts/build-apk.sh debug
 The script does three things: `pnpm build` inside `web/`, sync `web/dist` into `android/app/src/main/assets/www`, then `./gradlew assembleRelease`. Output:
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.10-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.11-release.apk
 ```
 
 Step by step:
@@ -127,6 +130,7 @@ If any of them is missing, `assembleRelease` still produces an APK, just unsigne
 - **Background / lock screen**: the system throttles WebView, so long generations may be interrupted. Keeping it running while locked needs a foreground service, which is not implemented
 - **System dark mode**: the page renders with the theme present at launch (`configChanges` includes `uiMode` so the activity is never recreated and streaming survives). A system theme switch takes effect on the next launch; the in-app Settings → Theme switch applies immediately
 - **Animated images over 4096 px** lose their animation when downscaled before upload (upstream behaviour)
+- **Recent photos need photo permission**: when denied the strip shows a retry action; Camera / Photos / Files still work
 - **PDF opening depends on a system viewer**: without one the app opens a save-location picker instead; the file is still written normally
 - Large attachments (tens of MB) go through SAF into memory before upload; low-end devices risk OOM (`largeHeap` is enabled, which only helps)
 - DeepSeek endpoints only (`/anthropic/v1/messages`, `/anthropic/v1/files`, `/v1/tools/asr|tts`). Supporting an OpenAI-compatible endpoint means changing `web/src/services/api/`
@@ -140,6 +144,8 @@ Checked on Android 16 (API 36.1, x86_64 emulator) for the shell: page origin and
 v0.1.9's mobile sidebar (search, multi-select, pinned group, batch delete, floating New, persistent header button), session menu (pin / unpin / multi-select) and auto-read toggle (including the 1.6-second centered hint and the auto-read trigger) were checked in a 390×844 viewport; real audio output and the Android IME behaviour still need an on-device check.
 
 v0.1.10 was checked on Android 16 (API 36.1, x86_64 emulator): a 6000×3000 image is downscaled to 4096×2048 before upload, a historical image with its `serverId` cleared is re-uploaded and gets a new ID, chat and draft images open in the in-app preview (back button closes, tap toggles actual size), PDFs reach the system viewer, SVG saves through SAF byte-for-byte, the exported ZIP re-downloads with a valid CRC and the original image bytes, and `javascript:` search results / page links never become clickable anchors; all 12 `isWebUrl` cases pass. Real-device network and IME behaviour are covered by the pre-release device check.
+
+v0.1.11 was checked on Android 16 (emulator): the circled sound-wave entry and Hold to talk switch, the recording overlay and swipe-up cancel, auto-send after a mocked ASR transcript, and switching back to the keyboard; the circled-plus attachment panel with granted / denied photo permission, recent-photo taps, camera capture, Photos, Files and back-button dismissal; and a mocked new release whose whole toast opens Settings → About. Real-device camera, photo permission and IME behaviour await the device check.
 
 ## Repository layout
 

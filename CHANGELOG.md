@@ -5,6 +5,24 @@
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-11-21
+
+### 新增
+
+- 语音输入改为圆圈声波入口：点击进入「按住说话」，按住录音、松手转写并直接发送；上滑变为取消，录音浮层显示蓝色渐变与实时频谱，右侧键盘按钮可切回文本输入
+- 输入框附件入口改为圆圈加号：点击后输入框上滑，展开最近照片横排与「拍照 / 相册 / 文件」三个按钮；最近照片走 MediaStore，拍照调用系统相机
+- 自动朗读开关改为细线喇叭：开启为双声波，关闭为同形喇叭加叉号
+
+### 变更
+
+- 发现新版本的提示改为整条可点，直接打开「设置 → 关于」，不再跳转 Release 网页
+- 提示支持键盘 Enter / 空格触发，文字与链接之间补上间距
+- 设置分组改为状态库驱动，设置已打开时从更新提示跳转也能切到「关于」
+
+### 修复
+
+- 设置弹窗已经打开时，切换分组不生效
+
 ## [0.1.10] - 2026-11-21
 
 ### 新增
@@ -122,7 +140,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.10...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.11...HEAD
+[0.1.11]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.11
 [0.1.10]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.10
 [0.1.9]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.9
 [0.1.8]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.8

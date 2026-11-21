@@ -24,8 +24,8 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.10（versionCode 11） |
-| 体积 | 5.33 MB（release） |
+| 版本 | 0.1.11（versionCode 12） |
+| 体积 | 5.34 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
 | 构建工具链 | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
@@ -45,6 +45,9 @@
 ### 壳补上的部分
 
 - **系统能力**：返回键、状态栏配色、安全区与键盘避让、麦克风、文件选择、外链
+- **语音输入**：圆圈声波入口；点击切到「按住说话」，按住录音、松手转写并直接发送，上滑取消，录音浮层显示实时频谱
+- **添加附件**：圆圈加号展开面板，显示手机最近照片并支持拍照 / 相册 / 文件
+- **更新提示**：发现新版本时点击提示直接打开「设置 → 关于」
 - **附件打开**：图片走应用内全屏预览（点图片切换原始尺寸），PDF 交给系统查看器（无查看器回退 SAF 保存），SVG / 其他文件走 SAF 下载
 - **导出**：ZIP 与附件下载走 SAF 落盘（WebView 会丢弃 `blob:` 下载），保存桥按文件 MIME 创建文档
 - **移动端侧边栏**：会话搜索（标题 + 当前分支正文，命中高亮）、底部浮动「新建」、多选批量置顶 / 删除
@@ -57,7 +60,7 @@
 从 [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 下载签名 APK，或：
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.10-release.apk
+adb install -r DeepSeekChatBot-v0.1.11-release.apk
 ```
 
 首次启动在「设置 → 数据管理」填入自己的 DeepSeek API Key；Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
@@ -86,7 +89,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.10-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.11-release.apk
 ```
 
 手动分步：
@@ -131,6 +134,7 @@ KEYSTORE_FILE / KEYSTORE_PASSWORD / KEYSTORE_ALIAS / KEY_PASSWORD
 - **后台 / 锁屏**：WebView 会被系统节流，长时间生成可能中断；「锁屏继续跑」需要前台服务，未实现
 - **系统深色模式**：页面按启动时的系统主题渲染（`configChanges` 含 `uiMode`，为的是不重建 Activity、不丢流式回复），运行中切系统主题要重启应用才生效；应用内「设置 → 主题」可立即切换
 - **超过 4096 像素的动图**：上传前缩放时只保留一帧，动效会丢失（上游行为）
+- **最近照片需要相册权限**：拒绝后照片条显示重试入口，拍照 / 相册 / 文件仍可用
 - **PDF 打开依赖系统查看器**：没有可用的 PDF 应用时会弹出保存位置选择，文件仍可正常落盘
 - 大附件（几十 MB）经 SAF 进内存再上传，低端机有 OOM 风险（已开 `largeHeap`）
 - 只支持 DeepSeek 官方接口（`/anthropic/v1/messages`、`/anthropic/v1/files`、`/v1/tools/asr|tts`）；换 OpenAI 兼容端点需要改 `web/src/services/api/`
@@ -150,6 +154,10 @@ v0.1.10 在 Android 16（API 36.1，x86_64 模拟器）上核对：6000×3000 �
 历史图片清掉 `serverId` 后自动补传并写回新 ID、聊天记录与草稿图片的应用内预览（含返回键关闭与原始尺寸切换）、
 PDF 进入系统查看器、SVG 经 SAF 保存后字节一致、ZIP 导出重新下载校验 CRC 与原件字节、`javascript:` 搜索结果与
 阅读链接不渲染为可点链接；`isWebUrl` 12 条用例通过。真机网络与 IME 行为仍由发布前的设备验收覆盖。
+
+v0.1.11 在 Android 16 模拟器上核对：圆圈声波入口与「按住说话」切换、按住录音浮层、上滑取消、mock ASR 松手后
+自动发送、键盘切回；圆圈加号附件面板、相册权限允许 / 拒绝、最近照片点选、拍照、相册、文件、返回键收起；
+mock Release 新版本提示整条点击后进入「设置 → 关于」。真机相机、相册权限与 IME 行为待设备验收。
 
 ## 仓库结构
 
