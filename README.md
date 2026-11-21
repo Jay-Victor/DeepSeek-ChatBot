@@ -24,8 +24,8 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.16（versionCode 17） |
-| 体积 | 5.35 MB（release） |
+| 版本 | 0.1.17（versionCode 18） |
+| 体积 | 5.36 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
 | 构建工具链 | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
@@ -56,13 +56,14 @@
 - **设置与关于**：思考内容自动折叠、上下文占用环（DeepSeek-V4 分词器，1M 窗口）、版本与更新检查、应用内下载安装
 - **上下文与压缩**：设置里可开启自动压缩并设置压缩阈值 / 目标（默认 50% / 20%）；占用卡片可手动「压缩对话」，查看进度与摘要、随时撤销；消息列表在覆盖点显示「已压缩」分隔条
 - **身份声明**：设置里可创建多套方案（姓名 + 设定），聊天页顶栏按会话切换；新会话继承默认方案，系统提示、占用统计与压缩预算同步使用所选身份
+- **外观**：图片 / 视频自定义背景（两类各保留一份）、蒙层浓度（默认 20%）与 0–24px 模糊、色相主题色拖动条与恢复默认；有背景时聊天区、顶栏、输入框和侧边栏切换为半透明面板；视频背景静音循环，切后台自动暂停
 
 ## 快速开始
 
 从 [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 下载签名 APK，或：
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.16-release.apk
+adb install -r DeepSeekChatBot-v0.1.17-release.apk
 ```
 
 首次启动在「设置 → 数据管理」填入自己的 DeepSeek API Key；Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
@@ -91,7 +92,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.16-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.17-release.apk
 ```
 
 手动分步：
@@ -147,6 +148,10 @@ KEYSTORE_FILE / KEYSTORE_PASSWORD / KEYSTORE_ALIAS / KEY_PASSWORD
 - **ZIP 导入导出不携带压缩摘要**：归档格式与上游一致，导入后回到完整上下文
 - **压缩目标是软目标**：最近一轮本身超过目标时，压缩后仍可能高于目标
 - **身份声明不随 ZIP 迁移**：身份方案是设备级设置；导入的历史会话回到内置身份，新建会话使用当前默认方案
+- **外观设置不随 ZIP 迁移**：背景、蒙层、模糊与主题色都只保存在本机；背景媒体复制在应用私有目录，卸载应用会一起删除
+- **背景只铺内容区**：原生壳给系统栏留 inset，状态栏与导航栏仍是主题底色；背景蒙层默认 20%，过亮壁纸可继续调高
+- **视频背景持续解码**：耗电高于纯色背景，低端机可能掉帧；模糊建议不超过 8px，格式取决于系统 WebView（H.264 MP4 / WebM 较稳，HEVC / MOV 视设备而定）
+- **主题色只改色相**：饱和度与明度沿用 DeepSeek 品牌色阶；极黄 / 极绿等色相会自动把主色上的文字切为深色
 - 没有 iOS 版本：同样六类能力在 iOS 上要另写一份
 
 ## 验证状态
@@ -186,6 +191,14 @@ v0.1.16 在桌面 Chrome（390×844、360×800、1280×800）核对身份声明�
 删除正在使用的方案后回落到内置身份；抓取请求体确认 `system` 为当前会话的 `你是{姓名}。{设定}`；
 长身份下占用卡片的「系统与模板」随身份变化；mock 原生桥确认菜单打开时 `setOverlay(true)`、
 返回键先关闭菜单。APK 核对 `0.1.16` / `versionCode 17` 与 v2 签名。
+
+v0.1.17 在 Android 16（API 36.1，x86_64 模拟器，release 签名包）核对外观：六个设置分组与移动端横向滚动、
+「主题」改「模式」后的分段控制器、图片 / 视频背景选择与预览、蒙层与模糊的实时预览、
+图片与视频切换后各自保留、移除当前类型不影响另一类、重启与 force-stop 后壁纸和主题色保持、视频静音循环与
+切后台暂停、顶栏 / 输入框 / 侧边栏半透明面板；`/userbg/` 的 Range 响应返回 206，取 `bytes=100-199`
+与源文件同段 SHA-256 一致。桌面 Chrome（窗口 758×426 与 1280×800）核对同一套设置与浏览器 IndexedDB 回退，
+刷新后壁纸恢复；286° 与 52° 色相下按钮 / 链接 / 气泡同步变色，主色文字按对比度切换黑 / 白，
+恢复默认后注入样式移除。APK 核对 `0.1.17` / `versionCode 18` 与 v2 签名。
 
 ## 仓库结构
 

@@ -5,6 +5,31 @@
 
 ## [Unreleased]
 
+## [0.1.17] - 2026-11-22
+
+### 新增
+
+- 设置新增「外观」分组：支持图片 / 视频自定义背景，图片与视频各保留一份，切换时不用重新选择
+- 背景效果：壁纸上方蒙层（0% 最清晰，100% 完全遮住，默认 20%）与 0–24px 高斯模糊，设置页内提供实时预览
+- 视频背景静音循环播放，切到后台自动暂停、回到前台继续；退出应用后仍保留
+- 自定义主题色：色相拖动条即时生效，覆盖按钮、链接、用户气泡、选中态等整套品牌色；按对比度自动选择主色上的黑 / 白文字，可一键恢复 DeepSeek 蓝
+- 有背景时聊天区、顶栏、输入框与侧边栏使用 82%–90% 半透明面板，壁纸透过面板可见
+
+### 变更
+
+- 通用设置的「主题」改名为「模式」，浅色 / 深色 / 跟随系统由三个大选块改为分段控制器
+- 设置分组增加到六个（通用设置 → 外观 → 身份声明 → 上下文与压缩 → 数据管理 → 关于），移动端横向滚动导航可到达全部分组
+- 背景媒体在壳内由 SAF 选择后复制到应用私有目录，通过同源 `/userbg/` 地址提供并支持 Range；浏览器里回退到独立 IndexedDB
+
+### 已知限制
+
+- 自定义背景只作用于内容区，状态栏与导航栏仍是主题底色（原生壳给 WebView 留出系统栏 inset）
+- 背景蒙层为 0 时，过亮的壁纸可能降低文字可读性；可调高蒙层或模糊
+- 视频背景会持续解码，耗电高于纯色背景；模糊建议不超过 8px，低端机可能掉帧
+- 视频格式取决于系统 WebView 解码能力（H.264 MP4 / WebM 较稳，HEVC / MOV 视设备而定）；解码失败时提示并移除背景
+- 外观设置是设备级设置，不随 ZIP 历史导出 / 导入迁移
+- 主题色只做色相调整，饱和度和明度沿用 DeepSeek 品牌色阶；极黄 / 极绿等色相会自动改用深色文字
+
 ## [0.1.16] - 2026-11-21
 
 ### 新增
@@ -195,7 +220,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.16...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.17...HEAD
+[0.1.17]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.17
 [0.1.16]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.16
 [0.1.15]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.15
 [0.1.14]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.14

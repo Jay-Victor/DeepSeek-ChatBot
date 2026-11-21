@@ -24,8 +24,8 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 | | |
 | --- | --- |
 | Application ID | `com.deepseekchatbot` |
-| Version | 0.1.16 (versionCode 17) |
-| Size | 5.35 MB (release) |
+| Version | 0.1.17 (versionCode 18) |
+| Size | 5.36 MB (release) |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | Native deps | androidx only (webkit / browser / activity / core-splashscreen), no third-party runtime |
 | Toolchain | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
@@ -56,13 +56,14 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 - **Settings & About**: auto-collapse thinking, context-usage ring (DeepSeek-V4 tokenizer, 1M window), version and update check, in-app install
 - **Context & compression**: enable auto-compression in Settings with its own threshold / target (defaults 50% / 20%); the usage popover compresses manually, shows progress and the summary, and can undo; the message list marks the compressed boundary
 - **Identity statements**: create multiple name + setting profiles in Settings and switch per chat from the header; new chats inherit the default, and the system prompt, usage estimates and compression budget all follow the selected profile
+- **Appearance**: image / video wallpapers (one of each is kept), an overlay slider (20% by default), 0–24px blur, and a hue slider for the accent colour with reset. With a wallpaper active, the chat area, header, input and sidebar switch to translucent panels; video wallpapers play muted and loop, and pause in the background
 
 ## Quick start
 
 Download the signed APK from [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest), or:
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.16-release.apk
+adb install -r DeepSeekChatBot-v0.1.17-release.apk
 ```
 
 On first launch, add your DeepSeek API key in Settings → Data. The key is written only to the on-device WebView localStorage and is excluded from cloud backup (`allowBackup=false`).
@@ -88,7 +89,7 @@ scripts/build-apk.sh release        # or scripts/build-apk.sh debug
 The script does three things: `pnpm build` inside `web/`, sync `web/dist` into `android/app/src/main/assets/www`, then `./gradlew assembleRelease`. Output:
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.16-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.17-release.apk
 ```
 
 Step by step:
@@ -143,6 +144,10 @@ If any of them is missing, `assembleRelease` still produces an APK, just unsigne
 - **ZIP export / import does not carry summaries**: the archive format stays upstream-compatible, so imported chats start with full context
 - **The compression target is soft**: if the newest round alone exceeds it, usage may stay above the target after compression
 - **Identity statements are not carried by ZIP**: profiles are device-level settings; imported chats fall back to the built-in identity, and new chats use the current default
+- **Appearance settings are not carried by ZIP**: wallpaper, overlay, blur and accent colour stay on the device; wallpaper files live in the app's private storage and are removed on uninstall
+- **The wallpaper covers the content area only**: the shell keeps system-bar insets, so the status / navigation bars keep the theme background. The overlay starts at 20%; raise it for bright wallpapers
+- **Video wallpapers keep decoding**: battery use is higher than a plain colour and low-end devices may drop frames; keep blur at 8px or less. Playback depends on the system WebView codecs (H.264 MP4 / WebM are safest; HEVC / MOV vary by device)
+- **The accent slider changes hue only**: saturation and lightness follow the DeepSeek brand ramp; very yellow / green hues automatically switch the text on primary to dark
 - No iOS build: the same six capabilities would need a separate implementation there
 
 ## Verification status
@@ -164,6 +169,8 @@ v0.1.14 fixes overlapping labels and icons in the four mobile settings tabs on n
 v0.1.15 changes the mobile settings tabs to a horizontal scroll strip: each tab keeps its content width, and larger text or longer labels scroll sideways instead of wrapping or overlapping. Checked at 390×844 with 14 / 16 / 22px text without overlap; at 22px the strip scrolls to About. The APK reports `0.1.15` / `versionCode 16` with a v2 signature.
 
 v0.1.16 was checked in desktop Chrome at 390×844, 360×800 and 1280×800 for identity statements: creating, editing and deleting profiles, switching the default, the undeletable built-in profile, and empty / over-long name validation; two chats can use different profiles and keep them across a reload, and deleting the profile in use falls back to the built-in identity; captured request bodies confirm `system` is the chat's `你是{姓名}。{设定}`; the usage popover's "system & template" figure follows a long identity; a mocked native bridge confirms the menu sets `setOverlay(true)` and the back button closes it first. The APK reports `0.1.16` / `versionCode 17` with a v2 signature.
+
+v0.1.17 was checked on Android 16 (API 36.1, x86_64 emulator, signed release build) for appearance: the six settings tabs and mobile horizontal scrolling, the Theme → Mode segmented control, image / video wallpaper picking and preview, live overlay and blur previews, keeping one image and one video when switching, removing one type without touching the other, surviving restart and force-stop, muted looping video that pauses in the background, and translucent header / input / sidebar panels. A `/userbg/` Range request returns 206 and the `bytes=100-199` response matches the source file's SHA-256. Desktop Chrome (758×426 and 1280×800 windows) checked the same settings plus the IndexedDB fallback across reloads; hue 286° and 52° recoloured buttons, links and bubbles together, primary text switched between black and white by contrast, and Reset removed the injected style. The APK reports `0.1.17` / `versionCode 18` with a v2 signature.
 
 ## Repository layout
 
