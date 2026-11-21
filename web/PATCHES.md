@@ -5,7 +5,7 @@
 
 | 文件 | 改动 |
 | --- | --- |
-| `src/index.html` | 标题改为 DeepSeek ChatBot；`viewport` 加 `viewport-fit=cover` |
+| `src/index.html` | 标题改为 DeepSeek ChatBot；`viewport` 加 `viewport-fit=cover`，并设 `maximum-scale=1,user-scalable=no` 禁止双指缩放 |
 | `src/i18n/zh.ts` / `en.ts` | `appName` 改为 DeepSeek ChatBot |
 | `src/app/native.ts`（新增） | 导出 ZIP 的原生存盘桥：分片 base64 → `window.DeepSeekNative`；没有桥时回退到原来的 `<a download>` |
 | `src/app/nativeBridge.ts`（新增） | 返回键（`window.__closeOverlay`）、弹层状态同步（`setOverlay`）、主题与背景色回传（`setTheme`）；收起动画期间也视为有弹层 |
@@ -113,6 +113,7 @@
 | `src/components/chatInput/ChatInput.tsx` / `ChatInput.module.css` | 附件按钮改为圆圈加号；面板用 `0fr → 1fr` 网格槽展开，输入框随之上滑；新增只选图片的隐藏 input；点输入框 / 发送 / 录音时收起面板 |
 | `android/app/src/main/java/.../MediaBridge.kt`（新增） | MediaStore 最近照片查询与 160px 缩略图、按 token 分片读原图、相机结果读取 |
 | `android/app/src/main/java/.../MainActivity.kt` / `AndroidManifest.xml` / `res/xml/file_paths.xml` | 相册权限申请（READ_MEDIA_IMAGES / READ_EXTERNAL_STORAGE）、`loadGallery` / `openMedia` / `readMediaChunk` / `takePhoto` 桥、`cache/camera` 拍照输出 |
+| `android/app/src/main/java/.../MainActivity.kt` | `WebSettings.setSupportZoom(false)`，关闭 WebView 的双指缩放（`builtInZoomControls=false` 只隐藏控件，不阻止手势） |
 | `src/app/App.tsx` | 发现新版本时的提示不再跳 Release 网页，点击整条提示直接打开「设置 → 关于」 |
 | `src/components/base/Toast.tsx` / `.module.css` / `toastState.ts` / `src/i18n/index.ts` | 提示支持应用内动作：带 `onClick` 时整条提示可点、可键盘触发，动作完成后自动收起；文字链接保留原行为 |
 | `src/components/settings/SettingsDialog.tsx` | 设置分组改为状态库驱动，设置已打开时从更新提示跳转也能切到「关于」 |

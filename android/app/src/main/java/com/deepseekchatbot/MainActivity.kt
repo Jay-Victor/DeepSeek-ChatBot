@@ -264,10 +264,12 @@ class MainActivity : ComponentActivity() {
             allowContentAccess = true
             textZoom = 100
             mediaPlaybackRequiresUserGesture = false
-            setSupportMultipleWindows(true)
-            javaScriptCanOpenWindowsAutomatically = true
+            // 页面是固定布局：禁止双指缩放，避免聊天内容被整体放大后错位
+            setSupportZoom(false)
             builtInZoomControls = false
             displayZoomControls = false
+            setSupportMultipleWindows(true)
+            javaScriptCanOpenWindowsAutomatically = true
             cacheMode = WebSettings.LOAD_DEFAULT
         }
 
