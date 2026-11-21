@@ -24,7 +24,7 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.11（versionCode 12） |
+| 版本 | 0.1.12（versionCode 13） |
 | 体积 | 5.34 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
@@ -60,7 +60,7 @@
 从 [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 下载签名 APK，或：
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.11-release.apk
+adb install -r DeepSeekChatBot-v0.1.12-release.apk
 ```
 
 首次启动在「设置 → 数据管理」填入自己的 DeepSeek API Key；Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
@@ -89,7 +89,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.11-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.12-release.apk
 ```
 
 手动分步：
@@ -135,6 +135,7 @@ KEYSTORE_FILE / KEYSTORE_PASSWORD / KEYSTORE_ALIAS / KEY_PASSWORD
 - **系统深色模式**：页面按启动时的系统主题渲染（`configChanges` 含 `uiMode`，为的是不重建 Activity、不丢流式回复），运行中切系统主题要重启应用才生效；应用内「设置 → 主题」可立即切换
 - **超过 4096 像素的动图**：上传前缩放时只保留一帧，动效会丢失（上游行为）
 - **最近照片需要相册权限**：拒绝后照片条显示重试入口，拍照 / 相册 / 文件仍可用
+- **系统辅助功能的「强制启用缩放」仍可放大页面**：应用内已关闭 WebView 双指缩放，但系统无障碍能力不受应用控制
 - **PDF 打开依赖系统查看器**：没有可用的 PDF 应用时会弹出保存位置选择，文件仍可正常落盘
 - 大附件（几十 MB）经 SAF 进内存再上传，低端机有 OOM 风险（已开 `largeHeap`）
 - 只支持 DeepSeek 官方接口（`/anthropic/v1/messages`、`/anthropic/v1/files`、`/v1/tools/asr|tts`）；换 OpenAI 兼容端点需要改 `web/src/services/api/`
@@ -158,6 +159,9 @@ PDF 进入系统查看器、SVG 经 SAF 保存后字节一致、ZIP 导出重新
 v0.1.11 在 Android 16 模拟器上核对：圆圈声波入口与「按住说话」切换、按住录音浮层、上滑取消、mock ASR 松手后
 自动发送、键盘切回；圆圈加号附件面板、相册权限允许 / 拒绝、最近照片点选、拍照、相册、文件、返回键收起；
 mock Release 新版本提示整条点击后进入「设置 → 关于」。真机相机、相册权限与 IME 行为待设备验收。
+
+v0.1.12 修复聊天页面可被双指放大的问题：viewport 增加 `maximum-scale=1,user-scalable=no`，并在 WebView 关闭
+`supportZoom`。CDP 双指手势实测修复前 `visualViewport.scale` 从 1 跳到 5，修复后保持 1；图片预览的点按原始尺寸不受影响。
 
 ## 仓库结构
 

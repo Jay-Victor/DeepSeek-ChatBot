@@ -5,6 +5,12 @@
 
 ## [Unreleased]
 
+## [0.1.12] - 2026-11-21
+
+### 修复
+
+- 聊天页面可被双指放大：viewport 增加 `maximum-scale=1,user-scalable=no`，并在 WebView 关闭 `supportZoom`；`builtInZoomControls = false` 只隐藏缩放控件，不阻止 pinch 手势
+
 ## [0.1.11] - 2026-11-21
 
 ### 新增
@@ -140,7 +146,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.11...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.12...HEAD
+[0.1.12]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.12
 [0.1.11]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.11
 [0.1.10]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.10
 [0.1.9]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.9
