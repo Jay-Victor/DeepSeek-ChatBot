@@ -52,6 +52,15 @@ declare const styles: {
   readonly "aboutError": string;
   readonly "aboutLinks": string;
   readonly "aboutActionLink": string;
+  readonly "aboutSupport": string;
+  readonly "aboutSupportTitle": string;
+  readonly "aboutSupportDesc": string;
+  readonly "aboutSupportGrid": string;
+  readonly "aboutSupportItem": string;
+  readonly "aboutSupportThumb": string;
+  readonly "aboutSupportLabel": string;
+  readonly "aboutSupportSave": string;
+  readonly "aboutSupportHint": string;
   readonly "percentField": string;
   readonly "percentInput": string;
   readonly "percentInvalid": string;

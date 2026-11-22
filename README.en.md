@@ -55,6 +55,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 - **Message navigator & back to top**: a right-edge rail marks questions with dots and answers with ticks (ticks drop out on dense chats); tap to jump, drag to scrub, hover or drag for a text preview. Double-tap the chat title to return to the earliest message; a floating Back to bottom button appears once you leave the bottom
 - **Session menu**: pin / unpin and multi-select
 - **Settings & About**: auto-collapse thinking, context-usage ring (DeepSeek-V4 tokenizer, per-model window), version and update check, in-app install
+- **Support the author**: WeChat Pay and Alipay tip posters at the bottom of About; tap for a full-screen view, or save one to the system gallery (`Pictures/DeepSeek ChatBot`) and pick it from the gallery in WeChat / Alipay. Android 10+ needs no storage permission
 - **API profiles**: Data settings stores multiple endpoints (DeepSeek / Anthropic / OpenAI-compatible) with their own API keys; fetch the model list after entering an endpoint and switch models. New chats bind to the profile and model they were created with, so switching the current profile does not retarget old chats
 - **Context & compression**: enable auto-compression in Settings with its own threshold / target (defaults 50% / 20%); the usage popover compresses manually, shows progress and the summary, and can undo; the message list marks the compressed boundary
 - **Identity statements**: create multiple name + setting profiles in Settings and switch per chat from the header; new chats inherit the default, and the system prompt, usage estimates and compression budget all follow the selected profile
@@ -123,6 +124,7 @@ If any of them is missing, `assembleRelease` still produces an APK, just unsigne
 | Microphone | `onPermissionRequest` plus a runtime `RECORD_AUDIO` request |
 | File picker | `onShowFileChooser` + `ACTION_OPEN_DOCUMENT`, mapping the page's extension allow-list to MIME types |
 | ZIP export | A WebView silently drops `<a download>` on `blob:` URLs; the shell exposes a JS→native bridge that streams base64 chunks into SAF `ACTION_CREATE_DOCUMENT` |
+| Save image to gallery | The About tip posters go through a JS→native bridge into MediaStore under `Pictures/DeepSeek ChatBot`; Android 10+ uses `RELATIVE_PATH` + `IS_PENDING` with no permission, 8/9 asks for `WRITE_EXTERNAL_STORAGE` on the first save |
 | External links | `window.open` / `target=_blank` / plain links all open in Custom Tabs instead of a second WebView |
 | Back button | The page pushes its "overlay open" state to native, which decides synchronously whether to close or exit (no async JS callback) |
 | System bars and keyboard | Container padding reserves status bar, navigation bar and IME height; status bar icons follow the page theme |
@@ -157,6 +159,8 @@ If any of them is missing, `assembleRelease` still produces an APK, just unsigne
 - **The wallpaper covers the content area only**: the shell keeps system-bar insets, so the status / navigation bars keep the theme background. The overlay starts at 20%; raise it for bright wallpapers
 - **Video wallpapers keep decoding**: battery use is higher than a plain colour and low-end devices may drop frames; keep blur at 8px or less. Playback depends on the system WebView codecs (H.264 MP4 / WebM are safest; HEVC / MOV vary by device)
 - **The accent slider changes hue only**: saturation and lightness follow the DeepSeek brand ramp; very yellow / green hues automatically switch the text on primary to dark
+- **The tip posters are static images**: the app does not integrate a payment SDK or verify transfers; changing a code requires a new release, and older installs keep the old code
+- **Saved posters go to `Pictures/DeepSeek ChatBot`**: the whole poster (payment method and payee nickname included) is saved; Android 8/9 needs storage permission, and without it another phone can still scan the on-screen code
 - No iOS build: the same six capabilities would need a separate implementation there
 
 ## Verification status
@@ -196,6 +200,19 @@ scripts/    build-apk.sh: build web → sync assets → build APK
 docs/       screenshots and per-version release notes
 references/ upstream archive and icon assets (not tracked)
 ```
+
+## Support the author
+
+If this app helps you, you can buy the author a coffee. Tips are entirely voluntary and unlock nothing.
+
+<table>
+  <tr>
+    <td align="center"><a href="docs/tip-wechat.png"><img src="docs/tip-wechat.png" width="260" alt="WeChat Pay QR code"></a><br><sub>WeChat Pay</sub></td>
+    <td align="center"><a href="docs/tip-alipay.jpg"><img src="docs/tip-alipay.jpg" width="260" alt="Alipay QR code"></a><br><sub>Alipay</sub></td>
+  </tr>
+</table>
+
+You can also open Settings → About → Support the author to view them full-screen, or save one to your gallery and pick it from the gallery in WeChat or Alipay.
 
 ## License
 

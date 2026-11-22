@@ -10,6 +10,11 @@ declare module '*.png' {
   export default url
 }
 
+declare module '*.jpg' {
+  const url: string
+  export default url
+}
+
 /** 分词器资源（merges / specials）按 asset/resource 输出成 URL */
 declare module '*.txt' {
   const url: string

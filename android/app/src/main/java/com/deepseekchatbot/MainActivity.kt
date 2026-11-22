@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Message
 import android.provider.MediaStore
@@ -63,6 +64,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var updateInstaller: UpdateInstaller
     private lateinit var attachmentOpener: AttachmentOpener
     private lateinit var mediaBridge: MediaBridge
+    private lateinit var gallerySaver: GallerySaver
     private lateinit var backgroundStore: BackgroundStore
     private var errorView: TextView? = null
     private var cameraFile: File? = null
@@ -138,6 +140,12 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+    /** Android 8/9 保存到相册的存储权限；结果通过 __onGalleryPermission 回传页面 */
+    private val writeStoragePermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            emitGalleryPermission(granted)
+        }
+
     private val cameraLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val file = cameraFile
@@ -198,6 +206,7 @@ class MainActivity : ComponentActivity() {
         updateInstaller = UpdateInstaller(this) { payload -> emitUpdateEvent(payload) }
         attachmentOpener = AttachmentOpener(this)
         mediaBridge = MediaBridge(this) { payload -> emitGallery(payload) }
+        gallerySaver = GallerySaver(this)
         root.addView(
             webView,
             FrameLayout.LayoutParams(
@@ -262,6 +271,9 @@ class MainActivity : ComponentActivity() {
         }
         if (::mediaBridge.isInitialized) {
             mediaBridge.destroy()
+        }
+        if (::gallerySaver.isInitialized) {
+            gallerySaver.destroy()
         }
         synchronized(saveStreams) {
             saveStreams.values.forEach { stream -> runCatching { stream.close() } }
@@ -493,6 +505,17 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun emitGalleryPermission(granted: Boolean) {
+        webView.post {
+            runCatching {
+                webView.evaluateJavascript(
+                    "window.__onGalleryPermission && window.__onGalleryPermission($granted)",
+                    null
+                )
+            }
+        }
+    }
+
     private fun emitCamera(payload: JSONObject) {
         val json = payload.toString()
         webView.post {
@@ -650,6 +673,43 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        /** 保存图片到系统相册（MediaStore）；写入前页面按 state 决定是否先申请权限 */
+        @android.webkit.JavascriptInterface
+        fun gallerySaveState(): String = gallerySaver.state()
+
+        @android.webkit.JavascriptInterface
+        fun requestGallerySavePermission() {
+            runOnUiThread {
+                if (Build.VERSION.SDK_INT >= 29) {
+                    emitGalleryPermission(true)
+                    return@runOnUiThread
+                }
+                val granted = ContextCompat.checkSelfPermission(
+                    this@MainActivity,
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_GRANTED
+                if (granted) {
+                    emitGalleryPermission(true)
+                } else {
+                    writeStoragePermissionLauncher.launch(
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
+                }
+            }
+        }
+
+        @android.webkit.JavascriptInterface
+        fun saveImageBegin(name: String, mime: String): String? =
+            gallerySaver.begin(name, mime)
+
+        @android.webkit.JavascriptInterface
+        fun saveImageChunk(token: String, base64: String): Boolean =
+            gallerySaver.chunk(token, base64)
+
+        @android.webkit.JavascriptInterface
+        fun saveImageEnd(token: String, success: Boolean): Boolean =
+            gallerySaver.end(token, success)
 
         @android.webkit.JavascriptInterface
         fun toast(message: String) {

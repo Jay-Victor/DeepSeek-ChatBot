@@ -198,6 +198,11 @@
 | `src/components/session/MobileHeader.tsx` / `.module.css` | 移动端标题双击回顶；标题禁用文字选中与双击缩放 |
 | `src/utils/useDoubleTap.ts`（新增） | 用 pointerup 判定双击（320ms / 单次位移 10px / 两次落点 24px），覆盖 Android WebView 不合成 `dblclick` 的情况 |
 | `src/i18n/zh.ts` / `en.ts` | 消息定位条、消息预览、双击回顶与回到底部文案 |
+| `src/app/native.ts` | 新增 `saveImageToAlbum`：图片 Blob 分片交给原生写 MediaStore（`Pictures/DeepSeek ChatBot`）；`gallerySaveState` / `requestGallerySavePermission` 处理 Android 8/9 存储授权；浏览器退回 `<a download>` |
+| `src/env.d.ts` | 增加 `*.jpg` 资源声明（支付宝收款码是 JPG） |
+| `src/components/settings/AboutSetting.tsx` | 关于页底部新增「支持作者」：微信 / 支付宝海报缩略图、点按进应用内图片预览、逐张保存到相册 |
+| `src/components/settings/Settings.module.css` / `.css.d.ts` | 支持作者卡片与保存按钮样式 |
+| `src/i18n/zh.ts` / `en.ts` | 支持作者、保存到相册与失败提示文案 |
 
 分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与
 Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch。计数实现见 `bpe.ts`。

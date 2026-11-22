@@ -4,6 +4,7 @@
  * WebView 里对 blob: 链接的 <a download> 会被静默丢弃（DownloadListener 不触发，也不报错），
  * 图片 / PDF 的 target=_blank 也无法打开；所以在壳里把 Blob 分片交给原生：
  * - saveBlob：SAF 写进用户选定的位置（浏览器里保留原来的 <a download>）
+ * - saveImageToAlbum：写进系统相册（MediaStore），供微信 / 支付宝从相册识别
  * - openBlob：写入 cache/attachments，再由 FileProvider 交给系统查看器打开
  */
 
@@ -16,14 +17,21 @@ type FileBridge = {
   openFileBegin?: (name: string, mime: string, size: number) => string | null
   openFileChunk?: (token: string, base64: string) => boolean
   openFileEnd?: (token: string, ok: boolean) => boolean
+  gallerySaveState?: () => string
+  requestGallerySavePermission?: () => void
+  saveImageBegin?: (name: string, mime: string) => string | null
+  saveImageChunk?: (token: string, base64: string) => boolean
+  saveImageEnd?: (token: string, ok: boolean) => boolean
 }
 
 export type SaveResult = 'saved' | 'cancelled' | 'failed'
 export type OpenResult = 'opened' | 'failed' | 'unsupported'
+export type AlbumSaveResult = 'saved' | 'downloaded' | 'failed'
 
 type WindowWithBridge = Window & {
   DeepSeekNative?: FileBridge
   __onSaveToken?: (id: string, token: string | null) => void
+  __onGalleryPermission?: (granted: boolean) => void
 }
 
 const bridge = () => (window as WindowWithBridge).DeepSeekNative
@@ -114,6 +122,78 @@ export const saveBlob = async (name: string, blob: Blob, mime?: string): Promise
     return ok ? 'saved' : 'failed'
   } catch {
     native.saveEnd(token, false)
+    return 'failed'
+  }
+}
+
+/** 原生在 8/9 的存储权限对话框关闭后回调；30 秒没有回应按失败处理，避免按钮一直转圈 */
+let galleryPermissionWaiter: ((granted: boolean) => void) | null = null
+;(window as WindowWithBridge).__onGalleryPermission = (granted) => {
+  const resolve = galleryPermissionWaiter
+  galleryPermissionWaiter = null
+  resolve?.(granted)
+}
+
+const waitForGalleryPermission = (request: () => void) =>
+  new Promise<boolean>((resolve) => {
+    const timer = window.setTimeout(() => {
+      galleryPermissionWaiter = null
+      resolve(false)
+    }, 30_000)
+    galleryPermissionWaiter = (granted) => {
+      window.clearTimeout(timer)
+      resolve(granted)
+    }
+    try {
+      request()
+    } catch {
+      window.clearTimeout(timer)
+      galleryPermissionWaiter = null
+      resolve(false)
+    }
+  })
+
+/**
+ * 保存图片到系统相册：壳里写 MediaStore（Pictures/DeepSeek ChatBot），
+ * 浏览器里退回普通下载。Android 10+ 不需要权限，8/9 先弹存储授权。
+ */
+export const saveImageToAlbum = async (
+  name: string,
+  blob: Blob,
+  mime?: string
+): Promise<AlbumSaveResult> => {
+  const native = bridge()
+  if (!native?.saveImageBegin || !native.saveImageChunk || !native.saveImageEnd) {
+    anchorDownload(name, blob)
+    return 'downloaded'
+  }
+  if (native.gallerySaveState?.() === 'permission') {
+    if (!native.requestGallerySavePermission) {
+      return 'failed'
+    }
+    const granted = await waitForGalleryPermission(() =>
+      native.requestGallerySavePermission?.()
+    )
+    if (!granted) {
+      return 'failed'
+    }
+  }
+  const token = native.saveImageBegin(name, mime || blob.type || 'image/png')
+  if (!token) {
+    return 'failed'
+  }
+  try {
+    const ok = await forEachChunk(
+      blob,
+      (chunk) => native.saveImageChunk?.(token, toBase64(chunk)) === true
+    )
+    if (!ok) {
+      native.saveImageEnd?.(token, false)
+      return 'failed'
+    }
+    return native.saveImageEnd?.(token, true) === true ? 'saved' : 'failed'
+  } catch {
+    native.saveImageEnd?.(token, false)
     return 'failed'
   }
 }

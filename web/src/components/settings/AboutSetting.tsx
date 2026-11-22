@@ -1,12 +1,18 @@
 import clsx from 'clsx'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import appIcon from '../../assets/app-icon.png'
+import tipAlipay from '../../assets/tip-alipay.jpg'
+import tipWechat from '../../assets/tip-wechat.png'
+import { saveImageToAlbum } from '../../app/native.js'
 import { useTranslate, type TranslationKey } from '../../i18n/index.js'
 import { setAutoCheckUpdates, useSettings } from '../../services/settings.js'
 import { appVersion, checkForUpdates, hasUpdate, useUpdate } from '../../services/update.js'
 import { canInstallInApp, useUpdateInstall } from '../../services/updateInstall.js'
 import { Button } from '../base/Button.js'
+import { IconDownloadOutline16 } from '../base/icons.js'
+import { showToast } from '../base/toastState.js'
 import { Switch } from '../base/Switch.js'
+import { useImageViewer } from '../files/imageViewerState.js'
 import styles from './Settings.module.css'
 
 const formatSize = (bytes: number) => `${(bytes / 1048576).toFixed(1)} MB`
@@ -41,6 +47,13 @@ const errorKey = (code: string | null): TranslationKey => {
   return 'aboutInstallErrorGeneric'
 }
 
+type TipKind = 'wechat' | 'alipay'
+
+const TIPS: Record<TipKind, { src: string; file: string; mime: string }> = {
+  wechat: { src: tipWechat, file: 'DeepSeekChatBot-wechat-tip.png', mime: 'image/png' },
+  alipay: { src: tipAlipay, file: 'DeepSeekChatBot-alipay-tip.jpg', mime: 'image/jpeg' },
+}
+
 /**
  * 关于：上方居中放应用图标、名称与版本，下方是检查更新按钮和自动检查开关。
  * 有更新时在原生壳里直接下载、校验并调起系统安装器；浏览器预览退回普通下载链接。
@@ -60,6 +73,7 @@ export const AboutSetting = () => {
   const version = appVersion()
   const installable = Boolean((release?.apkApiUrl ?? release?.apkUrl) && canInstallInApp())
   const percent = total > 0 ? Math.min(100, Math.round((received / total) * 100)) : null
+  const [savingTip, setSavingTip] = useState<TipKind | null>(null)
 
   useEffect(() => {
     // 只清理旧的失败/空闲状态；正在下载或等待安装时不要丢掉 requestId
@@ -107,6 +121,48 @@ export const AboutSetting = () => {
 
   const buttonDisabled =
     phase === 'verifying' || phase === 'permission' || phase === 'installing'
+
+  const loadTip = async (kind: TipKind) => {
+    const response = await fetch(TIPS[kind].src)
+    if (!response.ok) {
+      throw new Error('tip fetch failed')
+    }
+    return response.blob()
+  }
+
+  const openTip = async (kind: TipKind) => {
+    try {
+      const blob = await loadTip(kind)
+      useImageViewer.getState().openImage({
+        blob,
+        name: t(kind === 'wechat' ? 'aboutSupportWechat' : 'aboutSupportAlipay'),
+      })
+    } catch {
+      showToast({ key: 'aboutSupportImageFailed', type: 'error' })
+    }
+  }
+
+  const saveTip = async (kind: TipKind) => {
+    if (savingTip) {
+      return
+    }
+    setSavingTip(kind)
+    try {
+      const blob = await loadTip(kind)
+      const result = await saveImageToAlbum(TIPS[kind].file, blob, TIPS[kind].mime)
+      if (result === 'saved') {
+        showToast({ key: 'aboutSupportSaved' })
+      } else if (result === 'downloaded') {
+        showToast({ key: 'aboutSupportDownloaded' })
+      } else {
+        showToast({ key: 'aboutSupportSaveFailed', type: 'error' })
+      }
+    } catch {
+      showToast({ key: 'aboutSupportSaveFailed', type: 'error' })
+    } finally {
+      setSavingTip(null)
+    }
+  }
 
   return (
     <div className={styles.about}>
@@ -259,6 +315,39 @@ export const AboutSetting = () => {
           label={t('aboutAutoCheck')}
           onChange={setAutoCheckUpdates}
         />
+      </div>
+
+      <div className={styles.aboutSupport}>
+        <div className={styles.aboutSupportTitle}>{t('aboutSupportTitle')}</div>
+        <div className={styles.aboutSupportDesc}>{t('aboutSupportDesc')}</div>
+        <div className={styles.aboutSupportGrid}>
+          {(['wechat', 'alipay'] as const).map((kind) => {
+            const label = t(kind === 'wechat' ? 'aboutSupportWechat' : 'aboutSupportAlipay')
+            return (
+              <div className={styles.aboutSupportItem} key={kind}>
+                <button
+                  type="button"
+                  className={styles.aboutSupportThumb}
+                  aria-label={t('aboutSupportEnlarge', { name: label })}
+                  onClick={() => void openTip(kind)}
+                >
+                  <img src={TIPS[kind].src} alt="" />
+                </button>
+                <div className={styles.aboutSupportLabel}>{label}</div>
+                <button
+                  type="button"
+                  className={styles.aboutSupportSave}
+                  disabled={savingTip !== null}
+                  onClick={() => void saveTip(kind)}
+                >
+                  <IconDownloadOutline16 />
+                  {savingTip === kind ? t('aboutSupportSaving') : t('aboutSupportSave')}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+        <div className={styles.aboutSupportHint}>{t('aboutSupportHint')}</div>
       </div>
     </div>
   )

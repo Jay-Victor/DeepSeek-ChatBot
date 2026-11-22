@@ -55,6 +55,7 @@
 - **消息定位与回顶**：会话页右侧定位条（提问大点、回答刻度，消息密度过高时只保留提问点）支持点按跳转、拖动滚动与消息摘要预览；双击标题回到最早的消息；离开底部时显示「回到底部」浮动按钮
 - **会话三点菜单**：置顶 / 取消置顶、多选
 - **设置与关于**：思考内容自动折叠、上下文占用环（DeepSeek-V4 分词器，按模型窗口）、版本与更新检查、应用内下载安装
+- **支持作者**：关于页底部展示微信 / 支付宝收款码海报，点按全屏查看；可保存到系统相册（`Pictures/DeepSeek ChatBot`），再用微信 / 支付宝从相册识别；Android 10+ 无需存储权限
 - **接入方案**：数据管理里可保存多套端点（DeepSeek / Anthropic / OpenAI 兼容）与各自的 API Key，输入端点后获取模型列表并切换；新会话绑定创建时的方案与模型，旧会话不受当前方案切换影响
 - **上下文与压缩**：设置里可开启自动压缩并设置压缩阈值 / 目标（默认 50% / 20%）；占用卡片可手动「压缩对话」，查看进度与摘要、随时撤销；消息列表在覆盖点显示「已压缩」分隔条
 - **身份声明**：设置里可创建多套方案（姓名 + 设定），聊天页顶栏按会话切换；新会话继承默认方案，系统提示、占用统计与压缩预算同步使用所选身份
@@ -127,6 +128,7 @@ KEYSTORE_FILE / KEYSTORE_PASSWORD / KEYSTORE_ALIAS / KEY_PASSWORD
 | 麦克风 | `onPermissionRequest` + 运行时 `RECORD_AUDIO` 授权 |
 | 文件选择 | `onShowFileChooser` + `ACTION_OPEN_DOCUMENT`，把页面上的扩展名白名单映射成 MIME |
 | 导出 ZIP | WebView 会静默丢弃 `blob:` 的 `<a download>`；改成 JS→原生桥，分片 base64 交给 SAF `ACTION_CREATE_DOCUMENT` 写入用户选定的位置 |
+| 保存图片到相册 | 关于页的收款码由 JS 分片交给原生，MediaStore 写入 `Pictures/DeepSeek ChatBot`；Android 10+ 用 `RELATIVE_PATH` + `IS_PENDING` 无需权限，8/9 首次保存时申请 `WRITE_EXTERNAL_STORAGE` |
 | 外链 | `window.open` / `target=_blank` / 普通外链统一用 Custom Tabs 打开，不在壳里开新 WebView |
 | 返回键 | 页面把「有弹层」状态推给原生，原生同步决定关弹层还是退出（不用异步 JS 回调） |
 | 系统栏与键盘 | 由容器 padding 留出状态栏、导航栏与输入法高度；状态栏字色随页面主题反色 |
@@ -161,6 +163,8 @@ KEYSTORE_FILE / KEYSTORE_PASSWORD / KEYSTORE_ALIAS / KEY_PASSWORD
 - **背景只铺内容区**：原生壳给系统栏留 inset，状态栏与导航栏仍是主题底色；背景蒙层默认 20%，过亮壁纸可继续调高
 - **视频背景持续解码**：耗电高于纯色背景，低端机可能掉帧；模糊建议不超过 8px，格式取决于系统 WebView（H.264 MP4 / WebM 较稳，HEVC / MOV 视设备而定）
 - **主题色只改色相**：饱和度与明度沿用 DeepSeek 品牌色阶；极黄 / 极绿等色相会自动把主色上的文字切为深色
+- **收款码是静态图片**：应用不接入支付 SDK、不校验转账结果；换码需要发新版本，旧版本仍显示旧码
+- **保存到相册写入 `Pictures/DeepSeek ChatBot`**：保存的是整张海报（含支付方式与收款人昵称）；Android 8/9 需要存储权限，拒绝后仍可用另一台手机扫码
 - 没有 iOS 版本：同样六类能力在 iOS 上要另写一份
 
 ## 验证状态
@@ -224,6 +228,19 @@ scripts/    build-apk.sh：构建 Web → 同步 assets → 出 APK
 docs/       截图与按版本归档的 Release 正文
 references/ 上游原始压缩包与图标素材（不进版本库）
 ```
+
+## 支持作者（为爱发电）
+
+如果这个应用对你有帮助，欢迎请作者喝杯咖啡。打赏完全自愿，不影响任何功能与更新。
+
+<table>
+  <tr>
+    <td align="center"><a href="docs/tip-wechat.png"><img src="docs/tip-wechat.png" width="260" alt="微信支付收款码"></a><br><sub>微信支付</sub></td>
+    <td align="center"><a href="docs/tip-alipay.jpg"><img src="docs/tip-alipay.jpg" width="260" alt="支付宝收款码"></a><br><sub>支付宝</sub></td>
+  </tr>
+</table>
+
+也可以在应用内「设置 → 关于 → 支持作者」点按放大，或保存到相册后用微信 / 支付宝从相册识别。
 
 ## 许可证
 
