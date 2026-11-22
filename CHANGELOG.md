@@ -5,6 +5,20 @@
 
 ## [Unreleased]
 
+## [0.1.21] - 2026-11-22
+
+### 新增
+
+- 关于页底部新增「支持作者」：展示微信支付与支付宝收款码海报，点按进入应用内全屏预览
+- 收款码可保存到系统相册：新增原生 `GallerySaver`，通过 MediaStore 写入 `Pictures/DeepSeek ChatBot`；Android 10+ 无需存储权限，8/9 首次保存时申请 `WRITE_EXTERNAL_STORAGE`，保存后可在微信 / 支付宝里从相册识别
+- README 中英增加「支持作者（为爱发电）」小节与两张收款码
+
+### 已知限制
+
+- 收款码是静态图片，应用不接入支付 SDK、不校验转账结果；换码需要发新版本，旧版本仍显示旧码
+- 保存的是整张海报（含支付方式与收款人昵称）；Android 8/9 需要存储权限，拒绝后仍可用另一台手机扫码
+- Android 8/9 的旧存储权限分支未在 8/9 实机验证
+
 ## [0.1.20] - 2026-11-22
 
 ### 新增
@@ -265,7 +279,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.20...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.21...HEAD
+[0.1.21]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.21
 [0.1.20]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.20
 [0.1.19]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.19
 [0.1.18]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.18

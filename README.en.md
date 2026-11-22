@@ -24,8 +24,8 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 | | |
 | --- | --- |
 | Application ID | `com.deepseekchatbot` |
-| Version | 0.1.20 (versionCode 21) |
-| Size | 5.37 MB (release) |
+| Version | 0.1.21 (versionCode 22) |
+| Size | 5.63 MB (release) |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | Native deps | androidx only (webkit / browser / activity / core-splashscreen), no third-party runtime |
 | Toolchain | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
@@ -66,7 +66,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 Download the signed APK from [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest), or:
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.20-release.apk
+adb install -r DeepSeekChatBot-v0.1.21-release.apk
 ```
 
 On first launch, add your DeepSeek API key in Settings → Data. The key is written only to the on-device WebView localStorage and is excluded from cloud backup (`allowBackup=false`).
@@ -92,7 +92,7 @@ scripts/build-apk.sh release        # or scripts/build-apk.sh debug
 The script does three things: `pnpm build` inside `web/`, sync `web/dist` into `android/app/src/main/assets/www`, then `./gradlew assembleRelease`. Output:
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.20-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.21-release.apk
 ```
 
 Step by step:
@@ -190,6 +190,8 @@ v0.1.18 fixes the accent contrast in light mode: with a yellow / green hue, link
 v0.1.19 was checked in desktop Chrome (390×844 and 1280×800) with mocked endpoints: creating / editing / switching profiles, DeepSeek `/models` metadata parsing, OpenAI and Anthropic request bodies, session binding (an old chat keeps its original endpoint after switching the current profile), usage rings at 128,000 / 1,048,576, `deepseek-v4-pro` offering document attachments only, and the welcome-page profile chip. The APK reports `0.1.19` / `versionCode 20` and a v2 signature. Real third-party endpoints, CORS and Android WebView await device verification.
 
 v0.1.20 was checked in desktop Chrome (1280×800, 390×844 and 360×800) for the navigator and back-to-top: marker positions against actual message tops (maxDiff = 0), tap-to-nearest-message and drag scrubbing, hover / drag previews, double-tap on the title, the Back to bottom button appearing after leaving the bottom and restoring follow after a tap, and instant jumps under `prefers-reduced-motion`. A 120-message chat drops to 60 question dots; a short chat hides the rail. Android 16 (API 36.1, x86_64 emulator) checked real touch double-taps, rail tap / drag, the back-to-bottom button, and the rail height above the composer with the keyboard open. The APK reports `0.1.20` / `versionCode 21` with a v2 signature.
+
+v0.1.21 was checked on Android 16 (API 36.1, x86_64 emulator, signed release build) for Support the author: the posters and both locales in About, tapping a poster to open the full-screen viewer, Back closing the viewer before Settings, saving into `Pictures/DeepSeek ChatBot` (the MediaStore row matched the source byte count, and the pulled file had the same SHA-256 as the repo image), and automatic numbering on repeated saves. A jsQR decode of the actual full-screen screenshot returned `wxp://…` for WeChat and `https://qr.alipay.com/…` for Alipay. The Android 8/9 `WRITE_EXTERNAL_STORAGE` branch was not tested on an 8/9 device, and the browser download fallback was not verified separately. The APK reports `0.1.21` / `versionCode 22` with a v2 signature.
 
 ## Repository layout
 

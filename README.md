@@ -24,8 +24,8 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.20（versionCode 21） |
-| 体积 | 5.37 MB（release） |
+| 版本 | 0.1.21（versionCode 22） |
+| 体积 | 5.63 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
 | 构建工具链 | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
@@ -66,7 +66,7 @@
 从 [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 下载签名 APK，或：
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.20-release.apk
+adb install -r DeepSeekChatBot-v0.1.21-release.apk
 ```
 
 首次启动在「设置 → 数据管理」填入自己的 DeepSeek API Key；Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
@@ -95,7 +95,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.20-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.21-release.apk
 ```
 
 手动分步：
@@ -218,6 +218,8 @@ v0.1.18 修复 v0.1.17 的浅色主题色对比度：色相拖到黄 / 绿等亮
 v0.1.19 在桌面 Chrome（390×844、1280×800）用 mock 端点核对：多方案新建 / 编辑 / 切换、DeepSeek `/models` 元数据解析、OpenAI 与 Anthropic 请求体、会话级绑定（切换当前方案后旧会话仍走创建时的端点）、占用环 128,000 / 1,048,576、`deepseek-v4-pro` 附件仅文件、欢迎页方案 chip；APK 核对 `0.1.19` / `versionCode 20` 与 v2 签名。真实第三方端点、CORS 与 Android WebView 待设备验收。
 
 v0.1.20 在桌面 Chrome（1280×800、390×844、360×800）核对消息定位与回顶：定位点与消息实际 top 比对 `maxDiff = 0`、点按最近消息 / 拖动轨道、悬停与拖动预览、双击标题回顶、离开底部出现「回到底部」并在点击后恢复跟底、`prefers-reduced-motion` 下直接跳转；120 条消息时自动只保留 60 个提问点，短会话不显示定位条。Android 16（API 36.1，x86_64 模拟器）核对真实触摸双击回顶、定位条 tap / drag、回底按钮，以及键盘弹出后轨道高度不压输入框。APK 核对 `0.1.20` / `versionCode 21` 与 v2 签名。
+
+v0.1.21 在 Android 16（API 36.1，x86_64 模拟器，release 签名包）核对支持作者：关于页底部海报与中英文案、点按进入全屏预览、返回键先关预览再回设置、保存到相册写入 `Pictures/DeepSeek ChatBot`（MediaStore 记录与源文件字节数一致，导出后 SHA-256 与仓库原图一致）、重复保存自动加序号；用全屏截图做 jsQR 解码，微信得到 `wxp://…`、支付宝得到 `https://qr.alipay.com/…`。Android 8/9 的 `WRITE_EXTERNAL_STORAGE` 分支未在 8/9 实机验证；浏览器里的保存回退为普通下载，未单独验证。APK 核对 `0.1.21` / `versionCode 22` 与 v2 签名。
 
 ## 仓库结构
 
