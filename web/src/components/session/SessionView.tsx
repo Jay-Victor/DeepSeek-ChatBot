@@ -1,10 +1,12 @@
 import clsx from 'clsx'
+import { useCallback, useRef } from 'react'
 import { useIsMobile } from '../../app/viewport.js'
 import { useTranslate } from '../../i18n/index.js'
 import { useSessionEndpoint } from '../../services/useCapabilities.js'
+import { useDoubleTap } from '../../utils/useDoubleTap.js'
 import type { Session } from '../../services/chat/types.js'
 import { ChatInput } from '../chatInput/ChatInput.js'
-import { MessageList } from '../messages/MessageList.js'
+import { MessageList, type MessageListHandle } from '../messages/MessageList.js'
 import { IdentitySwitcher } from './IdentitySwitcher.js'
 import { MobileHeader } from './MobileHeader.js'
 import styles from './SessionView.module.css'
@@ -22,6 +24,10 @@ export const SessionView = ({
   const t = useTranslate()
   const isMobile = useIsMobile()
   const { capabilities } = useSessionEndpoint(session.id)
+  const listRef = useRef<MessageListHandle>(null)
+  const composerRef = useRef<HTMLDivElement>(null)
+  const scrollToTop = useCallback(() => listRef.current?.scrollToTop(), [])
+  const titleTapHandlers = useDoubleTap(scrollToTop)
   const title = session.title || t('untitledChat')
   return (
     <div className={styles.view}>
@@ -31,10 +37,15 @@ export const SessionView = ({
           autoRead={capabilities.speech}
           sessionId={session.id}
           identityId={session.identityId}
+          onTitleDoubleClick={scrollToTop}
         />
       ) : (
         <div className={styles.header}>
-          <div className={clsx(styles.title, siderCollapsed && styles.withCollapsedSider)}>
+          <div
+            className={clsx(styles.title, siderCollapsed && styles.withCollapsedSider)}
+            title={t('doubleTapToTop')}
+            {...titleTapHandlers}
+          >
             {title}
           </div>
           <IdentitySwitcher
@@ -45,10 +56,12 @@ export const SessionView = ({
         </div>
       )}
       <MessageList
+        ref={listRef}
         session={session}
         streaming={streaming}
+        composerRef={composerRef}
         footer={
-          <div className={styles.inputContainer}>
+          <div ref={composerRef} className={styles.inputContainer}>
             <ChatInput sessionId={session.id} />
             <div className={styles.caveat}>{t('contentCaveat')}</div>
           </div>

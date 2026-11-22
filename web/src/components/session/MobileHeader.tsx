@@ -8,6 +8,7 @@ import { useTranslate } from '../../i18n/index.js'
 import { newChat } from '../../services/chat/store.js'
 import { setAutoReadAloud, useSettings } from '../../services/settings.js'
 import { stopReadAloud } from '../../services/speech/readAloud.js'
+import { useDoubleTap } from '../../utils/useDoubleTap.js'
 import { IconButton } from '../base/IconButton.js'
 import { showToast } from '../base/toastState.js'
 import { IdentitySwitcher } from './IdentitySwitcher.js'
@@ -27,6 +28,7 @@ export const MobileHeader = ({
   sessionId,
   identityId,
   showIdentity = true,
+  onTitleDoubleClick,
 }: {
   title?: string
   autoRead?: boolean
@@ -36,9 +38,12 @@ export const MobileHeader = ({
   identityId?: string
   /** 会话加载中还没有身份可显示时隐藏切换器 */
   showIdentity?: boolean
+  /** 会话页传入：双击标题回到最早的消息 */
+  onTitleDoubleClick?: () => void
 }) => {
   const t = useTranslate()
   const autoReadOn = useSettings((state) => state.autoReadAloud)
+  const titleTapHandlers = useDoubleTap(() => onTitleDoubleClick?.(), Boolean(onTitleDoubleClick))
   const toggleAutoRead = () => {
     const next = !useSettings.getState().autoReadAloud
     setAutoReadAloud(next)
@@ -62,7 +67,13 @@ export const MobileHeader = ({
       {showIdentity ? (
         <IdentitySwitcher sessionId={sessionId} identityId={identityId} />
       ) : null}
-      <div className={styles.title}>{title ?? ''}</div>
+      <div
+        className={styles.title}
+        title={onTitleDoubleClick ? t('doubleTapToTop') : undefined}
+        {...titleTapHandlers}
+      >
+        {title ?? ''}
+      </div>
       <div className={styles.actions}>
         {autoRead ? (
           <IconButton

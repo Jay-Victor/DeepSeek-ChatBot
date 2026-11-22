@@ -190,6 +190,14 @@
 | `src/components/session/Welcome.tsx` / `Welcome.module.css`（新增 chip） | 欢迎页显示当前接入方案与模型，点击进入「设置 → 数据管理」 |
 | `src/app/App.tsx` | 首启改为 `ensureEndpoint()` |
 | `src/i18n/zh.ts` / `en.ts` | 接入方案、模型、协议、能力降级与错误文案 |
+| `src/components/messages/MessageList.tsx` | 会话页新增消息定位条与「回到底部」浮动按钮：外层 `.body` 承载右侧轨道，按滚动层可视高度扣掉输入框；`forwardRef` 暴露 `scrollToTop`；点按 / 拖动跳转时关闭跟底，跳到当前最后一条时恢复跟底 |
+| `src/components/messages/MessageLocator.tsx` / `.module.css` / `.css.d.ts`（新增） | 右侧消息定位条：提问大点、回答小刻度，消息密度过高时只保留提问点；当前视口滑块；点按跳转、拖动滚动、桌面悬停 / 移动端拖动显示消息摘要；离开底部时显示「回到底部」按钮 |
+| `src/components/messages/MessageList.module.css` / `.css.d.ts` | 新增定位层相对定位容器 `.body`，不改变原有滚动层结构 |
+| `src/components/messages/UserMessage.tsx` / `AssistantMessage.tsx` | 根节点加 `data-message-id` / `data-message-role`，定位条按消息真实高度取锚点 |
+| `src/components/session/SessionView.tsx` / `.module.css` | 桌面标题双击回到最早消息；输入框容器 ref 传给 `MessageList` 供定位条避让 |
+| `src/components/session/MobileHeader.tsx` / `.module.css` | 移动端标题双击回顶；标题禁用文字选中与双击缩放 |
+| `src/utils/useDoubleTap.ts`（新增） | 用 pointerup 判定双击（320ms / 单次位移 10px / 两次落点 24px），覆盖 Android WebView 不合成 `dblclick` 的情况 |
+| `src/i18n/zh.ts` / `en.ts` | 消息定位条、消息预览、双击回顶与回到底部文案 |
 
 分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与
 Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch。计数实现见 `bpe.ts`。

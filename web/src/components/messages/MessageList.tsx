@@ -1,4 +1,14 @@
-import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import {
+  Fragment,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useIsMobile } from '../../app/viewport.js'
 import {
   buildMessageVersions,
@@ -11,6 +21,7 @@ import type { Session } from '../../services/chat/types.js'
 import { closeSearchPanel } from '../search/searchPanelState.js'
 import { AssistantMessage } from './AssistantMessage.js'
 import { CompressionDivider } from './CompressionDivider.js'
+import { MessageLocator } from './MessageLocator.js'
 import { ScrollToBottomContext } from './scrollContext.js'
 import { UserMessage } from './UserMessage.js'
 import type { Message } from '../../services/chat/types.js'
@@ -35,16 +46,27 @@ import styles from './MessageList.module.css'
 const STICKY_THRESHOLD = 40
 const EMPTY_VERSIONS: MessageVersions = { ids: [], index: -1 }
 
-export const MessageList = ({
-  session,
-  streaming,
-  footer,
-}: {
+export type MessageListHandle = {
+  scrollToTop: () => void
+}
+
+type MessageListProps = {
   session: Session
   streaming: boolean
   footer: React.ReactNode
-}) => {
+  /** 输入框容器：定位条用它避让底部输入区 */
+  composerRef: React.RefObject<HTMLDivElement>
+}
+
+const scrollBehavior = (): ScrollBehavior =>
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+
+export const MessageList = forwardRef<MessageListHandle, MessageListProps>(function MessageList(
+  { session, streaming, footer, composerRef },
+  ref
+) {
   const isMobile = useIsMobile()
+  const bodyRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   const stickyRef = useRef(true)
@@ -74,6 +96,50 @@ export const MessageList = ({
       scrollTopRef.current = el.scrollTop
     }
   }, [])
+
+  // 双击标题回顶：先停止跟底，避免流式内容一增高又被拉回底部。
+  const scrollToTop = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) {
+      return
+    }
+    stickyRef.current = false
+    el.scrollTo({ top: 0, behavior: scrollBehavior() })
+  }, [])
+
+  const scrollToBottomSmooth = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) {
+      return
+    }
+    stickyRef.current = true
+    el.scrollTo({ top: el.scrollHeight, behavior: scrollBehavior() })
+  }, [])
+
+  // 定位条跳转：最后一条回到最新位置并恢复跟底，其余消息停在阅读位置。
+  const jumpToMessage = useCallback((messageId: string, isLast: boolean) => {
+    const el = scrollRef.current
+    if (!el) {
+      return
+    }
+    if (isLast) {
+      stickyRef.current = true
+      el.scrollTo({ top: el.scrollHeight, behavior: scrollBehavior() })
+      return
+    }
+    const node = contentRef.current?.querySelector<HTMLElement>(
+      `[data-message-id="${CSS.escape(messageId)}"]`
+    )
+    if (!node) {
+      return
+    }
+    stickyRef.current = false
+    const top =
+      node.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop - 12
+    el.scrollTo({ top: Math.max(0, top), behavior: scrollBehavior() })
+  }, [])
+
+  useImperativeHandle(ref, () => ({ scrollToTop }), [scrollToTop])
 
   // 内容、键盘和输入框高度变化时，继续遵循当前跟随状态。
   useLayoutEffect(() => {
@@ -150,42 +216,54 @@ export const MessageList = ({
   const uploadRetryId = getUploadRetryId(messages, streaming)
   return (
     <ScrollToBottomContext.Provider value={scrollToBottom}>
-      <div ref={isMobile ? undefined : scrollRef} className={styles.container}>
-        <div ref={isMobile ? scrollRef : undefined} className={styles.scroll}>
-          <div ref={contentRef} className={styles.column}>
-            {messages.map((message, index) => (
-              <Fragment key={message.id}>
-                {compressionCut && message.id === compressedBoundaryId ? (
-                  <CompressionDivider compression={compressionCut.compression} />
-                ) : null}
-                {message.role === 'user' ? (
-                  <UserMessage
-                    sessionId={session.id}
-                    message={message}
-                    retryUploadId={uploadRetryId}
-                    isFirst={index === 0}
-                    isLast={index === lastIndex || index === lastIndex - 1}
-                    busy={streaming}
-                    versions={versions.get(message.id) ?? EMPTY_VERSIONS}
-                    onSelectVersion={selectVersion}
-                  />
-                ) : (
-                  <AssistantMessage
-                    sessionId={session.id}
-                    message={message}
-                    isLast={index === lastIndex}
-                    streaming={streaming && index === lastIndex}
-                    busy={streaming}
-                    versions={versions.get(message.id) ?? EMPTY_VERSIONS}
-                    onSelectVersion={selectVersion}
-                  />
-                )}
-              </Fragment>
-            ))}
+      <div ref={bodyRef} className={styles.body}>
+        <div ref={isMobile ? undefined : scrollRef} className={styles.container}>
+          <div ref={isMobile ? scrollRef : undefined} className={styles.scroll}>
+            <div ref={contentRef} className={styles.column}>
+              {messages.map((message, index) => (
+                <Fragment key={message.id}>
+                  {compressionCut && message.id === compressedBoundaryId ? (
+                    <CompressionDivider compression={compressionCut.compression} />
+                  ) : null}
+                  {message.role === 'user' ? (
+                    <UserMessage
+                      sessionId={session.id}
+                      message={message}
+                      retryUploadId={uploadRetryId}
+                      isFirst={index === 0}
+                      isLast={index === lastIndex || index === lastIndex - 1}
+                      busy={streaming}
+                      versions={versions.get(message.id) ?? EMPTY_VERSIONS}
+                      onSelectVersion={selectVersion}
+                    />
+                  ) : (
+                    <AssistantMessage
+                      sessionId={session.id}
+                      message={message}
+                      isLast={index === lastIndex}
+                      streaming={streaming && index === lastIndex}
+                      busy={streaming}
+                      versions={versions.get(message.id) ?? EMPTY_VERSIONS}
+                      onSelectVersion={selectVersion}
+                    />
+                  )}
+                </Fragment>
+              ))}
+            </div>
           </div>
+          {footer}
         </div>
-        {footer}
+        <MessageLocator
+          bodyRef={bodyRef}
+          scrollRef={scrollRef}
+          contentRef={contentRef}
+          composerRef={composerRef}
+          messages={messages}
+          isMobile={isMobile}
+          onJumpToMessage={jumpToMessage}
+          onScrollToBottom={scrollToBottomSmooth}
+        />
       </div>
     </ScrollToBottomContext.Provider>
   )
-}
+})
