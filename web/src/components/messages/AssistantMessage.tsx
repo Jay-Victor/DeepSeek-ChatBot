@@ -5,7 +5,7 @@ import { IconRefreshOutline16, IconWarningOutline16 } from '../base/icons.js'
 import { describeReply } from '../../services/chat/describe.js'
 import { canContinueReply } from '../../services/chat/reply.js'
 import { continueReply, regenerateReply } from '../../services/chat/store.js'
-import { stopReadAloud } from '../../services/speech/readAloud.js'
+import { stopReadAloud, useReadAloudSupported } from '../../services/speech/readAloud.js'
 import type { AssistantMessage as AssistantMessageType } from '../../services/chat/types.js'
 import { ensureProfileKey, openSettings } from '../settings/settingsDialogState.js'
 import { useSessionEndpoint } from '../../services/useCapabilities.js'
@@ -46,6 +46,8 @@ export const AssistantMessage = memo(function AssistantMessage({
 }) {
   const t = useTranslate()
   const { profile, capabilities } = useSessionEndpoint(sessionId)
+  // 本地朗读不依赖端点能力；在线朗读仍要求 DeepSeek 官方端点
+  const readAloudSupported = useReadAloudSupported(capabilities)
   const view = useReplyView(message, streaming)
   const panelEntry = useSearchPanel((state) => state.entry)
   const notice = streaming ? null : describeReply(message)
@@ -145,7 +147,7 @@ export const AssistantMessage = memo(function AssistantMessage({
           <BranchSwitcher versions={versions} disabled={busy} onSelect={onSelectVersion} />
           <div className={clsx(styles.actions, isLast && styles.alwaysShow)}>
             {copyText ? <CopyButton text={copyText} /> : null}
-            {responseText && !refused && capabilities.speech ? (
+            {responseText && !refused && readAloudSupported ? (
               <ReadAloudButton messageId={message.id} text={responseText} apiKey={profile.apiKey} />
             ) : null}
             <IconButton

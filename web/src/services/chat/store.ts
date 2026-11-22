@@ -11,6 +11,7 @@ import {
   useUploads,
 } from '../attachments.js'
 import { maybeAutoReadReply } from '../speech/autoRead.js'
+import { readAloudSupported } from '../speech/readAloud.js'
 import { useSettings } from '../settings.js'
 import {
   capabilitiesFor,
@@ -1300,7 +1301,7 @@ const streamReply = async (sessionId: string, initial: AssistantMessage, request
     if (reply.status === 'done' && !capabilities.title && request.history.length === 0) {
       maybeSetLocalTitle(sessionId, request.question, reply)
     }
-    if (capabilities.speech) {
+    if (readAloudSupported(capabilities, useSettings.getState().ttsEngine)) {
       maybeAutoReadReply(sessionId, get().activeId, reply, profile.apiKey)
     }
   }

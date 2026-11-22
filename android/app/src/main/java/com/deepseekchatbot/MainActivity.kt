@@ -66,6 +66,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var mediaBridge: MediaBridge
     private lateinit var gallerySaver: GallerySaver
     private lateinit var backgroundStore: BackgroundStore
+    private lateinit var ttsSpeaker: TtsSpeaker
     private var errorView: TextView? = null
     private var cameraFile: File? = null
     private var pendingBackgroundKind: String? = null
@@ -207,6 +208,7 @@ class MainActivity : ComponentActivity() {
         attachmentOpener = AttachmentOpener(this)
         mediaBridge = MediaBridge(this) { payload -> emitGallery(payload) }
         gallerySaver = GallerySaver(this)
+        ttsSpeaker = TtsSpeaker(this) { payload -> emitSpeech(payload) }
         root.addView(
             webView,
             FrameLayout.LayoutParams(
@@ -275,6 +277,9 @@ class MainActivity : ComponentActivity() {
         if (::gallerySaver.isInitialized) {
             gallerySaver.destroy()
         }
+        if (::ttsSpeaker.isInitialized) {
+            ttsSpeaker.destroy()
+        }
         synchronized(saveStreams) {
             saveStreams.values.forEach { stream -> runCatching { stream.close() } }
             saveStreams.clear()
@@ -340,6 +345,10 @@ class MainActivity : ComponentActivity() {
 
         override fun onPageFinished(view: WebView, url: String?) {
             pageReady = true
+            // 页面重载后不能留下上一次的朗读
+            if (::ttsSpeaker.isInitialized) {
+                ttsSpeaker.stop()
+            }
         }
 
         override fun onReceivedError(
@@ -534,6 +543,19 @@ class MainActivity : ComponentActivity() {
             runCatching {
                 webView.evaluateJavascript(
                     "window.__onBackground && window.__onBackground(${JSONObject.quote(json)})",
+                    null
+                )
+            }
+        }
+    }
+
+    /** 本地朗读的进度/结果回到页面；payload 只含 token、state 与错误码 */
+    private fun emitSpeech(payload: JSONObject) {
+        val json = payload.toString()
+        webView.post {
+            runCatching {
+                webView.evaluateJavascript(
+                    "window.__onSpeech && window.__onSpeech(${JSONObject.quote(json)})",
                     null
                 )
             }
@@ -797,6 +819,21 @@ class MainActivity : ComponentActivity() {
         @android.webkit.JavascriptInterface
         fun cancelUpdate(id: String) {
             updateInstaller.cancel(id)
+        }
+
+        /** 本地朗读：交给系统 TTS；进度通过 __onSpeech 回传 */
+        @android.webkit.JavascriptInterface
+        fun speak(text: String, lang: String, rate: Float, token: String): Boolean {
+            if (text.isBlank() || isFinishing || isDestroyed) {
+                return false
+            }
+            runOnUiThread { ttsSpeaker.speak(text, lang, rate, token) }
+            return true
+        }
+
+        @android.webkit.JavascriptInterface
+        fun stopSpeak() {
+            runOnUiThread { ttsSpeaker.stop() }
         }
     }
 

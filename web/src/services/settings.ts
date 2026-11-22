@@ -10,6 +10,9 @@ export type ThemePreference = 'light' | 'dark' | 'system'
 /** 自定义背景的媒体类型 */
 export type WallpaperKind = 'image' | 'video'
 
+/** 朗读引擎：在线走 DeepSeek TTS 接口，本地走系统文字转语音 */
+export type TtsEngine = 'remote' | 'local'
+
 /** 本机设置，存 localStorage：API Key、语言、主题、位置、朗读音色、深度思考与智能搜索开关、侧边栏收起状态、自动检查更新、思考内容自动折叠、自动朗读、上下文压缩、外观 */
 type Settings = {
   apiKey: string | null
@@ -17,6 +20,10 @@ type Settings = {
   themePreference: ThemePreference
   location: UserLocation | null
   ttsVoice: TtsVoice
+  /** 朗读引擎；默认在线，老用户行为不变 */
+  ttsEngine: TtsEngine
+  /** 本地朗读语速，百分数（50–200），100 为正常语速 */
+  localTtsRatePercent: number
   thinking: boolean
   search: boolean
   siderCollapsed: boolean
@@ -45,6 +52,8 @@ const KEYS = {
   location: 'chat-demo:location',
   themePreference: 'chat-demo:theme-preference',
   ttsVoice: 'chat-demo:tts-voice',
+  ttsEngine: 'chat-demo:tts-engine',
+  localTtsRate: 'chat-demo:local-tts-rate',
   thinking: 'chat-demo:thinking',
   search: 'chat-demo:search',
   siderCollapsed: 'chat-demo:sider-collapsed',
@@ -117,6 +126,9 @@ const initialThemePreference = (): ThemePreference => {
 /** 未保存过时使用服务端默认音色 stella（海星） */
 const initialTtsVoice = (): TtsVoice => (read(KEYS.ttsVoice) === 'tide' ? 'tide' : 'stella')
 
+/** 未保存过时保持在线朗读，与旧版本行为一致 */
+const initialTtsEngine = (): TtsEngine => (read(KEYS.ttsEngine) === 'local' ? 'local' : 'remote')
+
 const PERCENT_MIN = 1
 const PERCENT_MAX = 99
 
@@ -176,6 +188,8 @@ export const useSettings = create<Settings>(() => ({
   location: initialLocation(),
   themePreference: initialThemePreference(),
   ttsVoice: initialTtsVoice(),
+  ttsEngine: initialTtsEngine(),
+  localTtsRatePercent: readRangeInt(KEYS.localTtsRate, 100, 50, 200),
   thinking: read(KEYS.thinking) === 'true',
   search: read(KEYS.search) === 'true',
   siderCollapsed: read(KEYS.siderCollapsed) === 'true',
@@ -215,6 +229,23 @@ export const setThemePreference = (themePreference: ThemePreference) => {
 export const setTtsVoice = (ttsVoice: TtsVoice) => {
   write(KEYS.ttsVoice, ttsVoice)
   useSettings.setState({ ttsVoice })
+}
+
+export const setTtsEngine = (ttsEngine: TtsEngine) => {
+  write(KEYS.ttsEngine, ttsEngine)
+  useSettings.setState({ ttsEngine })
+}
+
+/** 语速百分数收口到 50–200；下一次朗读开始生效 */
+export const setLocalTtsRatePercent = (value: number) => {
+  const localTtsRatePercent = clampRangeInt(
+    value,
+    useSettings.getState().localTtsRatePercent,
+    50,
+    200
+  )
+  write(KEYS.localTtsRate, String(localTtsRatePercent))
+  useSettings.setState({ localTtsRatePercent })
 }
 
 export const setApiKey = (apiKey: string | null) => {

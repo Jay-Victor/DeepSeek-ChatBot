@@ -26,19 +26,30 @@ import {
   setCompressTarget,
   setCompressThreshold,
   setLocale,
+  setLocalTtsRatePercent,
   setLocation,
   setThemePreference,
+  setTtsEngine,
   setTtsVoice,
   useSettings,
   type ThemePreference,
+  type TtsEngine,
 } from '../../services/settings.js'
 import { resolveContextWindow } from '../../services/endpoints.js'
 import { saveBlob } from '../../app/native.js'
+import { describeLocalSpeechError, stopReadAloud } from '../../services/speech/readAloud.js'
+import {
+  localSpeechAvailable,
+  speakLocal,
+  stopLocalSpeech,
+} from '../../services/speech/localTts.js'
+import { createId } from '../../utils/id.js'
 import { useTranslate, type TranslationKey, type TranslationMessage } from '../../i18n/index.js'
 import { Button } from '../base/Button.js'
 import { Modal } from '../base/Modal.js'
 import { Segmented } from '../base/Segmented.js'
 import { Select } from '../base/Select.js'
+import { Slider } from '../base/Slider.js'
 import { Switch } from '../base/Switch.js'
 import { showToast } from '../base/toastState.js'
 import { AboutSetting } from './AboutSetting.js'
@@ -142,7 +153,7 @@ const SettingsContent = () => {
             <>
               <ModeSetting />
               <LocaleSetting />
-              <TtsVoiceSetting />
+              <ReadAloudSetting />
               <LocationSetting />
               <AutoCollapseThinkingSetting />
             </>
@@ -513,26 +524,121 @@ const LocaleSetting = () => {
   )
 }
 
-/** 朗读音色：stella（海星，女声）/ tide（暗潮，男声） */
-const TtsVoiceSetting = () => {
+/**
+ * 朗读方式：在线（DeepSeek 音色）或本地（系统 TTS）。
+ * 语速与试听只对本地生效；切换引擎时先停掉正在读的内容。
+ */
+const ReadAloudSetting = () => {
   const t = useTranslate()
+  const engine = useSettings((state) => state.ttsEngine)
   const ttsVoice = useSettings((state) => state.ttsVoice)
-  return (
-    <SettingCell
-      label={t('settingsTtsVoice')}
-      status={null}
-      action={
-        <Select
-          ariaLabel={t('settingsTtsVoice')}
-          value={ttsVoice}
-          options={[
-            { value: 'stella', label: t('settingsTtsVoiceStella') },
-            { value: 'tide', label: t('settingsTtsVoiceTide') },
-          ]}
-          onChange={setTtsVoice}
-        />
+  const rate = useSettings((state) => state.localTtsRatePercent)
+  const [previewing, setPreviewing] = useState(false)
+
+  // 设置关闭时停止试听，避免面板消失后还在读
+  useEffect(
+    () => () => {
+      stopLocalSpeech()
+    },
+    []
+  )
+
+  const preview = () => {
+    if (previewing) {
+      stopLocalSpeech()
+      setPreviewing(false)
+      return
+    }
+    if (!localSpeechAvailable()) {
+      showToast({ key: 'ttsNoEngine' })
+      return
+    }
+    // 先停掉消息上的朗读，避免两条声音叠在一起
+    stopReadAloud()
+    const accepted = speakLocal(t('ttsPreviewText'), createId(), (event) => {
+      if (event.state === 'start') {
+        return
       }
-    />
+      setPreviewing(false)
+      if (event.state === 'error') {
+        showToast(describeLocalSpeechError(event.error ?? 'failed'))
+      }
+    })
+    setPreviewing(accepted)
+    if (!accepted) {
+      showToast({ key: 'ttsNoEngine' })
+    }
+  }
+
+  const engineOptions: { value: TtsEngine; label: string }[] = [
+    { value: 'remote', label: t('settingsTtsEngineRemote') },
+    { value: 'local', label: t('settingsTtsEngineLocal') },
+  ]
+
+  return (
+    <>
+      {/* 与「模式」一致：分段控制器宽度固定，放在标题下方单独一行，避免挤扁标签 */}
+      <div className={styles.theme}>
+        <div className={styles.label}>{t('settingsTtsEngine')}</div>
+        <div className={styles.description}>
+          {engine === 'remote'
+            ? t('settingsTtsEngineRemoteDescription')
+            : t('settingsTtsEngineLocalDescription')}
+        </div>
+        <Segmented
+          ariaLabel={t('settingsTtsEngine')}
+          className={styles.modeControl}
+          value={engine}
+          options={engineOptions}
+          onChange={(next) => {
+            stopReadAloud()
+            setTtsEngine(next)
+          }}
+        />
+      </div>
+      {engine === 'remote' ? (
+        <SettingCell
+          label={t('settingsTtsVoice')}
+          status={null}
+          action={
+            <Select
+              ariaLabel={t('settingsTtsVoice')}
+              value={ttsVoice}
+              options={[
+                { value: 'stella', label: t('settingsTtsVoiceStella') },
+                { value: 'tide', label: t('settingsTtsVoiceTide') },
+              ]}
+              onChange={setTtsVoice}
+            />
+          }
+        />
+      ) : (
+        <>
+          <div className={styles.cell}>
+            <Slider
+              label={t('settingsTtsRate')}
+              valueText={`${(rate / 100).toFixed(1)}×`}
+              value={rate}
+              min={50}
+              max={200}
+              step={10}
+              hint={t('settingsTtsRateDescription')}
+              onChange={setLocalTtsRatePercent}
+            />
+          </div>
+          <SettingCell
+            label={t('settingsTtsPreview')}
+            description={t('settingsTtsPreviewDescription')}
+            status={null}
+            action={
+              <Button variant="outlined" size="m" onClick={preview}>
+                {previewing ? t('ttsStop') : t('settingsTtsPreview')}
+              </Button>
+            }
+          />
+        </>
+      )}
+    </>
   )
 }
 

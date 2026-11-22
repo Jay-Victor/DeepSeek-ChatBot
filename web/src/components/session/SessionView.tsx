@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { useCallback, useRef } from 'react'
 import { useIsMobile } from '../../app/viewport.js'
 import { useTranslate } from '../../i18n/index.js'
+import { useReadAloudSupported } from '../../services/speech/readAloud.js'
 import { useSessionEndpoint } from '../../services/useCapabilities.js'
 import { useDoubleTap } from '../../utils/useDoubleTap.js'
 import type { Session } from '../../services/chat/types.js'
@@ -24,6 +25,8 @@ export const SessionView = ({
   const t = useTranslate()
   const isMobile = useIsMobile()
   const { capabilities } = useSessionEndpoint(session.id)
+  // 本地朗读不看端点能力；在线朗读仍要求 DeepSeek 官方端点
+  const readAloudSupported = useReadAloudSupported(capabilities)
   const listRef = useRef<MessageListHandle>(null)
   const composerRef = useRef<HTMLDivElement>(null)
   const scrollToTop = useCallback(() => listRef.current?.scrollToTop(), [])
@@ -34,7 +37,7 @@ export const SessionView = ({
       {isMobile ? (
         <MobileHeader
           title={title}
-          autoRead={capabilities.speech}
+          autoRead={readAloudSupported}
           sessionId={session.id}
           identityId={session.identityId}
           onTitleDoubleClick={scrollToTop}

@@ -17,6 +17,13 @@
     <!-- 应用内更新：下载完成后交给系统包安装器；未知来源开关仍由用户在系统设置里确认 -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
+    <!-- 本地朗读：Android 11+ 需要声明 TTS 服务，否则看不到系统语音引擎 -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"

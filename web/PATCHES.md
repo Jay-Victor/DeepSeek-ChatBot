@@ -203,6 +203,16 @@
 | `src/components/settings/AboutSetting.tsx` | 关于页底部新增「支持作者」：微信 / 支付宝海报缩略图、点按进应用内图片预览、逐张保存到相册 |
 | `src/components/settings/Settings.module.css` / `.css.d.ts` | 支持作者卡片与保存按钮样式 |
 | `src/i18n/zh.ts` / `en.ts` | 支持作者、保存到相册与失败提示文案 |
+| `src/services/settings.ts` | 新增 `ttsEngine`（默认在线，老用户行为不变）与 `localTtsRatePercent`（50–200，默认 100）并持久化 |
+| `src/services/speech/speakableText.ts`（新增） | 把回复正文解析成可朗读纯文本：跳过代码块、表格、公式、图片，链接只留文字，去掉裸 URL 与 `[citation:N]` |
+| `src/services/speech/localTts.ts`（新增） | 本地朗读桥：壳里调 `window.DeepSeekNative.speak` / `stopSpeak`，浏览器回退 `speechSynthesis`；按 token 分发 `__onSpeech` 事件 |
+| `src/services/speech/readAloud.ts` | 朗读拆成在线 / 本地两个后端，共用停止与状态；新增 `readAloudSupported` / `useReadAloudSupported` 与本地错误文案 |
+| `src/components/settings/SettingsDialog.tsx` | 通用设置「朗读音色」改为「朗读方式」：在线显示音色，本地显示语速滑杆与试听；切换引擎先停止朗读 |
+| `src/services/chat/store.ts` / `src/components/messages/AssistantMessage.tsx` / `src/components/session/SessionView.tsx` | 朗读按钮、自动朗读开关与自动朗读触发改按引擎判断：本地朗读不再依赖 DeepSeek 官方端点 |
+| `src/i18n/zh.ts` / `en.ts` | 朗读方式、语速、试听与本地朗读错误文案 |
+| `android/app/src/main/java/.../TtsSpeaker.kt`（新增） | 系统 TextToSpeech：懒初始化、按标点分段（≤600 字）、瞬态音频焦点、进度回调；语言数据缺失回 `no_voice` |
+| `android/app/src/main/java/.../MainActivity.kt` | 新增 `speak` / `stopSpeak` 桥，进度经 `__onSpeech` 回传；页面重载与退出时停止朗读 |
+| `android/app/src/main/AndroidManifest.xml` | 新增声明 `TTS_SERVICE` 的 `<queries>`（Android 11+ 才能发现系统语音引擎） |
 
 分词器校验：25 条固定夹具（中英日韩阿、emoji ZWJ、代码、数字、空白、控制字符、特殊标记）与
 Python `tokenizers` **0 mismatch**；另跑 306 条随机 fuzz 也是 0 mismatch。计数实现见 `bpe.ts`。
