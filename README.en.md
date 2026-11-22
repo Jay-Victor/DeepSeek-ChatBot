@@ -24,8 +24,8 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 | | |
 | --- | --- |
 | Application ID | `com.deepseekchatbot` |
-| Version | 0.1.21 (versionCode 22) |
-| Size | 5.63 MB (release) |
+| Version | 0.1.22 (versionCode 23) |
+| Size | 5.64 MB (release) |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | Native deps | androidx only (webkit / browser / activity / core-splashscreen), no third-party runtime |
 | Toolchain | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
@@ -46,6 +46,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 
 - **System capabilities**: back button, status bar appearance, safe areas and keyboard avoidance, microphone, file picker, external links
 - **Voice input**: circled sound-wave entry; tapping switches to "Hold to talk" — hold to record, release to transcribe and send, swipe up to cancel, with a live spectrum overlay
+- **Read-aloud engine**: Settings → General offers Online (the stella / tide DeepSeek voices) or Local (the system text-to-speech engine, 0.5–2.0× speed with a preview button); local reading works offline, makes no TTS request, and is also available on custom, Anthropic and OpenAI profiles
 - **Attachment panel**: circled plus opens a panel with recent photos plus Camera / Photos / Files
 - **Update prompt**: tapping the new-version prompt opens Settings → About
 - **Attachment preview**: images open in a full-screen in-app preview (tap to toggle actual size), PDFs go to the system viewer (fallback to SAF save), SVG and other files are saved through SAF
@@ -66,7 +67,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 Download the signed APK from [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest), or:
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.21-release.apk
+adb install -r DeepSeekChatBot-v0.1.22-release.apk
 ```
 
 On first launch, add your DeepSeek API key in Settings → Data. The key is written only to the on-device WebView localStorage and is excluded from cloud backup (`allowBackup=false`).
@@ -92,7 +93,7 @@ scripts/build-apk.sh release        # or scripts/build-apk.sh debug
 The script does three things: `pnpm build` inside `web/`, sync `web/dist` into `android/app/src/main/assets/www`, then `./gradlew assembleRelease`. Output:
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.21-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.22-release.apk
 ```
 
 Step by step:
@@ -132,7 +133,7 @@ If any of them is missing, `assembleRelease` still produces an APK, just unsigne
 
 ## Known limitations
 
-- **Auto-read makes TTS requests**: one per completed reply, off by default; only for the active chat, only when visible, and it does not interrupt an ongoing reading
+- **Online read-aloud makes TTS requests**: one per completed reply, off by default; local read-aloud makes none. It only reads the active chat, only while visible, and does not interrupt an ongoing reading
 - **Session search, pinning and multi-select are mobile-only**: search matches titles, current branch text and attachment names, not thinking blocks; the first search builds a local index, so a large history may pause briefly
 - **The message navigator only appears when the chat is scrollable and has at least 3 visible messages**: on dense chats the answer ticks are dropped and only question dots remain; hover / drag previews show text only and do not load images or attachments
 - **Double-tap-to-top and the navigator follow the current branch's rendered messages**: jumping to history pauses streaming follow until you return to the bottom or tap the last message; the desktop build keeps the native scrollbar and places the rail to its left
@@ -146,7 +147,8 @@ If any of them is missing, `assembleRelease` still produces an APK, just unsigne
 - DeepSeek official endpoints are supported natively (`/anthropic/v1/messages`, `/anthropic/v1/files`, `/v1/tools/asr|tts`); Anthropic and OpenAI-compatible endpoints can be added as API profiles (text + thinking only in this version)
 - **Custom endpoints must use HTTPS and allow CORS**: the WebView origin is fixed; if the endpoint does not allow the preflight, requests fail. Enter the API root, without `/v1` or `/anthropic`
 - **Non-DeepSeek protocols support text + thinking only in this version**: web search, attachments, speech input and server-side titles degrade by capability; those entries are hidden or disabled on Anthropic / OpenAI endpoints
-- **Speech input and read-aloud use the DeepSeek official endpoint only**: ASR / TTS live under `/v1/tools`; custom DeepSeek endpoints that do not forward that path hide the speech entry
+- **Speech input uses the DeepSeek official endpoint only**: ASR / TTS live under `/v1/tools`; custom DeepSeek endpoints that do not forward that path hide the speech entry. Read-aloud can use the local engine; online reading still requires the official endpoint
+- **Local read-aloud depends on the system voice pack**: voice, pauses and usable speed range come from the device engine; when speech data for the current language is missing, install it in the system text-to-speech settings. Code blocks, tables, formulas, images and bare URLs are skipped
 - **Context usage is estimated with the DeepSeek-V4 tokenizer**: numbers in the ring and compression preview are approximate on other models
 - **API profiles are not included in ZIP export/import**: profiles, keys and default models stay on the device; imported chats fall back to the current profile
 - In-app updates need access to GitHub release assets (the `api.github.com` asset endpoint is preferred). On restricted networks the download may fail; use "Download in browser" instead. The first install also requires allowing unknown sources in system settings
@@ -192,6 +194,8 @@ v0.1.19 was checked in desktop Chrome (390×844 and 1280×800) with mocked endpo
 v0.1.20 was checked in desktop Chrome (1280×800, 390×844 and 360×800) for the navigator and back-to-top: marker positions against actual message tops (maxDiff = 0), tap-to-nearest-message and drag scrubbing, hover / drag previews, double-tap on the title, the Back to bottom button appearing after leaving the bottom and restoring follow after a tap, and instant jumps under `prefers-reduced-motion`. A 120-message chat drops to 60 question dots; a short chat hides the rail. Android 16 (API 36.1, x86_64 emulator) checked real touch double-taps, rail tap / drag, the back-to-bottom button, and the rail height above the composer with the keyboard open. The APK reports `0.1.20` / `versionCode 21` with a v2 signature.
 
 v0.1.21 was checked on Android 16 (API 36.1, x86_64 emulator, signed release build) for Support the author: the posters and both locales in About, tapping a poster to open the full-screen viewer, Back closing the viewer before Settings, saving into `Pictures/DeepSeek ChatBot` (the MediaStore row matched the source byte count, and the pulled file had the same SHA-256 as the repo image), and automatic numbering on repeated saves. A jsQR decode of the actual full-screen screenshot returned `wxp://…` for WeChat and `https://qr.alipay.com/…` for Alipay. The Android 8/9 `WRITE_EXTERNAL_STORAGE` branch was not tested on an 8/9 device, and the browser download fallback was not verified separately. The APK reports `0.1.21` / `versionCode 22` with a v2 signature.
+
+v0.1.22 was checked on Android 16 (API 36.1, x86_64 emulator, debug build with CDP) for local read-aloud: WebView has no `speechSynthesis`, and the native `TextToSpeech` bridge delivered `__onSpeech` start / done events; a 1320-character text played in chunks with a single trailing done, `stopSpeak` produced no late callbacks and the next reading started immediately; the message button sent only the cleaned text (code blocks, tables, formulas and bare URLs skipped, link labels kept) and a 1.5× rate took effect; the Settings engine switch, speed slider and preview worked and switching engines stopped playback; auto-read triggered the local engine after a mocked SSE reply; on an Anthropic profile the read button and auto-read toggle stayed visible with the local engine and disappeared again with Online. Google TTS on the emulator failed once with `ERROR_NETWORK` (-7, missing offline voice data) and worked after installing the language pack; real-device audio, lock screen and vendor engines are still to be verified. The signed release APK was installed and launched, reporting `0.1.22` / `versionCode 23` with a v2 signature.
 
 ## Repository layout
 

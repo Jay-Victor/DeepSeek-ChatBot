@@ -24,8 +24,8 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.21（versionCode 22） |
-| 体积 | 5.63 MB（release） |
+| 版本 | 0.1.22（versionCode 23） |
+| 体积 | 5.64 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
 | 构建工具链 | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
@@ -46,6 +46,7 @@
 
 - **系统能力**：返回键、状态栏配色、安全区与键盘避让、麦克风、文件选择、外链
 - **语音输入**：圆圈声波入口；点击切到「按住说话」，按住录音、松手转写并直接发送，上滑取消，录音浮层显示实时频谱
+- **朗读方式**：设置 → 通用可选「在线」（stella / tide 两个 DeepSeek 音色）或「本地」（系统文字转语音，0.5–2.0 倍语速可调并支持试听）；本地朗读离线可用、不产生 TTS 费用，自定义端点与 Anthropic / OpenAI 方案下也能读
 - **添加附件**：圆圈加号展开面板，显示手机最近照片并支持拍照 / 相册 / 文件
 - **更新提示**：发现新版本时点击提示直接打开「设置 → 关于」
 - **附件打开**：图片走应用内全屏预览（点图片切换原始尺寸），PDF 交给系统查看器（无查看器回退 SAF 保存），SVG / 其他文件走 SAF 下载
@@ -66,7 +67,7 @@
 从 [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 下载签名 APK，或：
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.21-release.apk
+adb install -r DeepSeekChatBot-v0.1.22-release.apk
 ```
 
 首次启动在「设置 → 数据管理」填入自己的 DeepSeek API Key；Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
@@ -95,7 +96,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.21-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.22-release.apk
 ```
 
 手动分步：
@@ -136,7 +137,7 @@ KEYSTORE_FILE / KEYSTORE_PASSWORD / KEYSTORE_ALIAS / KEY_PASSWORD
 
 ## 已知限制
 
-- **自动朗读会产生 TTS 调用**：每条完成的回复一次，默认关闭；只读当前会话、前台完成的回复，正在朗读其他内容时不打断
+- **在线朗读会产生 TTS 调用**：每条完成的回复一次，默认关闭；本地朗读不产生请求。只读当前会话、前台完成的回复，正在朗读其他内容时不打断
 - **会话搜索、置顶与多选只在移动端侧边栏**：搜索匹配标题、当前分支正文与附件名，不含思考内容；首次搜索需建本地索引，历史很多时会有短暂延迟
 - **消息定位条只在可滚动且至少 3 条可见消息时显示**：消息密度过高时自动隐藏回答刻度，只保留提问点；悬停 / 拖动预览只显示文字摘要，不加载图片或附件
 - **双击回顶与定位条按当前分支实际渲染的消息计算**：跳到历史位置后会暂停流式跟底，直到回到底部或点按最后一条；桌面端保留原生滚动条，定位条位于其左侧
@@ -150,7 +151,8 @@ KEYSTORE_FILE / KEYSTORE_PASSWORD / KEYSTORE_ALIAS / KEY_PASSWORD
 - 原生支持 DeepSeek 官方接口（`/anthropic/v1/messages`、`/anthropic/v1/files`、`/v1/tools/asr|tts`）；也可在「接入方案」里选择 Anthropic 或 OpenAI 兼容端点（第一版只支持纯文本 + 思考）
 - **自定义端点要求 https 且允许跨域（CORS）**：WebView 页面 origin 固定，端点不放行预检时请求会失败；地址填 API 根，不要带 `/v1` 或 `/anthropic`
 - **非 DeepSeek 协议第一版只支持纯文本 + 思考**：智能搜索、附件、语音输入与服务端自动标题按能力降级；Anthropic / OpenAI 端点下这些入口会隐藏或置灰
-- **语音输入与朗读只走 DeepSeek 官方端点**：ASR / TTS 是 `/v1/tools` 专用接口；自定义 DeepSeek 端点若没有转发该路径，语音入口会自动隐藏
+- **语音输入只走 DeepSeek 官方端点**：ASR / TTS 是 `/v1/tools` 专用接口；自定义 DeepSeek 端点若没有转发该路径，语音输入入口会自动隐藏。朗读可选本地引擎，在线朗读仍要求官方端点
+- **本地朗读依赖系统语音包**：音色、停顿与可用语速由机型引擎决定；缺少当前语言的语音数据时，需要在系统「文字转语音」设置里安装。代码块、表格、公式、图片与裸链接默认跳过不读
 - **上下文占用按 DeepSeek-V4 分词器估算**：切换到其他模型后占用环与压缩预览的数字是近似值
 - **接入方案不随 ZIP 迁移**：方案、Key 与默认模型只保存在本机；导入的会话回落到当前方案
 - 应用内更新需要访问 GitHub 资产（优先 `api.github.com` 资产入口）；受限网络可能下载失败，此时可用「在浏览器中下载」，首次安装还需在系统设置里允许未知来源
@@ -220,6 +222,8 @@ v0.1.19 在桌面 Chrome（390×844、1280×800）用 mock 端点核对：多方
 v0.1.20 在桌面 Chrome（1280×800、390×844、360×800）核对消息定位与回顶：定位点与消息实际 top 比对 `maxDiff = 0`、点按最近消息 / 拖动轨道、悬停与拖动预览、双击标题回顶、离开底部出现「回到底部」并在点击后恢复跟底、`prefers-reduced-motion` 下直接跳转；120 条消息时自动只保留 60 个提问点，短会话不显示定位条。Android 16（API 36.1，x86_64 模拟器）核对真实触摸双击回顶、定位条 tap / drag、回底按钮，以及键盘弹出后轨道高度不压输入框。APK 核对 `0.1.20` / `versionCode 21` 与 v2 签名。
 
 v0.1.21 在 Android 16（API 36.1，x86_64 模拟器，release 签名包）核对支持作者：关于页底部海报与中英文案、点按进入全屏预览、返回键先关预览再回设置、保存到相册写入 `Pictures/DeepSeek ChatBot`（MediaStore 记录与源文件字节数一致，导出后 SHA-256 与仓库原图一致）、重复保存自动加序号；用全屏截图做 jsQR 解码，微信得到 `wxp://…`、支付宝得到 `https://qr.alipay.com/…`。Android 8/9 的 `WRITE_EXTERNAL_STORAGE` 分支未在 8/9 实机验证；浏览器里的保存回退为普通下载，未单独验证。APK 核对 `0.1.21` / `versionCode 22` 与 v2 签名。
+
+v0.1.22 在 Android 16（API 36.1，x86_64 模拟器，debug 包 + CDP）核对本地朗读：WebView 无 `speechSynthesis`、原生 `TextToSpeech` 桥能回传 `__onSpeech` 的 start / done；1320 字长文分段播放且只在最后一段 done，`stopSpeak` 后无迟到回调并可立即再读；消息朗读只把清洗后的正文交给引擎（跳过代码块、表格、公式与裸链接，保留链接文字），语速 1.5× 生效；设置页「在线 / 本地」切换、语速滑杆与试听可用，切换引擎即停止朗读；自动朗读在 mock SSE 回复完成后自动调用本地引擎；本地引擎下 Anthropic 端点仍显示朗读按钮与自动朗读开关，切回在线后按旧逻辑隐藏。模拟器 Google TTS 首次合成中文报过 `ERROR_NETWORK`（-7，缺离线语音包），安装语音数据后正常；真机听感、锁屏与厂商引擎待设备验收。release 签名包已安装启动，APK 核对 `0.1.22` / `versionCode 23` 与 v2 签名。
 
 ## 仓库结构
 
