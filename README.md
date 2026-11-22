@@ -24,8 +24,8 @@
 | | |
 | --- | --- |
 | 包名 | `com.deepseekchatbot` |
-| 版本 | 0.1.19（versionCode 20） |
-| 体积 | 5.36 MB（release） |
+| 版本 | 0.1.20（versionCode 21） |
+| 体积 | 5.37 MB（release） |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | 原生依赖 | 仅 androidx（webkit / browser / activity / core-splashscreen），无第三方运行时 |
 | 构建工具链 | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
@@ -52,6 +52,7 @@
 - **导出**：ZIP 与附件下载走 SAF 落盘（WebView 会丢弃 `blob:` 下载），保存桥按文件 MIME 创建文档
 - **移动端侧边栏**：会话搜索（标题 + 当前分支正文，命中高亮）、底部浮动「新建」、多选批量置顶 / 删除
 - **会话页顶栏**：自动朗读开关；开启后每条新完成的回复自动朗读，切换时在屏幕中央显示 1.6 秒提示
+- **消息定位与回顶**：会话页右侧定位条（提问大点、回答刻度，消息密度过高时只保留提问点）支持点按跳转、拖动滚动与消息摘要预览；双击标题回到最早的消息；离开底部时显示「回到底部」浮动按钮
 - **会话三点菜单**：置顶 / 取消置顶、多选
 - **设置与关于**：思考内容自动折叠、上下文占用环（DeepSeek-V4 分词器，按模型窗口）、版本与更新检查、应用内下载安装
 - **接入方案**：数据管理里可保存多套端点（DeepSeek / Anthropic / OpenAI 兼容）与各自的 API Key，输入端点后获取模型列表并切换；新会话绑定创建时的方案与模型，旧会话不受当前方案切换影响
@@ -64,7 +65,7 @@
 从 [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest) 下载签名 APK，或：
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.19-release.apk
+adb install -r DeepSeekChatBot-v0.1.20-release.apk
 ```
 
 首次启动在「设置 → 数据管理」填入自己的 DeepSeek API Key；Key 只写在本机 WebView 的 localStorage，不进云备份（`allowBackup=false`）。
@@ -93,7 +94,7 @@ scripts/build-apk.sh release        # 或 scripts/build-apk.sh debug
 产物：
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.19-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.20-release.apk
 ```
 
 手动分步：
@@ -135,6 +136,8 @@ KEYSTORE_FILE / KEYSTORE_PASSWORD / KEYSTORE_ALIAS / KEY_PASSWORD
 
 - **自动朗读会产生 TTS 调用**：每条完成的回复一次，默认关闭；只读当前会话、前台完成的回复，正在朗读其他内容时不打断
 - **会话搜索、置顶与多选只在移动端侧边栏**：搜索匹配标题、当前分支正文与附件名，不含思考内容；首次搜索需建本地索引，历史很多时会有短暂延迟
+- **消息定位条只在可滚动且至少 3 条可见消息时显示**：消息密度过高时自动隐藏回答刻度，只保留提问点；悬停 / 拖动预览只显示文字摘要，不加载图片或附件
+- **双击回顶与定位条按当前分支实际渲染的消息计算**：跳到历史位置后会暂停流式跟底，直到回到底部或点按最后一条；桌面端保留原生滚动条，定位条位于其左侧
 - **后台 / 锁屏**：WebView 会被系统节流，长时间生成可能中断；「锁屏继续跑」需要前台服务，未实现
 - **系统深色模式**：页面按启动时的系统主题渲染（`configChanges` 含 `uiMode`，为的是不重建 Activity、不丢流式回复），运行中切系统主题要重启应用才生效；应用内「设置 → 主题」可立即切换
 - **超过 4096 像素的动图**：上传前缩放时只保留一帧，动效会丢失（上游行为）
@@ -209,6 +212,8 @@ v0.1.17 在 Android 16（API 36.1，x86_64 模拟器，release 签名包）核�
 v0.1.18 修复 v0.1.17 的浅色主题色对比度：色相拖到黄 / 绿等亮色时，链接、设置「恢复默认」、侧栏选中项与品牌文字在浅色底上按 4.5:1 收口；页面底色上的 appName、标题图标、上下文环与朗读波形改用可读的 brand-text，主色填充保持鲜艳。桌面 Chrome 以浅色 + 52° 复验：brand-text 计算为 `hsl(52,99%,26%)`，主按钮为 `hsl(52,99%,61%)` 配深色文字；APK 核对 `0.1.18` / `versionCode 19`。
 
 v0.1.19 在桌面 Chrome（390×844、1280×800）用 mock 端点核对：多方案新建 / 编辑 / 切换、DeepSeek `/models` 元数据解析、OpenAI 与 Anthropic 请求体、会话级绑定（切换当前方案后旧会话仍走创建时的端点）、占用环 128,000 / 1,048,576、`deepseek-v4-pro` 附件仅文件、欢迎页方案 chip；APK 核对 `0.1.19` / `versionCode 20` 与 v2 签名。真实第三方端点、CORS 与 Android WebView 待设备验收。
+
+v0.1.20 在桌面 Chrome（1280×800、390×844、360×800）核对消息定位与回顶：定位点与消息实际 top 比对 `maxDiff = 0`、点按最近消息 / 拖动轨道、悬停与拖动预览、双击标题回顶、离开底部出现「回到底部」并在点击后恢复跟底、`prefers-reduced-motion` 下直接跳转；120 条消息时自动只保留 60 个提问点，短会话不显示定位条。Android 16（API 36.1，x86_64 模拟器）核对真实触摸双击回顶、定位条 tap / drag、回底按钮，以及键盘弹出后轨道高度不压输入框。APK 核对 `0.1.20` / `versionCode 21` 与 v2 签名。
 
 ## 仓库结构
 

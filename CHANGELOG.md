@@ -5,6 +5,19 @@
 
 ## [Unreleased]
 
+## [0.1.20] - 2026-11-22
+
+### 新增
+
+- 会话页右侧新增消息定位条：提问用大点、回答用小刻度，消息密度过高时自动只保留提问点；当前视口以滑块显示，可点按跳到最近一条消息、拖动轨道快速滚动，桌面悬停 / 移动端拖动时显示消息摘要
+- 双击会话标题回到最早的消息（桌面双击、移动端双击均可；Android WebView 不依赖 `dblclick`）
+- 滚动离开底部后，消息区右下角出现「回到底部」浮动按钮，桌面悬停显示提示，点击平滑回底并恢复流式跟底
+
+### 已知限制
+
+- 定位条只在内容可滚动且至少有 3 条可见消息时显示；消息密度过高时只保留提问点，不再显示回答刻度
+- 定位条与双击回顶按当前分支实际渲染的消息计算；跳转到历史位置后会暂停流式跟底，直到回到底部或点按最后一条
+
 ## [0.1.19] - 2026-11-22
 
 ### 新增
@@ -252,7 +265,8 @@
 - 后台 / 锁屏时 WebView 被系统节流，长时间生成可能中断
 - 运行中切换系统深浅色需重启应用（应用内主题开关即时生效）
 
-[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.19...HEAD
+[Unreleased]: https://github.com/Jay-Victor/DeepSeek-ChatBot/compare/v0.1.20...HEAD
+[0.1.20]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.20
 [0.1.19]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.19
 [0.1.18]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.18
 [0.1.17]: https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/tag/v0.1.17

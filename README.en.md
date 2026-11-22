@@ -24,8 +24,8 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 | | |
 | --- | --- |
 | Application ID | `com.deepseekchatbot` |
-| Version | 0.1.19 (versionCode 20) |
-| Size | 5.36 MB (release) |
+| Version | 0.1.20 (versionCode 21) |
+| Size | 5.37 MB (release) |
 | SDK | minSdk 26 / targetSdk 36 / compileSdk 36 |
 | Native deps | androidx only (webkit / browser / activity / core-splashscreen), no third-party runtime |
 | Toolchain | Gradle 8.14.4 · AGP 8.13.0 · Kotlin 2.3.0 · JDK 17+ |
@@ -52,6 +52,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 - **Export**: ZIP and attachment downloads use SAF (WebView drops `blob:` downloads); the save bridge creates documents with the right MIME type
 - **Mobile sidebar**: session search (title + current branch text, highlighted hits), floating New button, multi-select with batch pin/delete
 - **Session header**: auto-read toggle; reads each completed reply aloud and shows a 1.6-second centered hint when toggled
+- **Message navigator & back to top**: a right-edge rail marks questions with dots and answers with ticks (ticks drop out on dense chats); tap to jump, drag to scrub, hover or drag for a text preview. Double-tap the chat title to return to the earliest message; a floating Back to bottom button appears once you leave the bottom
 - **Session menu**: pin / unpin and multi-select
 - **Settings & About**: auto-collapse thinking, context-usage ring (DeepSeek-V4 tokenizer, per-model window), version and update check, in-app install
 - **API profiles**: Data settings stores multiple endpoints (DeepSeek / Anthropic / OpenAI-compatible) with their own API keys; fetch the model list after entering an endpoint and switch models. New chats bind to the profile and model they were created with, so switching the current profile does not retarget old chats
@@ -64,7 +65,7 @@ Packs [deepseek-ai/chat-demo](https://github.com/deepseek-ai/chat-demo) 0.1.3 in
 Download the signed APK from [Releases](https://github.com/Jay-Victor/DeepSeek-ChatBot/releases/latest), or:
 
 ```bash
-adb install -r DeepSeekChatBot-v0.1.19-release.apk
+adb install -r DeepSeekChatBot-v0.1.20-release.apk
 ```
 
 On first launch, add your DeepSeek API key in Settings → Data. The key is written only to the on-device WebView localStorage and is excluded from cloud backup (`allowBackup=false`).
@@ -90,7 +91,7 @@ scripts/build-apk.sh release        # or scripts/build-apk.sh debug
 The script does three things: `pnpm build` inside `web/`, sync `web/dist` into `android/app/src/main/assets/www`, then `./gradlew assembleRelease`. Output:
 
 ```
-android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.19-release.apk
+android/app/build/outputs/apk/release/DeepSeekChatBot-v0.1.20-release.apk
 ```
 
 Step by step:
@@ -131,6 +132,8 @@ If any of them is missing, `assembleRelease` still produces an APK, just unsigne
 
 - **Auto-read makes TTS requests**: one per completed reply, off by default; only for the active chat, only when visible, and it does not interrupt an ongoing reading
 - **Session search, pinning and multi-select are mobile-only**: search matches titles, current branch text and attachment names, not thinking blocks; the first search builds a local index, so a large history may pause briefly
+- **The message navigator only appears when the chat is scrollable and has at least 3 visible messages**: on dense chats the answer ticks are dropped and only question dots remain; hover / drag previews show text only and do not load images or attachments
+- **Double-tap-to-top and the navigator follow the current branch's rendered messages**: jumping to history pauses streaming follow until you return to the bottom or tap the last message; the desktop build keeps the native scrollbar and places the rail to its left
 - **Background / lock screen**: the system throttles WebView, so long generations may be interrupted. Keeping it running while locked needs a foreground service, which is not implemented
 - **System dark mode**: the page renders with the theme present at launch (`configChanges` includes `uiMode` so the activity is never recreated and streaming survives). A system theme switch takes effect on the next launch; the in-app Settings → Theme switch applies immediately
 - **Animated images over 4096 px** lose their animation when downscaled before upload (upstream behaviour)
@@ -181,6 +184,8 @@ v0.1.17 was checked on Android 16 (API 36.1, x86_64 emulator, signed release bui
 v0.1.18 fixes the accent contrast in light mode: with a yellow / green hue, links, the Settings Reset action, the selected sidebar row and brand text now keep 4.5:1 against the light page; the app name, title icon, context ring and read-aloud waveform painted on the page background use the readable brand-text alias, while primary fills stay vivid. Desktop Chrome checked light mode at hue 52°: brand-text resolves to `hsl(52,99%,26%)` and the primary button to `hsl(52,99%,61%)` with dark text. The APK reports `0.1.18` / `versionCode 19`.
 
 v0.1.19 was checked in desktop Chrome (390×844 and 1280×800) with mocked endpoints: creating / editing / switching profiles, DeepSeek `/models` metadata parsing, OpenAI and Anthropic request bodies, session binding (an old chat keeps its original endpoint after switching the current profile), usage rings at 128,000 / 1,048,576, `deepseek-v4-pro` offering document attachments only, and the welcome-page profile chip. The APK reports `0.1.19` / `versionCode 20` and a v2 signature. Real third-party endpoints, CORS and Android WebView await device verification.
+
+v0.1.20 was checked in desktop Chrome (1280×800, 390×844 and 360×800) for the navigator and back-to-top: marker positions against actual message tops (maxDiff = 0), tap-to-nearest-message and drag scrubbing, hover / drag previews, double-tap on the title, the Back to bottom button appearing after leaving the bottom and restoring follow after a tap, and instant jumps under `prefers-reduced-motion`. A 120-message chat drops to 60 question dots; a short chat hides the rail. Android 16 (API 36.1, x86_64 emulator) checked real touch double-taps, rail tap / drag, the back-to-bottom button, and the rail height above the composer with the keyboard open. The APK reports `0.1.20` / `versionCode 21` with a v2 signature.
 
 ## Repository layout
 
